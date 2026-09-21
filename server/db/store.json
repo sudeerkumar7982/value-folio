@@ -1,0 +1,1019 @@
+{
+  "profile": {
+    "symbol": "SUDK",
+    "name": "KALLA SUDEER KUMAR",
+    "bio": "Software Engineer & Personal Life Ticker. Building human stock assets.",
+    "startingPrice": 100,
+    "currentPrice": 125.47,
+    "walletBalance": 10000,
+    "sharesOwned": 0,
+    "avgBuyPrice": 0,
+    "apiKey": "",
+    "createdAt": "2026-09-19T16:00:00.000Z"
+  },
+  "sectors": {
+    "Career": 26,
+    "Education": 0,
+    "Skills": 0,
+    "Projects": 1,
+    "Finance": 2,
+    "Social": 0,
+    "Wellbeing": 0
+  },
+  "events": [
+    {
+      "id": "evt-1789974368696",
+      "title": "Currently having 2 offers",
+      "description": "",
+      "sector": "Career",
+      "sentiment": "POSITIVE",
+      "confidence": 87,
+      "importance": "HIGH",
+      "impactPercent": 11.96,
+      "previousPrice": 111.43,
+      "newPrice": 124.76,
+      "timestamp": "2026-09-21T00:00:00.000Z"
+    },
+    {
+      "id": "evt-1789974317292",
+      "title": "Having project review in this week",
+      "description": "",
+      "sector": "Projects",
+      "sentiment": "POSITIVE",
+      "confidence": 68,
+      "importance": "LOW",
+      "impactPercent": 0.82,
+      "previousPrice": 112.64,
+      "newPrice": 113.56,
+      "timestamp": "2026-09-21T00:00:00.000Z"
+    },
+    {
+      "id": "evt-1789836240971",
+      "title": "Infosys gives training,if we fail in the training then  Offer gets lost",
+      "description": "",
+      "sector": "Career",
+      "sentiment": "POSITIVE",
+      "confidence": 87,
+      "importance": "HIGH",
+      "impactPercent": -3.96,
+      "previousPrice": 115.32,
+      "newPrice": 110.75,
+      "timestamp": "2026-09-19T00:00:00.000Z"
+    },
+    {
+      "id": "evt-1789836014673",
+      "title": "Finance data Invested:51,260 Current profit/loss:44,308",
+      "description": "",
+      "sector": "Finance",
+      "sentiment": "NEUTRAL",
+      "confidence": 81,
+      "importance": "HIGH",
+      "impactPercent": -0.16,
+      "previousPrice": 115.5,
+      "newPrice": 115.32,
+      "timestamp": "2026-09-19T00:00:00.000Z"
+    },
+    {
+      "id": "evt-1789835962197",
+      "title": "Finance data  Invested:51,260 Current:44,308",
+      "description": "",
+      "sector": "Finance",
+      "sentiment": "POSITIVE",
+      "confidence": 68,
+      "importance": "LOW",
+      "impactPercent": 2.5,
+      "previousPrice": 112.68,
+      "newPrice": 115.5,
+      "timestamp": "2026-09-19T00:00:00.000Z"
+    },
+    {
+      "id": "evt-1789835874505",
+      "title": "Currently having 2 Offers",
+      "description": "",
+      "sector": "Career",
+      "sentiment": "POSITIVE",
+      "confidence": 87,
+      "importance": "HIGH",
+      "impactPercent": 12.96,
+      "previousPrice": 99.75,
+      "newPrice": 112.68,
+      "timestamp": "2026-09-19T00:00:00.000Z"
+    },
+    {
+      "id": "evt-1789834429091",
+      "title": "Financial Data:   Invested:51,260  Profit/Loss:44,308",
+      "description": "",
+      "sector": "Finance",
+      "sentiment": "NEUTRAL",
+      "confidence": 81,
+      "importance": "HIGH",
+      "impactPercent": -0.25,
+      "previousPrice": 100,
+      "newPrice": 99.75,
+      "timestamp": "2026-09-19T00:00:00.000Z"
+    }
+  ],
+  "priceTicks": [
+    {
+      "timestamp": "2026-09-19T00:00:00.000Z",
+      "price": 110.75,
+      "eventId": "evt-1789836240971",
+      "label": "Infosys gives training,if we fail in the training then  Offer gets lost"
+    },
+    {
+      "timestamp": "2026-09-21T07:01:31.980Z",
+      "price": 110.61,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:01:33.649Z",
+      "price": 110.71,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:01:34.954Z",
+      "price": 110.54,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:01:36.641Z",
+      "price": 110.58,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:01:38.705Z",
+      "price": 110.29,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:01:39.649Z",
+      "price": 109.93,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:01:41.649Z",
+      "price": 109.57,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:01:42.644Z",
+      "price": 109.41,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:01:44.660Z",
+      "price": 109.75,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:01:45.676Z",
+      "price": 109.41,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:19.903Z",
+      "price": 109.56,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:21.442Z",
+      "price": 109.54,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:22.868Z",
+      "price": 109.7,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:24.432Z",
+      "price": 109.89,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:25.787Z",
+      "price": 109.63,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:28.097Z",
+      "price": 109.54,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:28.837Z",
+      "price": 109.68,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:30.449Z",
+      "price": 109.76,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:31.848Z",
+      "price": 109.62,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:33.414Z",
+      "price": 109.79,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:34.886Z",
+      "price": 110.12,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:36.364Z",
+      "price": 109.96,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:37.865Z",
+      "price": 109.82,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:39.356Z",
+      "price": 110,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:40.910Z",
+      "price": 110.13,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:42.324Z",
+      "price": 110.5,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:43.992Z",
+      "price": 110.69,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:45.647Z",
+      "price": 110.49,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:46.840Z",
+      "price": 110.68,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:48.335Z",
+      "price": 110.84,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:49.918Z",
+      "price": 111.15,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:51.391Z",
+      "price": 111.08,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:52.965Z",
+      "price": 111.39,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:54.368Z",
+      "price": 111.73,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:55.961Z",
+      "price": 112.01,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:57.289Z",
+      "price": 112,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:04:58.815Z",
+      "price": 111.67,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:00.402Z",
+      "price": 111.59,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:01.844Z",
+      "price": 111.79,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:03.372Z",
+      "price": 112.13,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:04.945Z",
+      "price": 112.2,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:06.365Z",
+      "price": 112.06,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:07.899Z",
+      "price": 112.31,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:09.362Z",
+      "price": 112.47,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:10.848Z",
+      "price": 112.32,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:12.418Z",
+      "price": 112.24,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:13.977Z",
+      "price": 112.07,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:15.395Z",
+      "price": 112.29,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:16.940Z",
+      "price": 112.64,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T00:00:00.000Z",
+      "price": 113.56,
+      "eventId": "evt-1789974317292",
+      "label": "Having project review in this week"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:18.480Z",
+      "price": 113.23,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:19.876Z",
+      "price": 113.25,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:21.440Z",
+      "price": 113.08,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:22.874Z",
+      "price": 112.98,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:24.418Z",
+      "price": 113.26,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:25.942Z",
+      "price": 113.24,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:31.466Z",
+      "price": 113.3,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:33.032Z",
+      "price": 113.17,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:34.448Z",
+      "price": 112.89,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:35.880Z",
+      "price": 112.71,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:37.466Z",
+      "price": 112.88,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:38.959Z",
+      "price": 113.09,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:40.487Z",
+      "price": 112.94,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:42.021Z",
+      "price": 112.75,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:43.478Z",
+      "price": 113.04,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:44.847Z",
+      "price": 112.81,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:46.521Z",
+      "price": 112.61,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:47.953Z",
+      "price": 112.5,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:49.414Z",
+      "price": 112.4,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:50.903Z",
+      "price": 112.33,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:52.378Z",
+      "price": 112.23,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:53.841Z",
+      "price": 111.96,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:55.482Z",
+      "price": 111.81,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:56.905Z",
+      "price": 111.54,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:58.347Z",
+      "price": 111.37,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:05:59.840Z",
+      "price": 111.54,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:01.341Z",
+      "price": 111.53,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:02.835Z",
+      "price": 111.86,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:04.378Z",
+      "price": 111.53,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:05.969Z",
+      "price": 111.65,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:07.487Z",
+      "price": 111.43,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T00:00:00.000Z",
+      "price": 124.76,
+      "eventId": "evt-1789974368696",
+      "label": "Currently having 2 offers"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:08.944Z",
+      "price": 124.83,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:10.337Z",
+      "price": 124.99,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:11.914Z",
+      "price": 125.21,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:13.468Z",
+      "price": 124.81,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:14.987Z",
+      "price": 124.61,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:16.596Z",
+      "price": 124.89,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:18.536Z",
+      "price": 125.31,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:19.607Z",
+      "price": 125.15,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:21.638Z",
+      "price": 124.92,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:22.553Z",
+      "price": 125.15,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:24.529Z",
+      "price": 124.96,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:25.577Z",
+      "price": 125.3,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:27.693Z",
+      "price": 125.59,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:28.579Z",
+      "price": 125.94,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:30.539Z",
+      "price": 125.97,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:31.550Z",
+      "price": 126.1,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:33.591Z",
+      "price": 126.18,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:34.531Z",
+      "price": 125.92,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:36.598Z",
+      "price": 125.63,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:37.594Z",
+      "price": 125.38,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:39.696Z",
+      "price": 125.19,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:40.702Z",
+      "price": 124.8,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:42.642Z",
+      "price": 125.01,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:43.536Z",
+      "price": 125.38,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:45.715Z",
+      "price": 125.36,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:46.616Z",
+      "price": 125.25,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:48.641Z",
+      "price": 125.67,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:49.544Z",
+      "price": 125.65,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:51.653Z",
+      "price": 125.81,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:52.570Z",
+      "price": 126,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:54.626Z",
+      "price": 126.38,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:55.601Z",
+      "price": 126.46,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:57.696Z",
+      "price": 126.47,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:06:58.817Z",
+      "price": 126.34,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:07:00.657Z",
+      "price": 126.33,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:07:01.607Z",
+      "price": 126.49,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:07:03.685Z",
+      "price": 126.25,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:07:04.651Z",
+      "price": 126.69,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:07:06.698Z",
+      "price": 126.56,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:07:07.712Z",
+      "price": 126.36,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:07:09.675Z",
+      "price": 126.41,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:07:10.620Z",
+      "price": 126.18,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:07:12.647Z",
+      "price": 125.76,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:07:13.618Z",
+      "price": 125.92,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:09:00.028Z",
+      "price": 125.61,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:09:00.533Z",
+      "price": 125.6,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:09:01.210Z",
+      "price": 125.25,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:09:01.819Z",
+      "price": 125.44,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:09:03.155Z",
+      "price": 125.55,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:09:04.701Z",
+      "price": 125.97,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:09:07.385Z",
+      "price": 125.55,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:09:07.606Z",
+      "price": 125.91,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:09:09.145Z",
+      "price": 125.83,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:09:10.718Z",
+      "price": 126.11,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:09:12.264Z",
+      "price": 126,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:09:13.551Z",
+      "price": 125.98,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:09:15.230Z",
+      "price": 125.9,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:09:16.674Z",
+      "price": 125.66,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:09:18.218Z",
+      "price": 125.88,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:09:19.581Z",
+      "price": 125.46,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:09:21.099Z",
+      "price": 125.58,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:09:22.702Z",
+      "price": 125.77,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:09:24.236Z",
+      "price": 125.52,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:09:25.764Z",
+      "price": 125.41,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    },
+    {
+      "timestamp": "2026-09-21T07:09:27.199Z",
+      "price": 125.6,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:09:28.602Z",
+      "price": 125.78,
+      "eventId": null,
+      "label": "📈 Investor Buying Pressure"
+    },
+    {
+      "timestamp": "2026-09-21T07:09:30.128Z",
+      "price": 125.47,
+      "eventId": null,
+      "label": "📉 Market Sentiment Noise"
+    }
+  ],
+  "trades": []
+}
