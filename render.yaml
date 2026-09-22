@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: value-folio
+    env: node
+    buildCommand: npm run build
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 5000
