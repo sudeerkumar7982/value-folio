@@ -272,7 +272,6 @@ export const API = {
       label: noise >= 0 ? '📈 Investor Buying Movement' : '📉 Market Sentiment Noise'
     });
 
-    if (store.priceTicks.length > 150) store.priceTicks.shift();
     saveLocalStore(store);
 
     try {

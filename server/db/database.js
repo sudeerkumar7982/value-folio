@@ -176,11 +176,6 @@ export const DB = {
       label
     });
     
-    // Keep max 150 price ticks for high performance
-    if (data.priceTicks.length > 150) {
-      data.priceTicks.shift();
-    }
-    
     writeStore(data);
     return data.profile;
   },
