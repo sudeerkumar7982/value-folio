@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, ReferenceLine, ReferenceDot } from 'recharts';
 import { Bell, Bookmark, Link2, BarChart2, ArrowUpDown } from 'lucide-react';
 
-export function StockChart({ priceTicks = [], profile, symbol = 'SUDK' }) {
+export function StockChart({ priceTicks = [], profile, symbol = '' }) {
   // Default view: 1D
   const [timeRange, setTimeRange] = useState('1D');
 

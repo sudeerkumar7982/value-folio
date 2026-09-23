@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Settings, Key, Sparkles, X, Check, RefreshCw } from 'lucide-react';
 
 export function SettingsModal({ isOpen, onClose, profile, onSaveSettings }) {
-  const [symbol, setSymbol] = useState(profile?.symbol || 'SUDK');
-  const [name, setName] = useState(profile?.name || 'Sudeer Kumar');
+  const [symbol, setSymbol] = useState(profile?.symbol || '');
+  const [name, setName] = useState(profile?.name || '');
   const [bio, setBio] = useState(profile?.bio || '');
   const [startingPrice, setStartingPrice] = useState(profile?.startingPrice || 100);
   const [apiKey, setApiKey] = useState(profile?.apiKey || '');

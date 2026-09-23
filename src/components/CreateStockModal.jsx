@@ -1,23 +1,25 @@
 import React, { useState } from 'react';
-import { Rocket, Sparkles, X, CheckCircle2, ShieldCheck, Layers, Award } from 'lucide-react';
+import { Rocket, Sparkles, X, Layers, Award, DollarSign, Flame, Clock } from 'lucide-react';
 import { API } from '../utils/api.js';
 
 export function CreateStockModal({ isOpen, onClose, onCreateSuccess }) {
-  const [symbol, setSymbol] = useState('SUDK');
-  const [name, setName] = useState('KALLA SUDEER KUMAR');
-  const [bio, setBio] = useState('Software Engineer & Personal Life Ticker. Building human stock assets.');
-  const [startingPrice, setStartingPrice] = useState(95);
+  const [symbol, setSymbol] = useState('');
+  const [name, setName] = useState('');
+  const [bio, setBio] = useState('');
+  const [startingPrice, setStartingPrice] = useState(100);
+  const [lotSize, setLotSize] = useState(50);
+  const [status, setStatus] = useState('OPEN'); // OPEN, UPCOMING, LISTED
   const [walletBalance, setWalletBalance] = useState(10000);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [sectors, setSectors] = useState({
-    Career: 0,
-    Education: 0,
-    Skills: 0,
-    Projects: 0,
-    Finance: 0,
-    Social: 0,
-    Wellbeing: 0
+    Career: 75,
+    Education: 70,
+    Skills: 80,
+    Projects: 75,
+    Finance: 70,
+    Social: 65,
+    Wellbeing: 70
   });
 
   if (!isOpen) return null;
@@ -35,11 +37,13 @@ export function CreateStockModal({ isOpen, onClose, onCreateSuccess }) {
 
     setIsSubmitting(true);
     try {
-      const data = await API.createStock({
+      const data = await API.createIPO({
         symbol: symbol.toUpperCase(),
         name,
         bio,
         startingPrice: Number(startingPrice),
+        lotSize: Number(lotSize),
+        status,
         walletBalance: Number(walletBalance),
         initialSectors: sectors
       });
@@ -47,7 +51,7 @@ export function CreateStockModal({ isOpen, onClose, onCreateSuccess }) {
       onCreateSuccess(data);
       onClose();
     } catch (err) {
-      alert('Error creating stock: ' + err.message);
+      alert('Error creating IPO: ' + err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -64,8 +68,8 @@ export function CreateStockModal({ isOpen, onClose, onCreateSuccess }) {
               <Rocket className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">Create Human Stock (IPO Launch)</h2>
-              <p className="text-xs text-slate-400">Issue your personal stock ticker and start logging events freshly</p>
+              <h2 className="text-lg font-bold text-white">ValueFolio Human Stock IPO Creation</h2>
+              <p className="text-xs text-slate-400">Launch a fresh personal stock offering for public bidding & exchange listing</p>
             </div>
           </div>
 
@@ -87,7 +91,7 @@ export function CreateStockModal({ isOpen, onClose, onCreateSuccess }) {
                 type="text"
                 required
                 maxLength="8"
-                placeholder="e.g. SUDK"
+                placeholder="e.g. VALU"
                 value={symbol}
                 onChange={(e) => setSymbol(e.target.value.toUpperCase())}
                 className="w-full bg-[#0B0E14] border border-[#232936] focus:border-blue-500 rounded-xl px-4 py-2.5 text-white font-mono font-bold text-sm outline-none"
@@ -116,18 +120,33 @@ export function CreateStockModal({ isOpen, onClose, onCreateSuccess }) {
             </label>
             <input
               type="text"
-              placeholder="e.g. Full Stack Engineer & AI Innovator"
+              placeholder="e.g. Software Engineer & AI Innovator"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               className="w-full bg-[#0B0E14] border border-[#232936] focus:border-blue-500 rounded-xl px-4 py-2 text-white placeholder-slate-500 text-sm outline-none"
             />
           </div>
 
-          {/* Financial Parameters */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#0B0E14] p-3.5 rounded-xl border border-[#232936]">
+          {/* Issue Status, Price & Lot Size Parameters */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-[#0B0E14] p-3.5 rounded-xl border border-[#232936]">
             <div>
               <label className="text-xs font-semibold text-slate-400 block mb-1">
-                IPO Starting Price (₹)
+                IPO Status
+              </label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="w-full bg-[#151923] border border-[#232936] rounded-lg px-3 py-2 text-white font-semibold text-xs outline-none"
+              >
+                <option value="OPEN">🔥 Open Bids</option>
+                <option value="UPCOMING">⏳ Upcoming</option>
+                <option value="LISTED">⚡ Direct Listed</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-slate-400 block mb-1">
+                Issue Price (₹)
               </label>
               <input
                 type="number"
@@ -141,17 +160,25 @@ export function CreateStockModal({ isOpen, onClose, onCreateSuccess }) {
 
             <div>
               <label className="text-xs font-semibold text-slate-400 block mb-1">
-                Starting Virtual Cash Balance (₹)
+                Lot Size (Shares)
               </label>
               <input
                 type="number"
-                step="1000"
-                min="1000"
-                value={walletBalance}
-                onChange={(e) => setWalletBalance(e.target.value)}
+                step="5"
+                min="5"
+                value={lotSize}
+                onChange={(e) => setLotSize(e.target.value)}
                 className="w-full bg-[#151923] border border-[#232936] rounded-lg px-3 py-2 text-white font-mono text-sm font-bold"
               />
             </div>
+          </div>
+
+          {/* Dynamic AI GMP Information Pill */}
+          <div className="bg-[#0B0E14]/80 p-3 rounded-xl border border-blue-500/20 flex items-center space-x-2.5 text-xs text-slate-300">
+            <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
+            <p>
+              <strong className="text-white font-semibold">Dynamic GMP Engine:</strong> Grey Market Premium (GMP %) and AI Sentiment will be calculated internally based on sector ratings and news feed events.
+            </p>
           </div>
 
           {/* Baseline Sector Ratings */}
@@ -186,11 +213,11 @@ export function CreateStockModal({ isOpen, onClose, onCreateSuccess }) {
               className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-500/20 transition-all text-sm flex items-center justify-center space-x-2"
             >
               {isSubmitting ? (
-                <span>Issuing IPO...</span>
+                <span>Launching IPO...</span>
               ) : (
                 <>
                   <Rocket className="w-5 h-5" />
-                  <span>Issue IPO & Launch {symbol.toUpperCase()} Human Stock</span>
+                  <span>Issue & Create {symbol ? symbol.toUpperCase() : 'NEW'} Human Stock IPO</span>
                 </>
               )}
             </button>

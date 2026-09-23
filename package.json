@@ -1,7 +1,7 @@
 {
   "name": "value-folio",
   "version": "1.0.0",
-  "description": "Human Life Stock Market Platform (SUDK)",
+  "description": "ValueFolio — Human Life Stock Exchange Platform",
   "type": "module",
   "scripts": {
     "dev": "vite",

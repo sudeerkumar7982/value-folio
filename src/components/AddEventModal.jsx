@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, Sparkles, AlertCircle, ArrowUpRight, ArrowDownRight, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { X, Sparkles, AlertCircle, ArrowUpRight, ArrowDownRight, CheckCircle2, ShieldAlert, User } from 'lucide-react';
 import { API } from '../utils/api.js';
 
-export function AddEventModal({ isOpen, onClose, onCommitSuccess, currentPrice }) {
+export function AddEventModal({ isOpen, onClose, onCommitSuccess, currentPrice, stocks = [], activeSymbol }) {
+  const [selectedSymbol, setSelectedSymbol] = useState(activeSymbol || '');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [sector, setSector] = useState('Auto');
@@ -13,6 +14,11 @@ export function AddEventModal({ isOpen, onClose, onCommitSuccess, currentPrice }
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customImpact, setCustomImpact] = useState('');
   const [overrideImpact, setOverrideImpact] = useState(false);
+
+  // Sync selectedSymbol when activeSymbol changes
+  useEffect(() => {
+    if (activeSymbol) setSelectedSymbol(activeSymbol);
+  }, [activeSymbol]);
 
   // Debounced Live AI Sentiment Analysis Preview
   useEffect(() => {
@@ -41,12 +47,22 @@ export function AddEventModal({ isOpen, onClose, onCommitSuccess, currentPrice }
 
   if (!isOpen) return null;
 
+  const selectedStock = stocks.find(s => s.symbol === selectedSymbol);
+  const displayPrice = selectedStock?.currentPrice || currentPrice || 100;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim()) return;
+    if (!selectedSymbol) {
+      alert('Please select a stock to log this event for.');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
+      // Temporarily set the active symbol on the server/local store so commitEvent targets correct stock
+      await API.setActiveSymbol(selectedSymbol);
+
       const finalImpact = overrideImpact ? Number(customImpact) : (aiAnalysis ? aiAnalysis.impactPercent : 0);
 
       const data = await API.commitEvent({
@@ -73,6 +89,7 @@ export function AddEventModal({ isOpen, onClose, onCommitSuccess, currentPrice }
     }
   };
 
+
   const isPos = aiAnalysis ? aiAnalysis.impactPercent >= 0 : true;
 
   return (
@@ -98,9 +115,47 @@ export function AddEventModal({ isOpen, onClose, onCommitSuccess, currentPrice }
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 flex-1">
-          
+
+          {/* Stock Selector — required */}
+          <div className="bg-[#0B0E14] border border-[#2B354C] rounded-xl p-3.5 space-y-2">
+            <label className="text-xs font-bold text-slate-300 flex items-center space-x-1.5">
+              <User className="w-3.5 h-3.5 text-blue-400" />
+              <span>Log Event For Which Stock? <span className="text-rose-400">*</span></span>
+            </label>
+            {stocks.length === 0 ? (
+              <div className="text-xs text-slate-500 italic">No stocks listed yet. Create a stock first.</div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {stocks.map(s => (
+                  <button
+                    key={s.symbol}
+                    type="button"
+                    onClick={() => setSelectedSymbol(s.symbol)}
+                    className={`flex flex-col items-start p-2.5 rounded-xl border text-left transition-all ${
+                      selectedSymbol === s.symbol
+                        ? 'bg-blue-600/20 border-blue-500/60 ring-1 ring-blue-500/30'
+                        : 'bg-[#151923] border-[#232936] hover:border-slate-500'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-1.5 w-full">
+                      <span className={`font-mono font-black text-xs ${selectedSymbol === s.symbol ? 'text-blue-300' : 'text-white'}`}>{s.symbol}</span>
+                      {selectedSymbol === s.symbol && (
+                        <span className="ml-auto text-[9px] font-extrabold bg-blue-500 text-white px-1.5 py-0.5 rounded">SELECTED</span>
+                      )}
+                    </div>
+                    <span className="text-[10px] text-slate-400 line-clamp-1 mt-0.5">{s.name}</span>
+                    <span className={`text-[10px] font-mono font-bold mt-1 ${(s.changePercent || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      ₹{s.currentPrice?.toFixed(2)} {(s.changePercent || 0) >= 0 ? '▲' : '▼'}{Math.abs(s.changePercent || 0)}%
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Quick Preset Buttons */}
           <div>
+
             <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">
               Quick Life Event Ideas
             </label>
@@ -296,7 +351,7 @@ export function AddEventModal({ isOpen, onClose, onCommitSuccess, currentPrice }
               ) : (
                 <>
                   <CheckCircle2 className="w-5 h-5" />
-                  <span>Commit Event & Update SUDK Stock Price</span>
+                  <span>Commit Event & Update Stock Price</span>
                 </>
               )}
             </button>
