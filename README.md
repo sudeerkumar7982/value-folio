@@ -1,4 +1,4 @@
-# ValueFolio — Human Life Stock Exchange Platform (SUDK)
+# ValueFolio — Human Life Stock Exchange Platform
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/sudeerkumar7982/value-folio)
 
