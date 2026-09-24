@@ -597,6 +597,11 @@ export const API = {
       stock.sectors[aiResult.primarySector] = Math.min(Math.max(stock.sectors[aiResult.primarySector] + aiResult.sectorDelta, 0), 100);
     }
 
+    const todayStr = new Date().toISOString().split('T')[0];
+    const eventTimestamp = (date && date !== todayStr)
+      ? new Date(date).toISOString()
+      : new Date().toISOString();
+
     const newEvent = {
       id: `life-${Date.now()}`,
       title,
@@ -608,7 +613,7 @@ export const API = {
       impactPercent,
       previousPrice,
       newPrice,
-      timestamp: date ? new Date(date).toISOString() : new Date().toISOString()
+      timestamp: eventTimestamp
     };
 
     stock.events.unshift(newEvent);

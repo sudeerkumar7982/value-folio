@@ -236,6 +236,11 @@ app.post('/api/events/commit', async (req, res) => {
     const updatedSectors = calculateSectorUpdates(currentSectors, aiResult.primarySector, aiResult.sectorDelta);
     DB.updateSectors(updatedSectors, targetSym);
 
+    const todayStr = new Date().toISOString().split('T')[0];
+    const eventTimestamp = (date && date !== todayStr)
+      ? new Date(date).toISOString()
+      : new Date().toISOString();
+
     // Save Event
     const newEvent = {
       id: `evt-${Date.now()}`,
@@ -248,7 +253,7 @@ app.post('/api/events/commit', async (req, res) => {
       impactPercent,
       previousPrice,
       newPrice,
-      timestamp: date ? new Date(date).toISOString() : new Date().toISOString()
+      timestamp: eventTimestamp
     };
 
     DB.addEvent(newEvent, targetSym);

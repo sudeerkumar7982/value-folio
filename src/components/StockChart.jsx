@@ -15,106 +15,68 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
   }
 
   const getFilteredData = () => {
-    const now = new Date();
+    if (!priceTicks || priceTicks.length === 0) {
+      return { formattedData: [], openingPrice: 100 };
+    }
 
-    // ── 1D: Clean 24-hour day from 12:00 AM to 11:59 PM ──
+    const now = new Date();
+    // Sort all price ticks chronologically
+    const sortedTicks = [...priceTicks].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
     if (timeRange === '1D') {
       const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
 
-      // Opening price baseline at 12:00 AM
-      const ticksBeforeToday = priceTicks.filter(t => new Date(t.timestamp).getTime() < startOfDay.getTime());
-      const prevBaseline = ticksBeforeToday.length > 0 ? ticksBeforeToday[ticksBeforeToday.length - 1] : null;
-      const openingPrice = prevBaseline ? prevBaseline.price : (priceTicks[0]?.price || 100);
+      // Previous baseline before start of today
+      const ticksBeforeToday = sortedTicks.filter(t => new Date(t.timestamp).getTime() < startOfDay.getTime());
+      const openingPrice = ticksBeforeToday.length > 0 
+        ? ticksBeforeToday[ticksBeforeToday.length - 1].price 
+        : (sortedTicks[0]?.price || 100);
 
-      // Today's actual recorded ticks up to current time
-      const todayTicks = priceTicks.filter(t => {
-        const tMs = new Date(t.timestamp).getTime();
-        return tMs >= startOfDay.getTime() && tMs <= now.getTime();
-      });
+      // Today's ticks up to now
+      let todayTicks = sortedTicks.filter(t => new Date(t.timestamp).getTime() >= startOfDay.getTime());
+      if (todayTicks.length === 0) {
+        todayTicks = sortedTicks;
+      }
 
-      // Fixed 3-hour milestones for uniform X-axis display
-      const hourMilestones = [
-        { hour: 0,  min: 0,  label: '12:00 AM' },
-        { hour: 3,  min: 0,  label: '3:00 AM' },
-        { hour: 6,  min: 0,  label: '6:00 AM' },
-        { hour: 9,  min: 0,  label: '9:00 AM' },
-        { hour: 12, min: 0,  label: '12:00 PM' },
-        { hour: 15, min: 0,  label: '3:00 PM' },
-        { hour: 18, min: 0,  label: '6:00 PM' },
-        { hour: 21, min: 0,  label: '9:00 PM' },
-        { hour: 23, min: 59, label: '11:59 PM' }
-      ];
-
-      const pointsMap = new Map();
-
-      // 1. Populate major 3-hour milestone anchors
-      hourMilestones.forEach(m => {
-        const mDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), m.hour, m.min, 0, 0);
-        const isFuture = mDate.getTime() > now.getTime();
-
-        if (isFuture) {
-          pointsMap.set(m.label, {
-            timestamp: mDate.toISOString(),
-            dateLabel: m.label,
-            fullDate: mDate.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
-            price: null, // Blank in future
-            label: `${m.label} (Upcoming)`,
-            eventId: null,
-            diff: 0,
-            diffPct: 0
-          });
-        } else {
-          // Find price up to this milestone
-          const ticksUpToM = todayTicks.filter(t => new Date(t.timestamp).getTime() <= mDate.getTime());
-          const mPrice = ticksUpToM.length > 0 ? ticksUpToM[ticksUpToM.length - 1].price : openingPrice;
-
-          pointsMap.set(m.label, {
-            timestamp: mDate.toISOString(),
-            dateLabel: m.label,
-            fullDate: mDate.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
-            price: mPrice,
-            label: `${m.label} Market Price`,
-            eventId: null,
-            diff: 0,
-            diffPct: 0
-          });
-        }
-      });
-
-      // 2. Add EVERY single recorded price tick
       let prevP = openingPrice;
+      const formattedData = [];
+
+      // Always prepend Start-of-Day baseline point so chart has continuous 2+ point line
+      const startOfDayLabel = startOfDay.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      formattedData.push({
+        timestamp: startOfDay.toISOString(),
+        dateLabel: startOfDayLabel,
+        fullDate: startOfDay.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
+        price: openingPrice,
+        label: 'Market Opening Base Price',
+        eventId: null,
+        diff: 0,
+        diffPct: 0
+      });
 
       todayTicks.forEach(tick => {
         const d = new Date(tick.timestamp);
         const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-
         const diff = Number((tick.price - prevP).toFixed(2));
-        const diffPct = Number(((diff / prevP) * 100).toFixed(2));
+        const diffPct = prevP > 0 ? Number(((diff / prevP) * 100).toFixed(2)) : 0;
         prevP = tick.price;
 
-        pointsMap.set(tick.timestamp, {
+        formattedData.push({
           timestamp: tick.timestamp,
           dateLabel: timeStr,
           fullDate: d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
           price: tick.price,
-          label: tick.label || 'Price Tick',
+          label: tick.label || 'Price Fluctuation',
           eventId: tick.eventId,
           diff,
           diffPct
         });
       });
 
-      // Sort points chronologically
-      const sortedPoints = Array.from(pointsMap.values()).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-
-      return {
-        formattedData: sortedPoints,
-        openingPrice,
-        xAxisTicks: hourMilestones.map(m => m.label)
-      };
+      return { formattedData, openingPrice };
     }
 
-    // ── 1W, 1M, 3M, 6M, 1Y, 3Y, 5Y, ALL (Rolling Windows relative to current date) ──
+    // ── 1W, 1M, 3M, 6M, 1Y, 3Y, 5Y, ALL ──
     let daysBack = null;
     if (timeRange === '1W') daysBack = 7;
     else if (timeRange === '1M') daysBack = 30;
@@ -124,29 +86,45 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
     else if (timeRange === '3Y') daysBack = 3 * 365;
     else if (timeRange === '5Y') daysBack = 5 * 365;
 
-    let filtered = priceTicks;
-    let openingPrice = priceTicks[0]?.price || 100;
+    let filtered = sortedTicks;
+    let openingPrice = sortedTicks[0]?.price || 100;
 
     if (daysBack !== null) {
       const cutoffMs = now.getTime() - (daysBack * 24 * 60 * 60 * 1000);
-      filtered = priceTicks.filter(t => new Date(t.timestamp).getTime() >= cutoffMs);
-
-      // Previous baseline tick before rolling window start
-      const ticksBeforeWindow = priceTicks.filter(t => new Date(t.timestamp).getTime() < cutoffMs);
-      if (ticksBeforeWindow.length > 0) {
-        openingPrice = ticksBeforeWindow[ticksBeforeWindow.length - 1].price;
+      filtered = sortedTicks.filter(t => new Date(t.timestamp).getTime() >= cutoffMs);
+      const beforeWindow = sortedTicks.filter(t => new Date(t.timestamp).getTime() < cutoffMs);
+      if (beforeWindow.length > 0) {
+        openingPrice = beforeWindow[beforeWindow.length - 1].price;
       } else if (filtered.length > 0) {
         openingPrice = filtered[0].price;
       }
 
-      // If fewer than 2 ticks in rolling window, include all recorded history
       if (filtered.length < 2) {
-        filtered = priceTicks;
-        openingPrice = priceTicks[0]?.price || 100;
+        filtered = sortedTicks;
+        openingPrice = sortedTicks[0]?.price || 100;
       }
     }
 
-    const formattedData = filtered.map((tick, idx) => {
+    let prevP = openingPrice;
+    const formattedData = [];
+
+    // Prepend baseline start point if only 1 tick exists
+    if (filtered.length === 1) {
+      const firstD = new Date(filtered[0].timestamp);
+      const baselineD = new Date(firstD.getTime() - 3600000);
+      formattedData.push({
+        timestamp: baselineD.toISOString(),
+        dateLabel: baselineD.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        fullDate: baselineD.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
+        price: openingPrice,
+        label: 'Base Offering Price',
+        eventId: null,
+        diff: 0,
+        diffPct: 0
+      });
+    }
+
+    filtered.forEach((tick) => {
       const d = new Date(tick.timestamp);
       let dateLabel;
       if (timeRange === '1W') {
@@ -157,11 +135,11 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
         dateLabel = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
       }
 
-      const prevTick = idx > 0 ? filtered[idx - 1] : tick;
-      const diff = Number((tick.price - prevTick.price).toFixed(2));
-      const diffPct = Number(((diff / prevTick.price) * 100).toFixed(2));
+      const diff = Number((tick.price - prevP).toFixed(2));
+      const diffPct = prevP > 0 ? Number(((diff / prevP) * 100).toFixed(2)) : 0;
+      prevP = tick.price;
 
-      return {
+      formattedData.push({
         timestamp: tick.timestamp,
         dateLabel,
         fullDate: d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
@@ -170,29 +148,29 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
         eventId: tick.eventId,
         diff,
         diffPct
-      };
+      });
     });
 
-    return { formattedData, openingPrice, xAxisTicks: undefined };
+    return { formattedData, openingPrice };
   };
 
-  const { formattedData, openingPrice, xAxisTicks } = getFilteredData();
+  const { formattedData, openingPrice } = getFilteredData();
 
-  // Find latest non-null price
-  const validPrices = formattedData.filter(d => d.price !== null).map(d => d.price);
+  // Find latest price
+  const validPrices = formattedData.filter(d => d.price !== null && !isNaN(d.price)).map(d => d.price);
   const latestPrice = validPrices.length > 0 ? validPrices[validPrices.length - 1] : openingPrice;
   const periodChangeAmt = Number((latestPrice - openingPrice).toFixed(2));
   const periodChangePct = openingPrice > 0 ? Number(((periodChangeAmt / openingPrice) * 100).toFixed(2)) : 0;
   const isUpTrend = periodChangeAmt >= 0;
   const strokeColor = isUpTrend ? '#10B981' : '#EF4444';
 
-  const minPrice = validPrices.length > 0 ? Math.max(Math.floor(Math.min(...validPrices) * 0.96), 0) : 0;
-  const maxPrice = validPrices.length > 0 ? Math.ceil(Math.max(...validPrices) * 1.04) : 200;
+  const minPrice = validPrices.length > 0 ? Math.max(Math.floor(Math.min(...validPrices) * 0.95), 0) : 0;
+  const maxPrice = validPrices.length > 0 ? Math.ceil(Math.max(...validPrices) * 1.05) : 200;
 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
-      if (data.price === null) return null;
+      if (data.price === null || isNaN(data.price)) return null;
       const isPos = data.diff >= 0;
 
       return (
@@ -243,7 +221,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
                 <ArrowUpDown className="w-3 h-3 text-slate-500" />
               </div>
               <h1 className="text-xl font-bold text-white tracking-tight">
-                {profile?.name || 'KALLA SUDEER KUMAR'}
+                {profile?.name || 'HUMAN LIFE TICKER'}
               </h1>
             </div>
           </div>
@@ -290,11 +268,11 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
             
             <XAxis 
               dataKey="dateLabel" 
-              ticks={xAxisTicks}
               stroke="#475569" 
               fontSize={11} 
               tickLine={false} 
               axisLine={{ stroke: '#232936' }} 
+              interval="preserveStartEnd"
             />
             <YAxis 
               domain={[minPrice, maxPrice]} 
@@ -323,7 +301,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
               fillOpacity={1} 
               fill="url(#chartGradient)" 
               dot={false}
-              connectNulls={false}
+              connectNulls={true}
               activeDot={{ r: 6, fill: strokeColor, stroke: '#FFFFFF', strokeWidth: 2 }}
             />
 
