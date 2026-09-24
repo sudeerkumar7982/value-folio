@@ -39,10 +39,11 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       const pointsMap = new Map();
 
       // 1. Start of day baseline (0 min = 12:00 AM)
+      const startOfDayLabel = startOfDay.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
       pointsMap.set(0, {
         timeMin: 0,
         timestamp: startOfDay.toISOString(),
-        dateLabel: '12:00 AM',
+        dateLabel: startOfDayLabel,
         fullDate: startOfDay.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
         price: openingPrice,
         label: 'Market Opening Base Price',
@@ -56,7 +57,6 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
 
       todayTicks.forEach(tick => {
         const d = new Date(tick.timestamp);
-        // Calculate minutes from midnight today
         let minOffset = Math.floor((d.getTime() - startOfDayMs) / 60000);
         minOffset = Math.max(0, Math.min(minOffset, 1439));
 
@@ -65,7 +65,6 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
         const diffPct = prevP > 0 ? Number(((diff / prevP) * 100).toFixed(2)) : 0;
         prevP = tick.price;
 
-        // If an event occurs at this minute, prioritize saving event info
         const existing = pointsMap.get(minOffset);
         if (!existing || tick.eventId || !existing.eventId) {
           pointsMap.set(minOffset, {
@@ -81,6 +80,25 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
           });
         }
       });
+
+      // 3. Always extend the price line to current minute right NOW
+      const nowMinOffset = Math.max(0, Math.min(Math.floor((now.getTime() - startOfDayMs) / 60000), 1439));
+      const latestPrice = sortedTicks.length > 0 ? sortedTicks[sortedTicks.length - 1].price : openingPrice;
+      const nowTimeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+      if (!pointsMap.has(nowMinOffset)) {
+        pointsMap.set(nowMinOffset, {
+          timeMin: nowMinOffset,
+          timestamp: now.toISOString(),
+          dateLabel: nowTimeStr,
+          fullDate: now.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
+          price: latestPrice,
+          label: 'Current Live Market Price',
+          eventId: null,
+          diff: 0,
+          diffPct: 0
+        });
+      }
 
       const formattedData = Array.from(pointsMap.values()).sort((a, b) => a.timeMin - b.timeMin);
 
@@ -177,6 +195,24 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
         diffPct
       });
     });
+
+    // Always extend line to current timestamp right NOW
+    const latestPrice = sortedTicks.length > 0 ? sortedTicks[sortedTicks.length - 1].price : openingPrice;
+    const lastPointMs = formattedData.length > 0 ? formattedData[formattedData.length - 1].timeMs : 0;
+
+    if (now.getTime() - lastPointMs > 60000) {
+      formattedData.push({
+        timeMs: now.getTime(),
+        timestamp: now.toISOString(),
+        dateLabel: now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        fullDate: now.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
+        price: latestPrice,
+        label: 'Current Live Market Price',
+        eventId: null,
+        diff: 0,
+        diffPct: 0
+      });
+    }
 
     return {
       formattedData,
