@@ -104,7 +104,7 @@ export default function App() {
 
     const interval = setInterval(async () => {
       try {
-        const tickResult = await API.tick();
+        const tickResult = await API.tick(activeSymbol);
         if (tickResult && tickResult.currentPrice) {
           setData(prev => {
             if (!prev) return prev;

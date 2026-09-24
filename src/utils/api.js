@@ -140,7 +140,17 @@ export const API = {
   getAllStocks: async () => {
     try {
       const res = await fetch('/api/stocks');
-      if (res.ok) return await res.json();
+      if (res.ok) {
+        const stocks = await res.json();
+        if (Array.isArray(stocks) && stocks.length > 0) {
+          const store = getLocalStore();
+          if (!store.activeSymbol || !stocks.some(s => s.symbol === store.activeSymbol)) {
+            store.activeSymbol = stocks[0].symbol;
+            saveLocalStore(store);
+          }
+        }
+        return stocks;
+      }
     } catch (e) {}
 
     const store = getLocalStore();
@@ -174,7 +184,7 @@ export const API = {
       const res = await fetch('/api/stocks/active');
       if (res.ok) {
         const data = await res.json();
-        return data.activeSymbol;
+        if (data.activeSymbol) return data.activeSymbol;
       }
     } catch (e) {}
 
@@ -184,7 +194,7 @@ export const API = {
 
   setActiveSymbol: async (symbol) => {
     const store = getLocalStore();
-    if (store.stocks[symbol]) {
+    if (symbol) {
       store.activeSymbol = symbol;
       saveLocalStore(store);
     }
@@ -635,16 +645,47 @@ export const API = {
     };
   },
 
-  tick: async () => {
+  tick: async (symbolParam = null) => {
     const store = getLocalStore();
-    const sym = store.activeSymbol || '';
-    const stock = store.stocks[sym];
+    const sym = symbolParam || store.activeSymbol || '';
+
+    // Attempt Express server tick POST first when deployed/connected
+    try {
+      const res = await fetch('/api/stock/tick', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symbol: sym })
+      });
+      if (res.ok) {
+        const serverData = await res.json();
+        if (serverData && serverData.currentPrice) {
+          const targetKey = sym || store.activeSymbol;
+          if (targetKey && store.stocks[targetKey]) {
+            store.stocks[targetKey].profile.currentPrice = serverData.currentPrice;
+            if (serverData.priceTicks) store.stocks[targetKey].priceTicks = serverData.priceTicks;
+            saveLocalStore(store);
+          }
+          return serverData;
+        }
+      }
+    } catch (e) {}
+
+    // Fallback to client-side localStorage tick calculation
+    let stockKey = sym;
+    if (!stockKey || !store.stocks[stockKey]) {
+      stockKey = store.activeSymbol;
+    }
+    if (!stockKey || !store.stocks[stockKey]) {
+      const keys = Object.keys(store.stocks || {});
+      if (keys.length > 0) stockKey = keys[0];
+    }
+
+    const stock = store.stocks ? store.stocks[stockKey] : null;
     if (!stock) return null;
 
     const sentimentData = computeStockSentiment(stock);
     const score = sentimentData ? (sentimentData.sentimentScore || 50) : 50;
 
-    // Directional bias derived from sentiment score (5..98, 50 neutral)
     const sentimentBias = (score - 50) / 100 * 0.4;
     const randomNoise = (Math.random() * 0.5 - 0.25);
     const noise = Number((sentimentBias + randomNoise).toFixed(3));
@@ -676,18 +717,6 @@ export const API = {
     }
 
     saveLocalStore(store);
-
-    try {
-      const res = await fetch('/api/stock/tick', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symbol: sym })
-      });
-      if (res.ok) {
-        const serverData = await res.json();
-        return serverData;
-      }
-    } catch (e) {}
 
     return {
       currentPrice: newPrice,
