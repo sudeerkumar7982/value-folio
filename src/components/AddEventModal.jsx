@@ -30,9 +30,9 @@ export function AddEventModal({ isOpen, onClose, onCommitSuccess, currentPrice, 
     const timer = setTimeout(async () => {
       setIsAnalyzing(true);
       try {
-        const data = await API.analyzeEvent(title, description, sector);
+        const data = await API.analyzeEvent(title, description, sector, selectedSymbol);
         setAiAnalysis(data);
-        if (!overrideImpact) {
+        if (!overrideImpact && data) {
           setCustomImpact(data.impactPercent);
         }
       } catch (err) {
@@ -43,7 +43,7 @@ export function AddEventModal({ isOpen, onClose, onCommitSuccess, currentPrice, 
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [title, description, sector]);
+  }, [title, description, sector, selectedSymbol]);
 
   if (!isOpen) return null;
 
@@ -60,12 +60,13 @@ export function AddEventModal({ isOpen, onClose, onCommitSuccess, currentPrice, 
 
     setIsSubmitting(true);
     try {
-      // Temporarily set the active symbol on the server/local store so commitEvent targets correct stock
+      // Set the active symbol on server & local store
       await API.setActiveSymbol(selectedSymbol);
 
       const finalImpact = overrideImpact ? Number(customImpact) : (aiAnalysis ? aiAnalysis.impactPercent : 0);
 
       const data = await API.commitEvent({
+        symbol: selectedSymbol,
         title,
         description,
         sector,
@@ -73,7 +74,7 @@ export function AddEventModal({ isOpen, onClose, onCommitSuccess, currentPrice, 
         date: eventDate
       });
 
-      if (data.success) {
+      if (data && data.success) {
         onCommitSuccess(data);
         onClose();
         // Reset form
@@ -81,6 +82,8 @@ export function AddEventModal({ isOpen, onClose, onCommitSuccess, currentPrice, 
         setDescription('');
         setAiAnalysis(null);
         setOverrideImpact(false);
+      } else {
+        alert((data && data.error) ? data.error : 'Failed to commit life event.');
       }
     } catch (err) {
       alert('Error committing life event: ' + err.message);

@@ -171,21 +171,32 @@ app.get('/api/events', (req, res) => {
 app.post('/api/events/analyze', async (req, res) => {
   try {
     const { title, description, sector, symbol } = req.body;
-    const targetSym = symbol || DB.getActiveSymbol();
-    const profile = DB.getProfile(targetSym);
+    let targetSym = symbol || DB.getActiveSymbol();
+    let profile = DB.getProfile(targetSym);
+
+    if (!profile) {
+      const all = DB.getAllStocks();
+      if (all.length > 0) {
+        targetSym = all[0].symbol;
+        profile = DB.getProfile(targetSym);
+      }
+    }
+
+    const currentPrice = profile ? profile.currentPrice : 100;
+    const apiKey = profile ? profile.apiKey : '';
 
     if (!title || title.trim() === '') {
       return res.status(400).json({ error: 'Event title is required' });
     }
 
-    const aiResult = await analyzeLifeEvent(title, description, sector, profile.apiKey);
-    const estimatedNewPrice = calculateNewPrice(profile.currentPrice, aiResult.impactPercent);
+    const aiResult = await analyzeLifeEvent(title, description, sector, apiKey);
+    const estimatedNewPrice = calculateNewPrice(currentPrice, aiResult.impactPercent);
 
     res.json({
       ...aiResult,
-      currentPrice: profile.currentPrice,
+      currentPrice,
       estimatedNewPrice,
-      estimatedPriceChange: Number((estimatedNewPrice - profile.currentPrice).toFixed(2))
+      estimatedPriceChange: Number((estimatedNewPrice - currentPrice).toFixed(2))
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -196,13 +207,25 @@ app.post('/api/events/analyze', async (req, res) => {
 app.post('/api/events/commit', async (req, res) => {
   try {
     const { title, description, sector, customImpact, date, symbol } = req.body;
-    const targetSym = symbol || DB.getActiveSymbol();
-    const profile = DB.getProfile(targetSym);
+    let targetSym = symbol || DB.getActiveSymbol();
+    let profile = DB.getProfile(targetSym);
+
+    if (!targetSym || !profile) {
+      const allStocks = DB.getAllStocks();
+      if (allStocks.length > 0) {
+        targetSym = allStocks[0].symbol;
+        profile = DB.getProfile(targetSym);
+      }
+    }
+
+    if (!targetSym || !profile) {
+      return res.status(400).json({ error: 'No active stock found on exchange. Please create or list a stock first.' });
+    }
 
     if (!title) return res.status(400).json({ error: 'Title required' });
 
     // Analyze AI sentiment
-    const aiResult = await analyzeLifeEvent(title, description, sector, profile.apiKey);
+    const aiResult = await analyzeLifeEvent(title, description, sector, profile.apiKey || '');
     const impactPercent = customImpact !== undefined && customImpact !== null ? Number(customImpact) : aiResult.impactPercent;
 
     const previousPrice = profile.currentPrice;

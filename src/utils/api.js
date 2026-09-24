@@ -495,10 +495,14 @@ export const API = {
     return freshStock;
   },
 
-  analyzeEvent: async (title, description, sector) => {
+  analyzeEvent: async (title, description, sector, symbol = null) => {
     const store = getLocalStore();
-    const activeSym = store.activeSymbol || '';
-    const activeStock = activeSym ? store.stocks[activeSym] : null;
+    const activeSym = symbol || store.activeSymbol || '';
+    let activeStock = activeSym ? store.stocks[activeSym] : null;
+    if (!activeStock && store.stocks) {
+      const keys = Object.keys(store.stocks);
+      if (keys.length > 0) activeStock = store.stocks[keys[0]];
+    }
 
     try {
       const res = await fetch('/api/events/analyze', {
@@ -512,33 +516,84 @@ export const API = {
       }
     } catch (e) {}
 
-    if (!activeStock) return null;
+    const apiKey = activeStock?.profile?.apiKey || '';
+    const currentPrice = activeStock?.profile?.currentPrice || 100;
 
-    const aiResult = await analyzeLifeEvent(title, description, sector, activeStock.profile.apiKey);
+    const aiResult = await analyzeLifeEvent(title, description, sector, apiKey);
     const multiplier = 1 + (aiResult.impactPercent / 100);
-    const estimatedNewPrice = Math.max(Number((activeStock.profile.currentPrice * multiplier).toFixed(2)), 1.00);
+    const estimatedNewPrice = Math.max(Number((currentPrice * multiplier).toFixed(2)), 1.00);
 
     return {
       ...aiResult,
-      currentPrice: activeStock.profile.currentPrice,
+      currentPrice,
       estimatedNewPrice,
-      estimatedPriceChange: Number((estimatedNewPrice - activeStock.profile.currentPrice).toFixed(2))
+      estimatedPriceChange: Number((estimatedNewPrice - currentPrice).toFixed(2))
     };
   },
 
-  commitEvent: async ({ title, description, sector, customImpact, date }) => {
+  commitEvent: async ({ title, description, sector, customImpact, date, symbol }) => {
     const store = getLocalStore();
-    const sym = store.activeSymbol || '';
-    const stock = store.stocks[sym];
-    if (!stock) return null;
+    const sym = symbol || store.activeSymbol || '';
 
-    const aiResult = await analyzeLifeEvent(title, description, sector, stock.profile.apiKey);
+    // Attempt Express server POST first if connected to backend
+    try {
+      const res = await fetch('/api/events/commit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, description, sector, customImpact, date, symbol: sym })
+      });
+      if (res.ok) {
+        const serverData = await res.json();
+        // Sync local storage store if stock exists locally
+        const stockKey = sym || store.activeSymbol;
+        if (stockKey && store.stocks[stockKey]) {
+          const stock = store.stocks[stockKey];
+          if (serverData.event) stock.events.unshift(serverData.event);
+          if (serverData.newPrice) {
+            stock.profile.currentPrice = serverData.newPrice;
+            stock.priceTicks.push({
+              timestamp: serverData.event?.timestamp || new Date().toISOString(),
+              price: serverData.newPrice,
+              eventId: serverData.event?.id || `evt-${Date.now()}`,
+              label: title
+            });
+          }
+          if (serverData.updatedSectors) stock.sectors = serverData.updatedSectors;
+          saveLocalStore(store);
+        }
+        return serverData;
+      } else {
+        const errJson = await res.json().catch(() => ({}));
+        if (errJson.error) {
+          return { success: false, error: errJson.error };
+        }
+      }
+    } catch (e) {
+      console.warn('Backend server commitEvent unavailable, falling back to local store:', e);
+    }
+
+    // LocalStorage Fallback Logic
+    let stockKey = sym;
+    if (!stockKey || !store.stocks[stockKey]) {
+      stockKey = store.activeSymbol;
+    }
+    if (!stockKey || !store.stocks[stockKey]) {
+      const keys = Object.keys(store.stocks || {});
+      if (keys.length > 0) stockKey = keys[0];
+    }
+
+    const stock = store.stocks ? store.stocks[stockKey] : null;
+    if (!stock) {
+      return { success: false, error: 'No stock available to commit event. Please create a stock first.' };
+    }
+
+    const aiResult = await analyzeLifeEvent(title, description, sector, stock.profile?.apiKey || '');
     const impactPercent = customImpact !== undefined && customImpact !== null ? Number(customImpact) : aiResult.impactPercent;
 
-    const previousPrice = stock.profile.currentPrice;
+    const previousPrice = stock.profile.currentPrice || 100;
     const newPrice = Math.max(Number((previousPrice * (1 + impactPercent / 100)).toFixed(2)), 1.00);
 
-    if (aiResult.primarySector && stock.sectors[aiResult.primarySector] !== undefined) {
+    if (aiResult.primarySector && stock.sectors && stock.sectors[aiResult.primarySector] !== undefined) {
       stock.sectors[aiResult.primarySector] = Math.min(Math.max(stock.sectors[aiResult.primarySector] + aiResult.sectorDelta, 0), 100);
     }
 
@@ -566,14 +621,6 @@ export const API = {
     stock.profile.currentPrice = newPrice;
 
     saveLocalStore(store);
-
-    try {
-      await fetch('/api/events/commit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, description, sector, customImpact, date, symbol: sym })
-      });
-    } catch (e) {}
 
     return {
       success: true,
