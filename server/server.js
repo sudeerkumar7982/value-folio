@@ -336,13 +336,30 @@ app.post('/api/stock/tick', (req, res) => {
   try {
     const symbol = req.body.symbol || DB.getActiveSymbol();
     const profile = DB.getProfile(symbol);
+    const sectors = DB.getSectors(symbol);
+    const events = DB.getEvents(symbol);
+    const stockData = { profile, sectors, events };
+    
+    // Import or compute stock sentiment score
+    const eventsArr = events || [];
+    let posCount = 0;
+    eventsArr.forEach(e => {
+      if (e.sentiment === 'POSITIVE' || e.impactPercent > 0) posCount++;
+    });
+    const positiveRatio = eventsArr.length > 0 ? Math.round((posCount / eventsArr.length) * 100) : 50;
+    const priceChangePercent = profile ? ((profile.currentPrice - profile.startingPrice) / profile.startingPrice) * 100 : 0;
+    let sentimentScore = Math.round(50 + (positiveRatio - 50) * 0.4 + Math.min(Math.max(priceChangePercent * 1.2, -25), 25));
+    sentimentScore = Math.min(Math.max(sentimentScore, 5), 98);
 
-    // Random subtle market noise between -0.35% and +0.35%
-    const noise = (Math.random() * 0.7 - 0.35);
-    const newPrice = calculateNewPrice(profile.currentPrice, noise);
-    
-    DB.addMarketTick(newPrice, noise >= 0 ? '📈 Investor Buying Pressure' : '📉 Market Sentiment Noise', symbol);
-    
+    const sentimentBias = (sentimentScore - 50) / 100 * 0.4;
+    const randomNoise = (Math.random() * 0.5 - 0.25);
+    const noise = Number((sentimentBias + randomNoise).toFixed(3));
+
+    const newPrice = calculateNewPrice(profile ? profile.currentPrice : 100, noise);
+    const label = noise > 0.1 ? '🔥 Bullish Sentiment Buying' : noise < -0.1 ? '🔻 Bearish Market Selling' : '⚖️ Neutral Fluctuation';
+
+    DB.addMarketTick(newPrice, label, symbol);
+
     const priceTicks = DB.getPriceTicks(symbol);
     const metrics = computeStockMetrics(priceTicks);
 

@@ -641,7 +641,14 @@ export const API = {
     const stock = store.stocks[sym];
     if (!stock) return null;
 
-    const noise = Number((Math.random() * 0.7 - 0.35).toFixed(2));
+    const sentimentData = computeStockSentiment(stock);
+    const score = sentimentData ? (sentimentData.sentimentScore || 50) : 50;
+
+    // Directional bias derived from sentiment score (5..98, 50 neutral)
+    const sentimentBias = (score - 50) / 100 * 0.4;
+    const randomNoise = (Math.random() * 0.5 - 0.25);
+    const noise = Number((sentimentBias + randomNoise).toFixed(3));
+
     const newPrice = Math.max(Number((stock.profile.currentPrice * (1 + noise / 100)).toFixed(2)), 1.00);
 
     stock.profile.currentPrice = newPrice;
@@ -649,26 +656,37 @@ export const API = {
     const currentMin = nowIso.slice(0, 16);
     const lastTick = stock.priceTicks.length > 0 ? stock.priceTicks[stock.priceTicks.length - 1] : null;
 
+    const tickLabel = noise > 0.1 
+      ? '🔥 Bullish Sentiment Buying' 
+      : noise < -0.1 
+      ? '🔻 Bearish Market Selling' 
+      : '⚖️ Neutral Fluctuation';
+
     if (lastTick && !lastTick.eventId && lastTick.timestamp && lastTick.timestamp.startsWith(currentMin)) {
       lastTick.price = newPrice;
       lastTick.timestamp = nowIso;
+      lastTick.label = tickLabel;
     } else {
       stock.priceTicks.push({
         timestamp: nowIso,
         price: newPrice,
         eventId: null,
-        label: noise >= 0 ? '📈 Investor Buying Movement' : '📉 Market Sentiment Noise'
+        label: tickLabel
       });
     }
 
     saveLocalStore(store);
 
     try {
-      await fetch('/api/stock/tick', {
+      const res = await fetch('/api/stock/tick', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ symbol: sym })
       });
+      if (res.ok) {
+        const serverData = await res.json();
+        return serverData;
+      }
     } catch (e) {}
 
     return {

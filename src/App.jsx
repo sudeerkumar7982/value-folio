@@ -98,7 +98,7 @@ export default function App() {
     }
   };
 
-  // Live Market Fluctuation Loop (Fires every 1.5s for continuous lively motion)
+  // Live Market Fluctuation Loop (Fires every 1s for continuous second-to-second sentiment motion)
   useEffect(() => {
     if (!isLiveActive || loading || !activeSymbol) return;
 
@@ -114,8 +114,8 @@ export default function App() {
                 ...prev.profile,
                 currentPrice: tickResult.currentPrice
               },
-              priceTicks: tickResult.priceTicks,
-              metrics: tickResult.metrics
+              priceTicks: tickResult.priceTicks || prev.priceTicks,
+              metrics: tickResult.metrics || prev.metrics
             };
           });
 
@@ -124,7 +124,7 @@ export default function App() {
       } catch (e) {
         console.warn('Live tick update error:', e.message);
       }
-    }, 1500);
+    }, 1000);
 
     return () => clearInterval(interval);
   }, [isLiveActive, loading, activeSymbol]);
