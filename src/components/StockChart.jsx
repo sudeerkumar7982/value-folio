@@ -15,37 +15,34 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
   }
 
   const getFilteredData = () => {
-    if (!priceTicks || priceTicks.length === 0) {
-      return { formattedData: [], openingPrice: 100 };
-    }
-
     const now = new Date();
     // Sort all price ticks chronologically
     const sortedTicks = [...priceTicks].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
     if (timeRange === '1D') {
       const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+      const startOfDayMs = startOfDay.getTime();
 
-      // Previous baseline before start of today
-      const ticksBeforeToday = sortedTicks.filter(t => new Date(t.timestamp).getTime() < startOfDay.getTime());
+      // Find opening baseline price before start of today
+      const ticksBeforeToday = sortedTicks.filter(t => new Date(t.timestamp).getTime() < startOfDayMs);
       const openingPrice = ticksBeforeToday.length > 0 
         ? ticksBeforeToday[ticksBeforeToday.length - 1].price 
         : (sortedTicks[0]?.price || 100);
 
-      // Today's ticks up to now
-      let todayTicks = sortedTicks.filter(t => new Date(t.timestamp).getTime() >= startOfDay.getTime());
+      // Today's ticks
+      let todayTicks = sortedTicks.filter(t => new Date(t.timestamp).getTime() >= startOfDayMs);
       if (todayTicks.length === 0) {
         todayTicks = sortedTicks;
       }
 
-      let prevP = openingPrice;
-      const formattedData = [];
+      // Build data points with timeMin (0..1439) for 24-hour X-axis
+      const pointsMap = new Map();
 
-      // Always prepend Start-of-Day baseline point so chart has continuous 2+ point line
-      const startOfDayLabel = startOfDay.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-      formattedData.push({
+      // 1. Start of day baseline (0 min = 12:00 AM)
+      pointsMap.set(0, {
+        timeMin: 0,
         timestamp: startOfDay.toISOString(),
-        dateLabel: startOfDayLabel,
+        dateLabel: '12:00 AM',
         fullDate: startOfDay.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
         price: openingPrice,
         label: 'Market Opening Base Price',
@@ -54,26 +51,54 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
         diffPct: 0
       });
 
+      // 2. Map today's ticks to minute offsets (0..1439)
+      let prevP = openingPrice;
+
       todayTicks.forEach(tick => {
         const d = new Date(tick.timestamp);
+        // Calculate minutes from midnight today
+        let minOffset = Math.floor((d.getTime() - startOfDayMs) / 60000);
+        minOffset = Math.max(0, Math.min(minOffset, 1439));
+
         const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
         const diff = Number((tick.price - prevP).toFixed(2));
         const diffPct = prevP > 0 ? Number(((diff / prevP) * 100).toFixed(2)) : 0;
         prevP = tick.price;
 
-        formattedData.push({
-          timestamp: tick.timestamp,
-          dateLabel: timeStr,
-          fullDate: d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
-          price: tick.price,
-          label: tick.label || 'Price Fluctuation',
-          eventId: tick.eventId,
-          diff,
-          diffPct
-        });
+        // If an event occurs at this minute, prioritize saving event info
+        const existing = pointsMap.get(minOffset);
+        if (!existing || tick.eventId || !existing.eventId) {
+          pointsMap.set(minOffset, {
+            timeMin: minOffset,
+            timestamp: tick.timestamp,
+            dateLabel: timeStr,
+            fullDate: d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
+            price: tick.price,
+            label: tick.label || 'Price Fluctuation',
+            eventId: tick.eventId,
+            diff,
+            diffPct
+          });
+        }
       });
 
-      return { formattedData, openingPrice };
+      const formattedData = Array.from(pointsMap.values()).sort((a, b) => a.timeMin - b.timeMin);
+
+      return {
+        formattedData,
+        openingPrice,
+        isNumericDomain: true,
+        xDomain: [0, 1439],
+        xTicks: [0, 360, 720, 1080, 1439],
+        xFormatter: (val) => {
+          if (val === 0) return '12:00 AM';
+          if (val === 360) return '6:00 AM';
+          if (val === 720) return '12:00 PM';
+          if (val === 1080) return '6:00 PM';
+          if (val === 1439) return '11:59 PM';
+          return '';
+        }
+      };
     }
 
     // ── 1W, 1M, 3M, 6M, 1Y, 3Y, 5Y, ALL ──
@@ -113,6 +138,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       const firstD = new Date(filtered[0].timestamp);
       const baselineD = new Date(firstD.getTime() - 3600000);
       formattedData.push({
+        timeMs: baselineD.getTime(),
         timestamp: baselineD.toISOString(),
         dateLabel: baselineD.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         fullDate: baselineD.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
@@ -140,6 +166,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       prevP = tick.price;
 
       formattedData.push({
+        timeMs: d.getTime(),
         timestamp: tick.timestamp,
         dateLabel,
         fullDate: d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
@@ -151,12 +178,23 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       });
     });
 
-    return { formattedData, openingPrice };
+    return {
+      formattedData,
+      openingPrice,
+      isNumericDomain: true,
+      xDomain: ['dataMin', 'dataMax'],
+      xTicks: undefined,
+      xFormatter: (val) => {
+        const d = new Date(val);
+        if (timeRange === '1W') return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      }
+    };
   };
 
-  const { formattedData, openingPrice } = getFilteredData();
+  const { formattedData, openingPrice, isNumericDomain, xDomain, xTicks, xFormatter } = getFilteredData();
 
-  // Find latest price
+  // Calculate dynamic Y-axis min/max bounds with padding
   const validPrices = formattedData.filter(d => d.price !== null && !isNaN(d.price)).map(d => d.price);
   const latestPrice = validPrices.length > 0 ? validPrices[validPrices.length - 1] : openingPrice;
   const periodChangeAmt = Number((latestPrice - openingPrice).toFixed(2));
@@ -164,8 +202,12 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
   const isUpTrend = periodChangeAmt >= 0;
   const strokeColor = isUpTrend ? '#10B981' : '#EF4444';
 
-  const minPrice = validPrices.length > 0 ? Math.max(Math.floor(Math.min(...validPrices) * 0.95), 0) : 0;
-  const maxPrice = validPrices.length > 0 ? Math.ceil(Math.max(...validPrices) * 1.05) : 200;
+  const minVal = validPrices.length > 0 ? Math.min(...validPrices, openingPrice) : openingPrice;
+  const maxVal = validPrices.length > 0 ? Math.max(...validPrices, openingPrice) : openingPrice;
+  const rangePadding = Math.max((maxVal - minVal) * 0.1, 2.5);
+
+  const minPrice = Math.max(Number((minVal - rangePadding).toFixed(2)), 0);
+  const maxPrice = Number((maxVal + rangePadding).toFixed(2));
 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
@@ -202,10 +244,12 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
     return null;
   };
 
+  const xDataKey = timeRange === '1D' ? 'timeMin' : 'timeMs';
+
   return (
     <div className="bg-[#151923] border border-[#232936] rounded-2xl p-6 shadow-xl flex flex-col justify-between space-y-4 font-['Plus_Jakarta_Sans',sans-serif]">
       
-      {/* ── Top Header Section (Matching Dixon Technologies Layout) ── */}
+      {/* ── Top Header Section (Matching Professional Trading Layout) ── */}
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           {/* Logo Badge + Exchange Selector */}
@@ -267,12 +311,15 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
             </defs>
             
             <XAxis 
-              dataKey="dateLabel" 
+              type={isNumericDomain ? 'number' : 'category'}
+              dataKey={xDataKey}
+              domain={xDomain}
+              ticks={xTicks}
+              tickFormatter={xFormatter}
               stroke="#475569" 
               fontSize={11} 
               tickLine={false} 
               axisLine={{ stroke: '#232936' }} 
-              interval="preserveStartEnd"
             />
             <YAxis 
               domain={[minPrice, maxPrice]} 
@@ -294,7 +341,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
             />
 
             <Area 
-              type="monotone" 
+              type="linear" 
               dataKey="price" 
               stroke={strokeColor} 
               strokeWidth={2.5} 
@@ -309,7 +356,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
             {formattedData.map((d, i) => d.eventId && d.price !== null && (
               <ReferenceDot
                 key={i}
-                x={d.dateLabel}
+                x={d[xDataKey]}
                 y={d.price}
                 r={5}
                 fill={d.diff >= 0 ? '#10B981' : '#EF4444'}

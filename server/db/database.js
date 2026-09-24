@@ -266,12 +266,21 @@ export const DB = {
     if (!stock) return null;
 
     stock.profile.currentPrice = newPrice;
-    stock.priceTicks.push({
-      timestamp: new Date().toISOString(),
-      price: newPrice,
-      eventId: null,
-      label
-    });
+    const nowIso = new Date().toISOString();
+    const currentMin = nowIso.slice(0, 16);
+    const lastTick = stock.priceTicks.length > 0 ? stock.priceTicks[stock.priceTicks.length - 1] : null;
+
+    if (lastTick && !lastTick.eventId && lastTick.timestamp && lastTick.timestamp.startsWith(currentMin)) {
+      lastTick.price = newPrice;
+      lastTick.timestamp = nowIso;
+    } else {
+      stock.priceTicks.push({
+        timestamp: nowIso,
+        price: newPrice,
+        eventId: null,
+        label
+      });
+    }
 
     writeStore(store);
     return stock.profile;
