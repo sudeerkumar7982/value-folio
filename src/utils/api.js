@@ -185,20 +185,36 @@ function computeMetrics(priceTicks, stock = null) {
       ...circuits
     };
   }
-  const prices = priceTicks.map(p => p.price);
-  const currentPrice = prices[prices.length - 1];
-  const startingPrice = prices[0];
-  const previousPrice = prices.length > 1 ? prices[prices.length - 2] : startingPrice;
+
+  const now = new Date();
+  const startOfDayMs = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).getTime();
+  const sorted = [...priceTicks].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  const ticksBeforeToday = sorted.filter(t => new Date(t.timestamp).getTime() < startOfDayMs);
+
+  let openingPrice;
+  if (ticksBeforeToday.length > 0) {
+    openingPrice = ticksBeforeToday[ticksBeforeToday.length - 1].price;
+  } else if (stock?.profile?.startingPrice) {
+    openingPrice = stock.profile.startingPrice;
+  } else if (sorted.length > 0) {
+    openingPrice = sorted[0].price;
+  } else {
+    openingPrice = 100;
+  }
+
+  const circuits = getCircuitLimitsBySentiment(openingPrice, sentimentData);
+
+  const rawPrices = sorted.map(p => p.price);
+  const clampedPrices = rawPrices.map(p => Math.min(Math.max(p, circuits.lowerCircuit), circuits.upperCircuit));
+
+  const currentPrice = clampedPrices[clampedPrices.length - 1];
+  const startingPrice = openingPrice;
+  const previousPrice = clampedPrices.length > 1 ? clampedPrices[clampedPrices.length - 2] : startingPrice;
 
   const changeAmount = Number((currentPrice - previousPrice).toFixed(2));
-  const changePercent = Number(((changeAmount / previousPrice) * 100).toFixed(2));
+  const changePercent = previousPrice > 0 ? Number(((changeAmount / previousPrice) * 100).toFixed(2)) : 0;
   const totalChangeAmount = Number((currentPrice - startingPrice).toFixed(2));
-  const totalChangePercent = Number(((totalChangeAmount / startingPrice) * 100).toFixed(2));
-
-  // Anchor circuit to latest life event price tick or starting price
-  const lastEventTick = [...priceTicks].reverse().find(t => t.eventId !== null);
-  const anchorPrice = lastEventTick ? lastEventTick.price : startingPrice;
-  const circuits = getCircuitLimitsBySentiment(anchorPrice, sentimentData);
+  const totalChangePercent = startingPrice > 0 ? Number(((totalChangeAmount / startingPrice) * 100).toFixed(2)) : 0;
 
   return {
     currentPrice,
@@ -208,8 +224,8 @@ function computeMetrics(priceTicks, stock = null) {
     changePercent,
     totalChangeAmount,
     totalChangePercent,
-    highPrice: Math.max(...prices),
-    lowPrice: Math.min(...prices),
+    highPrice: Math.max(...clampedPrices),
+    lowPrice: Math.min(...clampedPrices),
     totalEvents: priceTicks.filter(h => h.eventId !== null).length,
     ...circuits
   };
@@ -217,49 +233,59 @@ function computeMetrics(priceTicks, stock = null) {
 
 export const API = {
   getAllStocks: async () => {
+    let stocksList = null;
     try {
       const res = await fetch('/api/stocks');
       if (res.ok) {
-        const stocks = await res.json();
-        if (Array.isArray(stocks) && stocks.length > 0) {
+        stocksList = await res.json();
+        if (Array.isArray(stocksList) && stocksList.length > 0) {
           const store = getLocalStore();
-          if (!store.activeSymbol || !stocks.some(s => s.symbol === store.activeSymbol)) {
-            store.activeSymbol = stocks[0].symbol;
+          if (!store.activeSymbol || !stocksList.some(s => s.symbol === store.activeSymbol)) {
+            store.activeSymbol = stocksList[0].symbol;
             saveLocalStore(store);
           }
         }
-        return stocks;
       }
     } catch (e) {}
 
-    const store = getLocalStore();
-    return Object.keys(store.stocks).map(sym => {
-      const stock = store.stocks[sym];
-      const sentimentData = computeStockSentiment(stock);
-      const startingPrice = stock.profile.startingPrice;
-      const currentPrice = stock.profile.currentPrice;
-      const changeAmount = Number((currentPrice - startingPrice).toFixed(2));
-      const changePercent = Number(((changeAmount / startingPrice) * 100).toFixed(2));
+    if (!stocksList) {
+      const store = getLocalStore();
+      stocksList = Object.keys(store.stocks || {}).map(sym => {
+        const stock = store.stocks[sym];
+        const sentimentData = computeStockSentiment(stock);
+        const metrics = computeMetrics(stock.priceTicks, stock);
 
-      const metrics = computeMetrics(stock.priceTicks, stock);
+        return {
+          symbol: sym,
+          name: stock.profile.name,
+          bio: stock.profile.bio,
+          startingPrice: stock.profile.startingPrice,
+          currentPrice: metrics.currentPrice,
+          changeAmount: metrics.changeAmount,
+          changePercent: metrics.changePercent,
+          upperCircuit: metrics.upperCircuit,
+          lowerCircuit: metrics.lowerCircuit,
+          upperCircuitPct: metrics.upperCircuitPct,
+          lowerCircuitPct: metrics.lowerCircuitPct,
+          walletBalance: stock.profile.walletBalance,
+          sharesOwned: stock.profile.sharesOwned,
+          eventsCount: stock.events.length,
+          sectors: stock.sectors,
+          ...sentimentData
+        };
+      });
+    }
 
+    return (stocksList || []).map(stock => {
+      const metrics = computeMetrics(stock.priceTicks || [], stock);
+      const clampedPrice = Math.min(Math.max(Number(stock.currentPrice || stock.startingPrice || 100), metrics.lowerCircuit), metrics.upperCircuit);
       return {
-        symbol: sym,
-        name: stock.profile.name,
-        bio: stock.profile.bio,
-        startingPrice,
-        currentPrice,
-        changeAmount,
-        changePercent,
+        ...stock,
+        currentPrice: clampedPrice,
         upperCircuit: metrics.upperCircuit,
         lowerCircuit: metrics.lowerCircuit,
         upperCircuitPct: metrics.upperCircuitPct,
-        lowerCircuitPct: metrics.lowerCircuitPct,
-        walletBalance: stock.profile.walletBalance,
-        sharesOwned: stock.profile.sharesOwned,
-        eventsCount: stock.events.length,
-        sectors: stock.sectors,
-        ...sentimentData
+        lowerCircuitPct: metrics.lowerCircuitPct
       };
     });
   },
@@ -316,33 +342,53 @@ export const API = {
   },
 
   getProfile: async (symbol = null) => {
+    let data = null;
     try {
       const symQuery = symbol ? `?symbol=${symbol}` : '';
       const res = await fetch(`/api/stock/profile${symQuery}`);
       if (res.ok) {
-        const data = await res.json();
-        if (data && data.profile) return data;
+        data = await res.json();
       }
     } catch (e) {}
 
-    const store = getLocalStore();
-    const stockKeys = Object.keys(store.stocks || {});
-    let sym = symbol || store.activeSymbol;
-    if (!sym || !store.stocks[sym]) {
-      sym = stockKeys.length > 0 ? stockKeys[0] : '';
+    if (!data || !data.profile) {
+      const store = getLocalStore();
+      const stockKeys = Object.keys(store.stocks || {});
+      let sym = symbol || store.activeSymbol;
+      if (!sym || !store.stocks[sym]) {
+        sym = stockKeys.length > 0 ? stockKeys[0] : '';
+      }
+
+      const stock = store.stocks[sym];
+      if (!stock) return null;
+
+      data = {
+        profile: stock.profile,
+        sectors: stock.sectors,
+        metrics: computeMetrics(stock.priceTicks, stock),
+        priceTicks: stock.priceTicks || [],
+        eventsCount: stock.events ? stock.events.length : 0,
+        sentiment: computeStockSentiment(stock)
+      };
     }
 
-    const stock = store.stocks[sym];
-    if (!stock) return null;
+    if (data && data.profile) {
+      const metrics = computeMetrics(data.priceTicks || [], { profile: data.profile, events: data.events });
+      const clampedPrice = Math.min(Math.max(Number(data.profile.currentPrice), metrics.lowerCircuit), metrics.upperCircuit);
+      data.profile.currentPrice = clampedPrice;
+      if (data.priceTicks && Array.isArray(data.priceTicks)) {
+        data.priceTicks = data.priceTicks.map(t => ({
+          ...t,
+          price: Math.min(Math.max(Number(t.price), metrics.lowerCircuit), metrics.upperCircuit)
+        }));
+      }
+      data.metrics = {
+        ...metrics,
+        currentPrice: clampedPrice
+      };
+    }
 
-    return {
-      profile: stock.profile,
-      sectors: stock.sectors,
-      metrics: computeMetrics(stock.priceTicks, stock),
-      priceTicks: stock.priceTicks || [],
-      eventsCount: stock.events ? stock.events.length : 0,
-      sentiment: computeStockSentiment(stock)
-    };
+    return data;
   },
 
   getEvents: async (symbol = null) => {

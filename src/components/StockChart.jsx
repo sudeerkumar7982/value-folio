@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, ReferenceLine, ReferenceDot } from 'recharts';
 import { Bell, Bookmark, Link2, BarChart2, ArrowUpDown } from 'lucide-react';
+import { getCircuitLimitsBySentiment } from '../utils/api.js';
 
 export function StockChart({ priceTicks = [], profile, symbol = '' }) {
   // Default view: 1D
@@ -32,6 +33,12 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
         openingPrice = 100;
       }
 
+      const sentimentData = {
+        sentimentScore: profile?.sentimentScore ?? 50,
+        sentiment: profile?.sentiment || 'NEUTRAL'
+      };
+      const circuits = getCircuitLimitsBySentiment(openingPrice, sentimentData);
+
       // Today's ticks starting from 12:00 AM
       const todayTicks = sortedTicks.filter(t => new Date(t.timestamp).getTime() >= startOfDayMs);
       const formattedData = [];
@@ -42,7 +49,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
         timestamp: startOfDay.toISOString(),
         dateLabel: '12:00 AM',
         fullDate: startOfDay.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
-        price: openingPrice,
+        price: Math.min(Math.max(openingPrice, circuits.lowerCircuit), circuits.upperCircuit),
         label: 'Day Opening Price (12:00 AM)',
         eventId: null,
         diff: 0,
@@ -59,7 +66,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
             timestamp: preTickD.toISOString(),
             dateLabel: preTickD.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }),
             fullDate: preTickD.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
-            price: openingPrice,
+            price: Math.min(Math.max(openingPrice, circuits.lowerCircuit), circuits.upperCircuit),
             label: 'Day Opening Baseline',
             eventId: null,
             diff: 0,
@@ -73,16 +80,17 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       todayTicks.forEach(tick => {
         const d = new Date(tick.timestamp);
         const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-        const diff = Number((tick.price - prevP).toFixed(2));
+        const clampedP = Math.min(Math.max(tick.price, circuits.lowerCircuit), circuits.upperCircuit);
+        const diff = Number((clampedP - prevP).toFixed(2));
         const diffPct = prevP > 0 ? Number(((diff / prevP) * 100).toFixed(2)) : 0;
-        prevP = tick.price;
+        prevP = clampedP;
 
         formattedData.push({
           timeMs: d.getTime(),
           timestamp: tick.timestamp,
           dateLabel: timeStr,
           fullDate: d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'medium' }),
-          price: tick.price,
+          price: clampedP,
           label: tick.label || 'Live Price Tick',
           eventId: tick.eventId,
           diff,
@@ -91,7 +99,8 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       });
 
       // 4. Always extend line continuously to current time right NOW
-      const latestPrice = sortedTicks.length > 0 ? sortedTicks[sortedTicks.length - 1].price : openingPrice;
+      const rawLatestPrice = sortedTicks.length > 0 ? sortedTicks[sortedTicks.length - 1].price : openingPrice;
+      const latestPrice = Math.min(Math.max(rawLatestPrice, circuits.lowerCircuit), circuits.upperCircuit);
       const lastPointMs = formattedData.length > 0 ? formattedData[formattedData.length - 1].timeMs : startOfDayMs;
 
       if (now.getTime() - lastPointMs > 5000) {
