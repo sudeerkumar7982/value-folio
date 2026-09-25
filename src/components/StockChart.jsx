@@ -159,7 +159,13 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       }
     }
 
-    let prevP = openingPrice;
+    const sentimentData = {
+      sentimentScore: profile?.sentimentScore ?? 50,
+      sentiment: profile?.sentiment || 'NEUTRAL'
+    };
+    const circuits = getCircuitLimitsBySentiment(openingPrice, sentimentData);
+
+    let prevP = Math.min(Math.max(openingPrice, circuits.lowerCircuit), circuits.upperCircuit);
     const formattedData = [];
 
     // Prepend baseline start point if only 1 tick exists
@@ -171,7 +177,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
         timestamp: baselineD.toISOString(),
         dateLabel: baselineD.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         fullDate: baselineD.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
-        price: openingPrice,
+        price: prevP,
         label: 'Base Offering Price',
         eventId: null,
         diff: 0,
@@ -190,16 +196,17 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
         dateLabel = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
       }
 
-      const diff = Number((tick.price - prevP).toFixed(2));
+      const clampedP = Math.min(Math.max(tick.price, circuits.lowerCircuit), circuits.upperCircuit);
+      const diff = Number((clampedP - prevP).toFixed(2));
       const diffPct = prevP > 0 ? Number(((diff / prevP) * 100).toFixed(2)) : 0;
-      prevP = tick.price;
+      prevP = clampedP;
 
       formattedData.push({
         timeMs: d.getTime(),
         timestamp: tick.timestamp,
         dateLabel,
         fullDate: d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
-        price: tick.price,
+        price: clampedP,
         label: tick.label || 'Price Tick',
         eventId: tick.eventId,
         diff,
@@ -208,7 +215,8 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
     });
 
     // Always extend line to current timestamp right NOW
-    const latestPrice = sortedTicks.length > 0 ? sortedTicks[sortedTicks.length - 1].price : openingPrice;
+    const rawLatest = profile?.currentPrice || (sortedTicks.length > 0 ? sortedTicks[sortedTicks.length - 1].price : openingPrice);
+    const latestPrice = Math.min(Math.max(rawLatest, circuits.lowerCircuit), circuits.upperCircuit);
     const lastPointMs = formattedData.length > 0 ? formattedData[formattedData.length - 1].timeMs : 0;
 
     if (now.getTime() - lastPointMs > 60000) {
@@ -243,7 +251,10 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
 
   // Calculate dynamic Y-axis min/max bounds with padding
   const validPrices = formattedData.filter(d => d.price !== null && !isNaN(d.price)).map(d => d.price);
-  const latestPrice = validPrices.length > 0 ? validPrices[validPrices.length - 1] : openingPrice;
+  const rawLatestPrice = profile?.currentPrice ?? (validPrices.length > 0 ? validPrices[validPrices.length - 1] : openingPrice);
+  const sentimentData = { sentimentScore: profile?.sentimentScore ?? 50, sentiment: profile?.sentiment || 'NEUTRAL' };
+  const circuits = getCircuitLimitsBySentiment(openingPrice, sentimentData);
+  const latestPrice = Math.min(Math.max(rawLatestPrice, circuits.lowerCircuit), circuits.upperCircuit);
   const periodChangeAmt = Number((latestPrice - openingPrice).toFixed(2));
   const periodChangePct = openingPrice > 0 ? Number(((periodChangeAmt / openingPrice) * 100).toFixed(2)) : 0;
   const isUpTrend = periodChangeAmt >= 0;

@@ -40,1810 +40,10 @@
       ],
       "priceTicks": [
         {
-          "timestamp": "2026-09-25T16:42:27.868Z",
-          "price": 145,
-          "eventId": null,
-          "label": "KSK IPO Issue Price"
-        },
-        {
-          "timestamp": "2026-09-25T16:42:27.868Z",
-          "price": 123.25,
-          "eventId": null,
-          "label": "KSK IPO Listing Day Surge (+-15%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:42:29.956Z",
-          "price": 130.75,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:42:30.958Z",
-          "price": 130.92,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:42:31.959Z",
-          "price": 130.94,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:42:33.958Z",
-          "price": 131.03,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:42:34.958Z",
-          "price": 131.01,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:42:37.954Z",
-          "price": 130.78,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:42:39.958Z",
-          "price": 130.59,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:42:42.956Z",
-          "price": 130.58,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:42:45.962Z",
-          "price": 130.61,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:42:46.962Z",
-          "price": 130.6,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:42:50.954Z",
-          "price": 130.76,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:42:51.960Z",
-          "price": 130.78,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:42:53.958Z",
-          "price": 130.54,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:42:55.952Z",
-          "price": 130.5,
-          "eventId": null,
-          "label": "🔒 Lower Circuit Limit Hit (-10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:42:56.955Z",
-          "price": 130.5,
-          "eventId": null,
-          "label": "🔒 Lower Circuit Limit Hit (-10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:42:57.959Z",
-          "price": 130.69,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:42:59.959Z",
-          "price": 131.09,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:00.962Z",
-          "price": 131.05,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:02.955Z",
-          "price": 131.14,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:04.956Z",
-          "price": 131.49,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:05.960Z",
-          "price": 131.67,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:07.955Z",
-          "price": 131.69,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:08.955Z",
-          "price": 131.52,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:09.959Z",
-          "price": 131.66,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:10.959Z",
-          "price": 131.91,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:12.954Z",
-          "price": 131.85,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:14.955Z",
-          "price": 131.68,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:15.959Z",
-          "price": 131.94,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:16.959Z",
-          "price": 131.69,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:18.964Z",
-          "price": 131.79,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:20.953Z",
-          "price": 132,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:21.958Z",
-          "price": 131.84,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:22.959Z",
-          "price": 131.68,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:25.949Z",
-          "price": 131.62,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:26.959Z",
-          "price": 131.39,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:27.959Z",
-          "price": 131.49,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:28.976Z",
-          "price": 131.31,
-          "eventId": null,
-          "label": "⚖️ Balanced Market Trading"
-        },
-        {
           "timestamp": "2026-09-25T16:43:29.118Z",
           "price": 162.18,
           "eventId": "evt-1790354609118",
           "label": "currently having 2 placement offers"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:31.959Z",
-          "price": 162.88,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:34.952Z",
-          "price": 162.87,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:35.959Z",
-          "price": 163.07,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:36.961Z",
-          "price": 163.41,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:37.961Z",
-          "price": 163.58,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:38.962Z",
-          "price": 163.89,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:40.962Z",
-          "price": 164.53,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:42.957Z",
-          "price": 164.8,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:46.959Z",
-          "price": 165.76,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:47.959Z",
-          "price": 165.97,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:48.962Z",
-          "price": 165.92,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:49.965Z",
-          "price": 166.29,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:51.958Z",
-          "price": 166.47,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:55.172Z",
-          "price": 167.3,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:56.181Z",
-          "price": 167.2,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:43:59.170Z",
-          "price": 168.07,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:00.171Z",
-          "price": 168.14,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:01.954Z",
-          "price": 168.32,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:04.165Z",
-          "price": 168.89,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:07.168Z",
-          "price": 169.54,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:08.172Z",
-          "price": 169.72,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:10.168Z",
-          "price": 170.18,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:11.168Z",
-          "price": 170.37,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:12.178Z",
-          "price": 170.81,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:17.165Z",
-          "price": 170.74,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:19.171Z",
-          "price": 171.45,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:21.961Z",
-          "price": 171.98,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:23.954Z",
-          "price": 172.71,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:25.958Z",
-          "price": 172.56,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:26.959Z",
-          "price": 172.84,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:27.962Z",
-          "price": 172.91,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:29.955Z",
-          "price": 172.89,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:30.959Z",
-          "price": 173.35,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:33.958Z",
-          "price": 173.37,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:34.962Z",
-          "price": 173.22,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:36.167Z",
-          "price": 173.17,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:37.168Z",
-          "price": 173.35,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:38.176Z",
-          "price": 173.52,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:39.176Z",
-          "price": 173.38,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:41.168Z",
-          "price": 173.04,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:43.169Z",
-          "price": 172.7,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:44.173Z",
-          "price": 172.83,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:45.177Z",
-          "price": 173.25,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:47.172Z",
-          "price": 173.16,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:48.176Z",
-          "price": 173.38,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:50.173Z",
-          "price": 173.78,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:52.168Z",
-          "price": 173.49,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:53.171Z",
-          "price": 173.87,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:55.169Z",
-          "price": 173.66,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:44:58.161Z",
-          "price": 173.8,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:00.157Z",
-          "price": 173.62,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:01.165Z",
-          "price": 173.4,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:03.169Z",
-          "price": 173.34,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:05.178Z",
-          "price": 173.9,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:08.165Z",
-          "price": 173.94,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:09.166Z",
-          "price": 174.22,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:10.176Z",
-          "price": 174.09,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:11.176Z",
-          "price": 174.02,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:13.169Z",
-          "price": 173.8,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:15.169Z",
-          "price": 173.91,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:17.177Z",
-          "price": 174.26,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:19.170Z",
-          "price": 174.87,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:21.167Z",
-          "price": 174.97,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:22.172Z",
-          "price": 175.37,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:24.173Z",
-          "price": 175.17,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:27.162Z",
-          "price": 176.16,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:29.167Z",
-          "price": 176.88,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:30.167Z",
-          "price": 176.92,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:31.175Z",
-          "price": 177.38,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:33.173Z",
-          "price": 177.57,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:35.171Z",
-          "price": 177.4,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:42.955Z",
-          "price": 177.65,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:45.951Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:47.954Z",
-          "price": 178.29,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:50.955Z",
-          "price": 178.15,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:53.957Z",
-          "price": 178.19,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:56.949Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:57.949Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:45:59.954Z",
-          "price": 178.23,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:03.961Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:04.963Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:06.175Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:09.173Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:10.181Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:13.171Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:15.169Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:16.179Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:17.180Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:18.183Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:21.169Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:23.176Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:26.169Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:28.954Z",
-          "price": 178.32,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:29.960Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:32.952Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:33.954Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:35.955Z",
-          "price": 178.3,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:36.955Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:38.959Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:40.957Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:42.959Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:43.964Z",
-          "price": 178.3,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:46.961Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:49.960Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:50.962Z",
-          "price": 178.3,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:52.958Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:53.964Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:54.970Z",
-          "price": 178.21,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:55.970Z",
-          "price": 178.06,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:57.174Z",
-          "price": 177.86,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:46:58.174Z",
-          "price": 177.94,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:00.179Z",
-          "price": 178.07,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:04.167Z",
-          "price": 178.12,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:06.172Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:08.174Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:11.958Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:12.958Z",
-          "price": 178.22,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:13.960Z",
-          "price": 178.28,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:15.960Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:17.955Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:20.958Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:21.958Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:22.960Z",
-          "price": 178.23,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:24.958Z",
-          "price": 178.02,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:25.965Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:29.957Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:31.952Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:34.961Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:36.960Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:40.174Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:41.178Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:43.177Z",
-          "price": 178.23,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:44.177Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:46.172Z",
-          "price": 178.19,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:48.173Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:49.179Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:52.177Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:56.171Z",
-          "price": 178.37,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:47:58.182Z",
-          "price": 178.15,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:01.174Z",
-          "price": 178.12,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:06.955Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:07.961Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:09.957Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:11.956Z",
-          "price": 178.33,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:12.957Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:13.963Z",
-          "price": 178.34,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:15.176Z",
-          "price": 178.24,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:18.973Z",
-          "price": 178.3,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:20.168Z",
-          "price": 178.19,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:21.175Z",
-          "price": 177.97,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:23.172Z",
-          "price": 177.94,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:27.170Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:28.177Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:29.177Z",
-          "price": 178.37,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:30.183Z",
-          "price": 178.14,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:34.960Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:37.376Z",
-          "price": 178.2,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:40.370Z",
-          "price": 178.05,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:44.375Z",
-          "price": 178.11,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:45.382Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:47.165Z",
-          "price": 178.18,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:48.176Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:50.174Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:52.369Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:53.373Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:54.374Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:55.377Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:56.388Z",
-          "price": 178.27,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:48:58.383Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:02.371Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:04.371Z",
-          "price": 178.35,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:07.369Z",
-          "price": 178.01,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:10.372Z",
-          "price": 177.6,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:14.371Z",
-          "price": 178.24,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:16.372Z",
-          "price": 178.38,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:17.374Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:20.174Z",
-          "price": 178.33,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:21.175Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:24.367Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:26.364Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:27.366Z",
-          "price": 178.23,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:30.367Z",
-          "price": 178.39,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:33.365Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:34.367Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:35.369Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:36.369Z",
-          "price": 178.27,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:37.374Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:39.370Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:40.371Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:42.368Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:47.366Z",
-          "price": 178.38,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:48.368Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:49.368Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:50.369Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:51.370Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:52.371Z",
-          "price": 178.27,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:53.394Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:56.371Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:49:59.366Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:02.368Z",
-          "price": 178.39,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:03.370Z",
-          "price": 178.31,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:06.172Z",
-          "price": 178.24,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:07.175Z",
-          "price": 178.38,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:09.371Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:12.367Z",
-          "price": 178.31,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:13.372Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:14.375Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:17.365Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:18.374Z",
-          "price": 178.21,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:21.371Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:22.373Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:24.369Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:26.372Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:27.375Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:29.372Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:33.370Z",
-          "price": 178.21,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:35.372Z",
-          "price": 178.35,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:36.377Z",
-          "price": 178.28,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:39.374Z",
-          "price": 178.32,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:40.376Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:42.377Z",
-          "price": 178.33,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:43.388Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:46.628Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:48.173Z",
-          "price": 178.35,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:49.179Z",
-          "price": 178.28,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:51.169Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:52.170Z",
-          "price": 178.34,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:54.172Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:55.182Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:50:59.171Z",
-          "price": 178.26,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:01.171Z",
-          "price": 178.34,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:05.163Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:06.163Z",
-          "price": 178.35,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:07.167Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:08.169Z",
-          "price": 178.22,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:09.176Z",
-          "price": 178.13,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:10.182Z",
-          "price": 178.07,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:13.170Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:14.180Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:16.180Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:17.181Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:19.177Z",
-          "price": 178.24,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:21.178Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:24.379Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:25.382Z",
-          "price": 178.31,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:28.169Z",
-          "price": 178.33,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:29.170Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:32.171Z",
-          "price": 178.1,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:34.170Z",
-          "price": 177.94,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:36.169Z",
-          "price": 178.17,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:39.174Z",
-          "price": 178.22,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:41.172Z",
-          "price": 177.93,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:43.164Z",
-          "price": 177.88,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:44.171Z",
-          "price": 178.11,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:46.171Z",
-          "price": 177.99,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:47.171Z",
-          "price": 178.14,
-          "eventId": null,
-          "label": "📈 Bullish Sentiment Momentum"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:48.175Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:50.174Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:52.172Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:54.170Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
-        },
-        {
-          "timestamp": "2026-09-25T16:51:55.179Z",
-          "price": 178.4,
-          "eventId": null,
-          "label": "🔒 Upper Circuit Limit Hit (+10%)"
         },
         {
           "timestamp": "2026-09-25T16:51:57.170Z",
@@ -2465,6 +665,2112 @@
         },
         {
           "timestamp": "2026-09-25T17:15:32.187Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:16:18.117Z",
+          "price": 178.25,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:16:20.170Z",
+          "price": 178.19,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:16:21.178Z",
+          "price": 178.24,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:16:24.165Z",
+          "price": 177.93,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:16:26.166Z",
+          "price": 177.81,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:16:27.175Z",
+          "price": 177.93,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:16:29.175Z",
+          "price": 178.17,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:16:31.079Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:16:32.174Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:16:33.177Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:16:34.188Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:16:37.176Z",
+          "price": 178.21,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:16:39.169Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:16:42.168Z",
+          "price": 178.16,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:16:44.178Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:16:48.171Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:16:49.173Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:16:50.174Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:16:52.173Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:16:54.181Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:16:56.180Z",
+          "price": 178.37,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:16:58.169Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:16:59.176Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:17:01.170Z",
+          "price": 178.19,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:17:03.173Z",
+          "price": 178.28,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:17:05.170Z",
+          "price": 178.27,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:17:07.168Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:17:08.182Z",
+          "price": 178.2,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:17:11.174Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:17:13.173Z",
+          "price": 178.06,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:17:16.171Z",
+          "price": 178.2,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:17:17.172Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:17:19.173Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:17:20.177Z",
+          "price": 178.22,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:17:23.171Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:17:25.165Z",
+          "price": 178.13,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:17:27.171Z",
+          "price": 178.24,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:17:30.169Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:17:32.171Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:18:32.189Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:19:32.183Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:20:32.183Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:21:32.192Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:22:32.189Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:23:32.181Z",
+          "price": 178.33,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:24:32.176Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:25:32.187Z",
+          "price": 178.27,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:26:32.186Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:27:32.170Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:28:32.182Z",
+          "price": 178.28,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:29:32.158Z",
+          "price": 178.25,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:30:32.187Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:16.093Z",
+          "price": 178.34,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:18.083Z",
+          "price": 178.17,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:19.091Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:21.086Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:22.086Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:24.093Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:27.079Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:28.092Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:30.086Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:32.084Z",
+          "price": 178.28,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:33.089Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:34.090Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:36.088Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:38.081Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:39.082Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:41.184Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:42.184Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:44.181Z",
+          "price": 178.32,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:47.174Z",
+          "price": 178.23,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:48.176Z",
+          "price": 178.12,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:50.179Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:53.175Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:55.173Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:56.178Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:57.183Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:34:59.182Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:01.175Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:02.177Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:03.186Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:04.189Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:08.176Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:11.178Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:12.182Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:15.181Z",
+          "price": 178.37,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:16.186Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:17.188Z",
+          "price": 178.39,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:19.187Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:20.189Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:22.178Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:23.185Z",
+          "price": 178.36,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:24.198Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:26.178Z",
+          "price": 178.1,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:27.182Z",
+          "price": 177.96,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:29.173Z",
+          "price": 177.88,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:31.185Z",
+          "price": 178.33,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:33.182Z",
+          "price": 178.28,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:35.175Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:37.177Z",
+          "price": 178.06,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:38.178Z",
+          "price": 178.36,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:39.188Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:41.096Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:43.095Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:45.082Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:46.097Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:48.081Z",
+          "price": 178.31,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:51.084Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:54.083Z",
+          "price": 178.27,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:55.099Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:57.085Z",
+          "price": 178.17,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:35:58.086Z",
+          "price": 178.34,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:01.081Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:02.088Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:03.090Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:05.090Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:06.100Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:08.084Z",
+          "price": 178.2,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:09.102Z",
+          "price": 178.36,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:10.167Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:11.168Z",
+          "price": 178.21,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:12.181Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:14.180Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:16.183Z",
+          "price": 178.15,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:17.185Z",
+          "price": 178.08,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:21.179Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:22.180Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:23.180Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:24.187Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:26.180Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:27.181Z",
+          "price": 178.21,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:29.181Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:30.181Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:32.180Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:33.181Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:34.189Z",
+          "price": 178.31,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:38.180Z",
+          "price": 178.32,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:40.181Z",
+          "price": 178.26,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:42.178Z",
+          "price": 178.36,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:43.181Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:46.186Z",
+          "price": 178.14,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:47.191Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:48.190Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:52.179Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:53.191Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:55.182Z",
+          "price": 178.13,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:36:58.179Z",
+          "price": 178.04,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:37:00.180Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:37:01.183Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:37:03.174Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:37:05.179Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:37:06.180Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:37:09.173Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:37:10.181Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:37:32.187Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:12.087Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:13.179Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:14.185Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:16.180Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:18.186Z",
+          "price": 178.32,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:21.177Z",
+          "price": 178.17,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:22.180Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:24.184Z",
+          "price": 178.38,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:26.181Z",
+          "price": 178.21,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:28.181Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:29.184Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:31.178Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:32.183Z",
+          "price": 178.33,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:35.177Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:36.182Z",
+          "price": 178.31,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:38.185Z",
+          "price": 178.31,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:39.189Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:42.175Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:44.183Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:45.189Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:47.187Z",
+          "price": 178.36,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:50.170Z",
+          "price": 178.01,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:54.164Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:38:57.171Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:39:01.166Z",
+          "price": 178.32,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:39:02.166Z",
+          "price": 178.29,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:39:03.175Z",
+          "price": 178.07,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:39:06.165Z",
+          "price": 178.25,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:39:09.177Z",
+          "price": 178.28,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:39:10.177Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:39:12.183Z",
+          "price": 178.17,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:39:32.185Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:40:32.189Z",
+          "price": 178.28,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:41:32.218Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:42:32.203Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:43:32.185Z",
+          "price": 178.39,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:44:32.196Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:45:32.185Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:46:32.183Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:01.085Z",
+          "price": 178.3,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:02.085Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:05.138Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:06.153Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:09.146Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:10.165Z",
+          "price": 178.37,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:12.168Z",
+          "price": 178.22,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:14.179Z",
+          "price": 178.32,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:16.172Z",
+          "price": 178.11,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:18.175Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:19.175Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:20.187Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:23.181Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:25.176Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:28.174Z",
+          "price": 178.28,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:29.182Z",
+          "price": 178.21,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:30.184Z",
+          "price": 178.05,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:32.177Z",
+          "price": 178.1,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:34.179Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:36.182Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:38.175Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:39.181Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:41.182Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:44.179Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:46.175Z",
+          "price": 178.2,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:49.176Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:50.178Z",
+          "price": 178.39,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:52.177Z",
+          "price": 178.14,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:53.179Z",
+          "price": 178.34,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:55.176Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:56.179Z",
+          "price": 178.38,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:47:58.177Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:48:00.182Z",
+          "price": 178.38,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:48:02.177Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:48:05.177Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:48:08.176Z",
+          "price": 178.35,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:48:09.180Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:48:32.179Z",
+          "price": 178.32,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:49:32.192Z",
+          "price": 178.37,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:50:32.187Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:51:20.173Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:51:23.182Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:51:25.176Z",
+          "price": 178.32,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:51:27.185Z",
+          "price": 178.03,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:51:29.185Z",
+          "price": 178.1,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:51:31.183Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:51:35.141Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:51:37.144Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:51:41.145Z",
+          "price": 178.35,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:51:42.170Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:51:43.181Z",
+          "price": 178.31,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:51:46.136Z",
+          "price": 178.19,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:51:47.140Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:51:49.171Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:51:50.171Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:51:52.169Z",
+          "price": 178.33,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:51:54.172Z",
+          "price": 178.16,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:51:55.174Z",
+          "price": 178.1,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:51:57.182Z",
+          "price": 177.8,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:51:59.176Z",
+          "price": 178.16,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:02.167Z",
+          "price": 178.04,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:03.177Z",
+          "price": 178.29,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:06.172Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:08.165Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:09.172Z",
+          "price": 178.22,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:10.180Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:12.171Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:16.165Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:18.173Z",
+          "price": 178.21,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:20.171Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:23.173Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:24.173Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:26.178Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:28.179Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:31.167Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:32.185Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:35.172Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:36.177Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:37.179Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:39.173Z",
+          "price": 178.29,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:41.183Z",
+          "price": 178.01,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:42.188Z",
+          "price": 177.85,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:45.174Z",
+          "price": 178.33,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:52:47.174Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:53:32.183Z",
+          "price": 178.36,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:59:21.177Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:59:24.180Z",
+          "price": 178.15,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:59:26.184Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:59:28.181Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:59:30.189Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:59:33.189Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:59:35.182Z",
+          "price": 178.36,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:59:37.178Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:59:38.189Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:59:40.179Z",
+          "price": 178.24,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:59:41.180Z",
+          "price": 178.23,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:59:43.176Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:59:45.166Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:59:46.166Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:59:48.164Z",
+          "price": 178.38,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:59:52.175Z",
+          "price": 178.37,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:59:54.172Z",
+          "price": 178.18,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T17:59:55.181Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:59:56.181Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T17:59:59.163Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:00:00.166Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:00:03.172Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:00:06.178Z",
+          "price": 178.2,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T18:00:08.176Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:00:09.178Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:00:10.187Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:00:12.178Z",
+          "price": 178.18,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T18:00:14.188Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:00:16.178Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:00:18.185Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:00:20.182Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:00:32.194Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:01:32.215Z",
+          "price": 178.27,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:02.148Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:04.151Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:05.153Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:06.170Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:08.181Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:10.176Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:12.173Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:13.182Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:15.185Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:17.178Z",
+          "price": 178.36,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:19.184Z",
+          "price": 178.15,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:21.177Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:23.184Z",
+          "price": 178.2,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:25.182Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:26.186Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:27.190Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:30.179Z",
+          "price": 178.34,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:31.182Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:33.182Z",
+          "price": 178.21,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:36.181Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:37.185Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:39.184Z",
+          "price": 178.29,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:43.179Z",
+          "price": 178.22,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:46.176Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:48.180Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:50.173Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:51.178Z",
+          "price": 178.36,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:52.178Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:54.176Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:56.178Z",
+          "price": 178.31,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:58.182Z",
+          "price": 178.29,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T18:02:59.182Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:03:01.186Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:03:03.190Z",
+          "price": 178.36,
+          "eventId": null,
+          "label": "📈 Bullish Sentiment Momentum"
+        },
+        {
+          "timestamp": "2026-09-25T18:03:05.191Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:03:32.186Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:04:32.170Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:05:32.193Z",
+          "price": 178.4,
+          "eventId": null,
+          "label": "🔒 Upper Circuit Limit Hit (+10%)"
+        },
+        {
+          "timestamp": "2026-09-25T18:06:32.183Z",
           "price": 178.4,
           "eventId": null,
           "label": "🔒 Upper Circuit Limit Hit (+10%)"

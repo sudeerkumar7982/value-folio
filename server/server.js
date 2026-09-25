@@ -68,13 +68,22 @@ app.get('/api/stock/profile', (req, res) => {
     const sectors = DB.getSectors(symbol);
     const priceTicks = DB.getPriceTicks(symbol);
     const events = DB.getEvents(symbol);
-    const metrics = computeStockMetrics(priceTicks);
+    const metrics = computeStockMetrics(priceTicks, { profile, events });
+
+    if (profile) {
+      profile.currentPrice = metrics.currentPrice;
+    }
+
+    const clampedTicks = (priceTicks || []).map(t => ({
+      ...t,
+      price: Math.min(Math.max(t.price, metrics.lowerCircuit), metrics.upperCircuit)
+    }));
 
     res.json({
       profile,
       sectors,
       metrics,
-      priceTicks,
+      priceTicks: clampedTicks,
       eventsCount: events.length
     });
   } catch (err) {
@@ -229,7 +238,9 @@ app.post('/api/events/commit', async (req, res) => {
     const impactPercent = customImpact !== undefined && customImpact !== null ? Number(customImpact) : aiResult.impactPercent;
 
     const previousPrice = profile.currentPrice;
-    const newPrice = calculateNewPrice(previousPrice, impactPercent);
+    const priceTicks = DB.getPriceTicks(targetSym);
+    const metrics = computeStockMetrics(priceTicks, profile);
+    const newPrice = calculateNewPrice(previousPrice, impactPercent, metrics.lowerCircuit, metrics.upperCircuit);
 
     // Update Sector Scores
     const currentSectors = DB.getSectors(targetSym);
