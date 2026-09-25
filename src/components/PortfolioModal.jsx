@@ -59,51 +59,51 @@ export function PortfolioModal({ isOpen, onClose, onSelectStock, onOpenTradeModa
   const isPnLPositive = totalPnL >= 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-      <div className="bg-[#151923] border border-[#232936] rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-md animate-fadeIn">
+      <div className="bg-white border border-[#E2E0D8] rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#232936] flex items-center justify-between bg-gradient-to-r from-[#1B212D] to-[#121B2B]">
+        <div className="px-6 py-4 border-b border-[#E2E0D8] flex items-center justify-between bg-[#F7F6F1]">
           <div className="flex items-center space-x-3">
-            <div className="p-2.5 bg-gradient-to-br from-emerald-600 to-teal-700 rounded-xl text-white shadow-lg shadow-emerald-500/20">
+            <div className="p-2.5 bg-gradient-to-br from-emerald-600 to-teal-700 rounded-xl text-white shadow-md">
               <Briefcase className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                 ValueFolio Asset Portfolio & Holdings
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono">
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 font-mono">
                   Live Asset Ledger
                 </span>
               </h2>
-              <p className="text-xs text-slate-400">Track your virtual stock investments, returns, and order history across human tickers</p>
+              <p className="text-xs text-slate-500">Track your virtual stock investments, returns, and order history across human tickers</p>
             </div>
           </div>
 
-          <button onClick={onClose} className="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-[#232936]">
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 p-2 rounded-lg hover:bg-[#E2E0D8]">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Portfolio Summary Metric Cards */}
-        <div className="p-6 bg-[#0B0E14] border-b border-[#232936] grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="bg-[#151923] border border-[#232936] p-3.5 rounded-xl">
-            <span className="text-xs text-slate-400 block mb-0.5 font-medium">Total Net Worth</span>
-            <span className="text-xl font-black text-white font-mono">₹{netWorth.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
+        <div className="p-6 bg-[#F7F6F1] border-b border-[#E2E0D8] grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="bg-white border border-[#E2E0D8] p-3.5 rounded-xl">
+            <span className="text-xs text-slate-500 block mb-0.5 font-medium">Total Net Worth</span>
+            <span className="text-xl font-black text-slate-800 font-mono">₹{netWorth.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
           </div>
 
-          <div className="bg-[#151923] border border-[#232936] p-3.5 rounded-xl">
-            <span className="text-xs text-slate-400 block mb-0.5 font-medium">Total Invested</span>
-            <span className="text-xl font-bold text-slate-200 font-mono">₹{totalInvested.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
+          <div className="bg-white border border-[#E2E0D8] p-3.5 rounded-xl">
+            <span className="text-xs text-slate-500 block mb-0.5 font-medium">Total Invested</span>
+            <span className="text-xl font-bold text-slate-700 font-mono">₹{totalInvested.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
           </div>
 
-          <div className="bg-[#151923] border border-[#232936] p-3.5 rounded-xl">
-            <span className="text-xs text-slate-400 block mb-0.5 font-medium">Current Value</span>
-            <span className="text-xl font-bold text-white font-mono">₹{currentValue.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
+          <div className="bg-white border border-[#E2E0D8] p-3.5 rounded-xl">
+            <span className="text-xs text-slate-500 block mb-0.5 font-medium">Current Value</span>
+            <span className="text-xl font-bold text-slate-800 font-mono">₹{currentValue.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
           </div>
 
-          <div className="bg-[#151923] border border-[#232936] p-3.5 rounded-xl">
-            <span className="text-xs text-slate-400 block mb-0.5 font-medium">Total P&L</span>
-            <div className={`text-xl font-black font-mono flex items-center ${isPnLPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
+          <div className="bg-white border border-[#E2E0D8] p-3.5 rounded-xl">
+            <span className="text-xs text-slate-500 block mb-0.5 font-medium">Total P&L</span>
+            <div className={`text-xl font-black font-mono flex items-center ${isPnLPositive ? 'text-emerald-600' : 'text-rose-500'}`}>
               {isPnLPositive ? <ArrowUpRight className="w-4 h-4 mr-0.5" /> : <ArrowDownRight className="w-4 h-4 mr-0.5" />}
               <span>{isPnLPositive ? '+' : ''}₹{totalPnL.toFixed(2)} ({isPnLPositive ? '+' : ''}{totalPnLPct.toFixed(2)}%)</span>
             </div>
@@ -111,13 +111,13 @@ export function PortfolioModal({ isOpen, onClose, onSelectStock, onOpenTradeModa
         </div>
 
         {/* Navigation Sub-Tabs */}
-        <div className="flex items-center space-x-2 px-6 pt-4 border-b border-[#232936] bg-[#151923]">
+        <div className="flex items-center space-x-2 px-6 pt-4 border-b border-[#E2E0D8] bg-white">
           <button
             onClick={() => setActiveTab('HOLDINGS')}
             className={`pb-3 text-xs font-bold border-b-2 transition-all px-2 ${
               activeTab === 'HOLDINGS'
-                ? 'border-emerald-500 text-emerald-400'
-                : 'border-transparent text-slate-400 hover:text-white'
+                ? 'border-emerald-600 text-emerald-700'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
             My Holdings ({holdings.length})
@@ -126,8 +126,8 @@ export function PortfolioModal({ isOpen, onClose, onSelectStock, onOpenTradeModa
             onClick={() => setActiveTab('ORDERS')}
             className={`pb-3 text-xs font-bold border-b-2 transition-all px-2 ${
               activeTab === 'ORDERS'
-                ? 'border-blue-500 text-blue-400'
-                : 'border-transparent text-slate-400 hover:text-white'
+                ? 'border-blue-600 text-blue-700'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
             Order Book Ledger ({tradesHistory.length})
@@ -144,7 +144,7 @@ export function PortfolioModal({ isOpen, onClose, onSelectStock, onOpenTradeModa
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead>
-                      <tr className="border-b border-[#232936] text-slate-400 uppercase font-mono text-[11px]">
+                      <tr className="border-b border-[#E2E0D8] text-slate-400 uppercase font-mono text-[11px]">
                         <th className="py-2.5 px-3">Stock Ticker</th>
                         <th className="py-2.5 px-3 text-right">Shares</th>
                         <th className="py-2.5 px-3 text-right">Avg Buy (₹)</th>
@@ -155,7 +155,7 @@ export function PortfolioModal({ isOpen, onClose, onSelectStock, onOpenTradeModa
                         <th className="py-2.5 px-3 text-center">Action</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#232936]/60">
+                    <tbody className="divide-y divide-[#E2E0D8]">
                       {holdings.map(stock => {
                         const shares = stock.sharesOwned || 0;
                         const avgPrice = stock.avgBuyPrice || stock.startingPrice;
@@ -167,17 +167,17 @@ export function PortfolioModal({ isOpen, onClose, onSelectStock, onOpenTradeModa
                         const isGain = pnl >= 0;
 
                         return (
-                          <tr key={stock.symbol} className="hover:bg-[#1C2230] transition-colors font-mono">
+                          <tr key={stock.symbol} className="hover:bg-[#F7F6F1] transition-colors font-mono">
                             <td className="py-3 px-3">
-                              <div className="font-bold text-white text-sm">{stock.symbol}</div>
-                              <div className="text-[11px] text-slate-400 line-clamp-1 font-sans">{stock.name}</div>
+                              <div className="font-bold text-slate-800 text-sm">{stock.symbol}</div>
+                              <div className="text-[11px] text-slate-500 line-clamp-1 font-sans">{stock.name}</div>
                             </td>
-                            <td className="py-3 px-3 text-right font-bold text-slate-200">{shares}</td>
-                            <td className="py-3 px-3 text-right text-slate-300">₹{avgPrice.toFixed(2)}</td>
-                            <td className="py-3 px-3 text-right font-bold text-white">₹{currPrice.toFixed(2)}</td>
-                            <td className="py-3 px-3 text-right text-slate-300">₹{inv.toFixed(2)}</td>
-                            <td className="py-3 px-3 text-right font-bold text-white">₹{val.toFixed(2)}</td>
-                            <td className={`py-3 px-3 text-right font-bold ${isGain ? 'text-emerald-400' : 'text-rose-400'}`}>
+                            <td className="py-3 px-3 text-right font-bold text-slate-700">{shares}</td>
+                            <td className="py-3 px-3 text-right text-slate-600">₹{avgPrice.toFixed(2)}</td>
+                            <td className="py-3 px-3 text-right font-bold text-slate-800">₹{currPrice.toFixed(2)}</td>
+                            <td className="py-3 px-3 text-right text-slate-600">₹{inv.toFixed(2)}</td>
+                            <td className="py-3 px-3 text-right font-bold text-slate-800">₹{val.toFixed(2)}</td>
+                            <td className={`py-3 px-3 text-right font-bold ${isGain ? 'text-emerald-600' : 'text-rose-500'}`}>
                               {isGain ? '+' : ''}₹{pnl.toFixed(2)} ({isGain ? '+' : ''}{pnlPct.toFixed(2)}%)
                             </td>
                             <td className="py-3 px-3 text-center">
@@ -188,7 +188,7 @@ export function PortfolioModal({ isOpen, onClose, onSelectStock, onOpenTradeModa
                                   onOpenTradeModal();
                                   onClose();
                                 }}
-                                className="bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-500/30 px-3 py-1 rounded-lg text-xs font-bold font-sans transition-all"
+                                className="bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white border border-blue-200 px-3 py-1 rounded-lg text-xs font-bold font-sans transition-all"
                               >
                                 Trade
                               </button>
@@ -202,8 +202,8 @@ export function PortfolioModal({ isOpen, onClose, onSelectStock, onOpenTradeModa
               </div>
             ) : (
               <div className="py-12 text-center text-slate-400 font-mono space-y-2">
-                <Briefcase className="w-10 h-10 mx-auto text-slate-600" />
-                <p className="text-base font-bold text-slate-300 font-sans">No Stock Holdings Yet</p>
+                <Briefcase className="w-10 h-10 mx-auto text-slate-300" />
+                <p className="text-base font-bold text-slate-700 font-sans">No Stock Holdings Yet</p>
                 <p className="text-xs text-slate-500 max-w-sm mx-auto font-sans">
                   Execute virtual BUY orders on listed stocks or bid for IPOs to build your human stock portfolio!
                 </p>
@@ -218,27 +218,27 @@ export function PortfolioModal({ isOpen, onClose, onSelectStock, onOpenTradeModa
                 {tradesHistory.map(trade => (
                   <div
                     key={trade.id}
-                    className="bg-[#0B0E14] border border-[#232936] p-3.5 rounded-xl flex items-center justify-between text-xs font-mono"
+                    className="bg-[#F7F6F1] border border-[#E2E0D8] p-3.5 rounded-xl flex items-center justify-between text-xs font-mono"
                   >
                     <div className="flex items-center space-x-3">
                       <span className={`px-2.5 py-1 rounded-lg font-extrabold text-xs ${
                         trade.type === 'BUY'
-                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                          : 'bg-rose-100 text-rose-800 border border-rose-300'
                       }`}>
                         {trade.type}
                       </span>
                       <div>
-                        <span className="font-bold text-white text-sm">{trade.shares} Shares</span>
-                        <span className="text-slate-400 text-[11px] block">
+                        <span className="font-bold text-slate-800 text-sm">{trade.shares} Shares</span>
+                        <span className="text-slate-500 text-[11px] block">
                           Executed @ ₹{Number(trade.price).toFixed(2)}
                         </span>
                       </div>
                     </div>
 
                     <div className="text-right">
-                      <span className="font-bold text-white text-sm block">₹{Number(trade.totalAmount).toFixed(2)}</span>
-                      <span className="text-slate-500 text-[10px]">
+                      <span className="font-bold text-slate-800 text-sm block">₹{Number(trade.totalAmount).toFixed(2)}</span>
+                      <span className="text-slate-400 text-[10px]">
                         {new Date(trade.timestamp).toLocaleString()}
                       </span>
                     </div>
@@ -247,8 +247,8 @@ export function PortfolioModal({ isOpen, onClose, onSelectStock, onOpenTradeModa
               </div>
             ) : (
               <div className="py-12 text-center text-slate-400 font-mono space-y-2">
-                <Clock className="w-10 h-10 mx-auto text-slate-600" />
-                <p className="text-base font-bold text-slate-300 font-sans">No Order History Logged</p>
+                <Clock className="w-10 h-10 mx-auto text-slate-300" />
+                <p className="text-base font-bold text-slate-700 font-sans">No Order History Logged</p>
                 <p className="text-xs text-slate-500 max-w-sm mx-auto font-sans">
                   All executed trade orders will be recorded here in real-time.
                 </p>

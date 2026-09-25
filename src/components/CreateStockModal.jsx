@@ -58,22 +58,22 @@ export function CreateStockModal({ isOpen, onClose, onCreateSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-      <div className="bg-[#151923] border border-[#232936] rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-md animate-fadeIn">
+      <div className="bg-white border border-[#E2E0D8] rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#232936] flex items-center justify-between bg-gradient-to-r from-[#1B212D] to-[#121B2B]">
+        <div className="px-6 py-4 border-b border-[#E2E0D8] flex items-center justify-between bg-[#F7F6F1]">
           <div className="flex items-center space-x-2.5">
-            <div className="p-2.5 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl text-white shadow-lg shadow-blue-500/20">
+            <div className="p-2.5 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl text-white shadow-md">
               <Rocket className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">ValueFolio Human Stock IPO Creation</h2>
-              <p className="text-xs text-slate-400">Launch a fresh personal stock offering for public bidding & exchange listing</p>
+              <h2 className="text-lg font-bold text-slate-800">ValueFolio Human Stock IPO Creation</h2>
+              <p className="text-xs text-slate-500">Launch a fresh personal stock offering for public bidding & exchange listing</p>
             </div>
           </div>
 
-          <button onClick={onClose} className="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-[#232936]">
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 p-2 rounded-lg hover:bg-[#E2E0D8]">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -84,8 +84,8 @@ export function CreateStockModal({ isOpen, onClose, onCreateSuccess }) {
           {/* Ticker & Name */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-semibold text-slate-300 block mb-1">
-                Stock Ticker Symbol <span className="text-rose-400">*</span>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">
+                Stock Ticker Symbol <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
@@ -94,13 +94,13 @@ export function CreateStockModal({ isOpen, onClose, onCreateSuccess }) {
                 placeholder="e.g. VALU"
                 value={symbol}
                 onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-                className="w-full bg-[#0B0E14] border border-[#232936] focus:border-blue-500 rounded-xl px-4 py-2.5 text-white font-mono font-bold text-sm outline-none"
+                className="w-full bg-[#F7F6F1] border border-[#E2E0D8] focus:border-blue-500 rounded-xl px-4 py-2.5 text-slate-800 font-mono font-bold text-sm outline-none"
               />
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-300 block mb-1">
-                Full Name <span className="text-rose-400">*</span>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">
+                Full Name <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
@@ -108,14 +108,14 @@ export function CreateStockModal({ isOpen, onClose, onCreateSuccess }) {
                 placeholder="e.g. Sudeer Kumar"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-[#0B0E14] border border-[#232936] focus:border-blue-500 rounded-xl px-4 py-2.5 text-white text-sm outline-none"
+                className="w-full bg-[#F7F6F1] border border-[#E2E0D8] focus:border-blue-500 rounded-xl px-4 py-2.5 text-slate-800 text-sm outline-none"
               />
             </div>
           </div>
 
           {/* Headline Bio */}
           <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1">
+            <label className="text-xs font-semibold text-slate-700 block mb-1">
               Personal Headline / Bio
             </label>
             <input
@@ -123,20 +123,20 @@ export function CreateStockModal({ isOpen, onClose, onCreateSuccess }) {
               placeholder="e.g. Software Engineer & AI Innovator"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              className="w-full bg-[#0B0E14] border border-[#232936] focus:border-blue-500 rounded-xl px-4 py-2 text-white placeholder-slate-500 text-sm outline-none"
+              className="w-full bg-[#F7F6F1] border border-[#E2E0D8] focus:border-blue-500 rounded-xl px-4 py-2 text-slate-800 placeholder-slate-400 text-sm outline-none"
             />
           </div>
 
           {/* Issue Status, Price & Lot Size Parameters */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-[#0B0E14] p-3.5 rounded-xl border border-[#232936]">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-[#F7F6F1] p-3.5 rounded-xl border border-[#E2E0D8]">
             <div>
-              <label className="text-xs font-semibold text-slate-400 block mb-1">
+              <label className="text-xs font-semibold text-slate-500 block mb-1">
                 IPO Status
               </label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="w-full bg-[#151923] border border-[#232936] rounded-lg px-3 py-2 text-white font-semibold text-xs outline-none"
+                className="w-full bg-white border border-[#E2E0D8] rounded-lg px-3 py-2 text-slate-800 font-semibold text-xs outline-none"
               >
                 <option value="OPEN">🔥 Open Bids</option>
                 <option value="UPCOMING">⏳ Upcoming</option>
@@ -145,7 +145,7 @@ export function CreateStockModal({ isOpen, onClose, onCreateSuccess }) {
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-400 block mb-1">
+              <label className="text-xs font-semibold text-slate-500 block mb-1">
                 Issue Price (₹)
               </label>
               <input
@@ -154,12 +154,12 @@ export function CreateStockModal({ isOpen, onClose, onCreateSuccess }) {
                 min="10"
                 value={startingPrice}
                 onChange={(e) => setStartingPrice(e.target.value)}
-                className="w-full bg-[#151923] border border-[#232936] rounded-lg px-3 py-2 text-white font-mono text-sm font-bold"
+                className="w-full bg-white border border-[#E2E0D8] rounded-lg px-3 py-2 text-slate-800 font-mono text-sm font-bold"
               />
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-400 block mb-1">
+              <label className="text-xs font-semibold text-slate-500 block mb-1">
                 Lot Size (Shares)
               </label>
               <input
@@ -168,37 +168,37 @@ export function CreateStockModal({ isOpen, onClose, onCreateSuccess }) {
                 min="5"
                 value={lotSize}
                 onChange={(e) => setLotSize(e.target.value)}
-                className="w-full bg-[#151923] border border-[#232936] rounded-lg px-3 py-2 text-white font-mono text-sm font-bold"
+                className="w-full bg-white border border-[#E2E0D8] rounded-lg px-3 py-2 text-slate-800 font-mono text-sm font-bold"
               />
             </div>
           </div>
 
           {/* Dynamic AI GMP Information Pill */}
-          <div className="bg-[#0B0E14]/80 p-3 rounded-xl border border-blue-500/20 flex items-center space-x-2.5 text-xs text-slate-300">
-            <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
+          <div className="bg-[#F7F6F1] p-3 rounded-xl border border-blue-200 flex items-center space-x-2.5 text-xs text-slate-600">
+            <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
             <p>
-              <strong className="text-white font-semibold">Dynamic GMP Engine:</strong> Grey Market Premium (GMP %) and AI Sentiment will be calculated internally based on sector ratings and news feed events.
+              <strong className="text-slate-800 font-semibold">Dynamic GMP Engine:</strong> Grey Market Premium (GMP %) and AI Sentiment will be calculated internally based on sector ratings and news feed events.
             </p>
           </div>
 
           {/* Baseline Sector Ratings */}
           <div>
-            <label className="text-xs font-bold text-slate-300 block mb-2 flex items-center space-x-1.5">
-              <Layers className="w-4 h-4 text-indigo-400" />
+            <label className="text-xs font-bold text-slate-700 block mb-2 flex items-center space-x-1.5">
+              <Layers className="w-4 h-4 text-indigo-600" />
               <span>Initial 7 Life Sector Baselines (0–100)</span>
             </label>
             
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
               {Object.entries(sectors).map(([sec, val]) => (
-                <div key={sec} className="bg-[#0B0E14] border border-[#232936] p-2 rounded-lg flex items-center justify-between">
-                  <span className="text-slate-400 font-semibold">{sec}</span>
+                <div key={sec} className="bg-[#F7F6F1] border border-[#E2E0D8] p-2 rounded-lg flex items-center justify-between">
+                  <span className="text-slate-600 font-semibold">{sec}</span>
                   <input
                     type="number"
                     min="0"
                     max="100"
                     value={val}
                     onChange={(e) => handleSectorChange(sec, e.target.value)}
-                    className="w-14 bg-[#151923] border border-[#232936] rounded px-1.5 py-0.5 text-center font-mono text-white text-xs font-bold"
+                    className="w-14 bg-white border border-[#E2E0D8] rounded px-1.5 py-0.5 text-center font-mono text-slate-800 text-xs font-bold"
                   />
                 </div>
               ))}
@@ -210,7 +210,7 @@ export function CreateStockModal({ isOpen, onClose, onCreateSuccess }) {
             <button
               type="submit"
               disabled={isSubmitting || !symbol.trim() || !name.trim()}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-500/20 transition-all text-sm flex items-center justify-center space-x-2"
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 text-white font-bold py-3 rounded-xl shadow-md transition-all text-sm flex items-center justify-center space-x-2"
             >
               {isSubmitting ? (
                 <span>Launching IPO...</span>

@@ -22,15 +22,15 @@ export default function StockHeader({
 
   const isPositive = metrics ? metrics.changePercent >= 0 : true;
 
-  // Minimal header shown when no stock is loaded yet
+  // Nav tabs
   const navTabs = (
-    <div className="flex items-center space-x-2 pt-3 mt-3 border-t border-[#232936]">
+    <div className="flex items-center space-x-2 pt-3 mt-3 border-t border-[#E2E0D8]">
       <button
         onClick={() => onTabChange('DASHBOARD')}
         className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${
           activeTab === 'DASHBOARD'
             ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-            : 'text-slate-400 hover:text-white hover:bg-[#1E2536]'
+            : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'
         }`}
       >
         <BarChart2 className="w-4 h-4" />
@@ -42,10 +42,10 @@ export default function StockHeader({
         className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${
           activeTab === 'IPO_HUB'
             ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20'
-            : 'text-slate-400 hover:text-white hover:bg-[#1E2536]'
+            : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'
         }`}
       >
-        <Rocket className="w-4 h-4 text-emerald-400" />
+        <Rocket className="w-4 h-4 text-emerald-500" />
         <span>Human IPO Launchpad</span>
       </button>
 
@@ -54,10 +54,10 @@ export default function StockHeader({
         className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${
           activeTab === 'WATCHLIST'
             ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/20'
-            : 'text-slate-400 hover:text-white hover:bg-[#1E2536]'
+            : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'
         }`}
       >
-        <Flame className="w-4 h-4 text-amber-400" />
+        <Flame className="w-4 h-4 text-amber-500" />
         <span>Market Screener &amp; Watchlist</span>
       </button>
     </div>
@@ -65,7 +65,7 @@ export default function StockHeader({
 
   if (!profile || !metrics) {
     return (
-      <header className="bg-[#151923] border-b border-[#232936] sticky top-0 z-30 shadow-xl">
+      <header className="bg-white border-b border-[#E2E0D8] sticky top-0 z-30 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             {/* Brand */}
@@ -74,7 +74,7 @@ export default function StockHeader({
                 <Activity className="w-6 h-6 text-white" />
               </div>
               <div>
-                <div className="text-lg font-black text-white tracking-tight">ValueFolio</div>
+                <div className="text-lg font-black text-slate-800 tracking-tight">ValueFolio</div>
                 <div className="text-xs text-slate-400 font-mono">Human Life Stock Exchange</div>
               </div>
             </div>
@@ -90,7 +90,7 @@ export default function StockHeader({
               </button>
               <button
                 onClick={onReset}
-                className="p-2 bg-[#1E2536] hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 rounded-xl border border-[#2B354C] hover:border-rose-500/30 transition-colors"
+                className="p-2 bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-xl border border-[#E2E0D8] hover:border-rose-200 transition-colors"
                 title="Reset All Data"
               >
                 <RotateCcw className="w-4 h-4" />
@@ -104,7 +104,7 @@ export default function StockHeader({
   }
 
   return (
-    <header className="bg-[#151923] border-b border-[#232936] sticky top-0 z-30 shadow-xl">
+    <header className="bg-white border-b border-[#E2E0D8] sticky top-0 z-30 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
         
         {/* Top Row: Brand, Stock Switcher, Live Price & Action Buttons */}
@@ -122,15 +122,15 @@ export default function StockHeader({
                 {/* Stock Switcher Dropdown Toggle */}
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center space-x-1.5 bg-[#0B0E14] border border-[#232936] hover:border-blue-500 px-3 py-1 rounded-xl transition-all"
+                  className="flex items-center space-x-1.5 bg-[#F7F6F1] border border-[#E2E0D8] hover:border-blue-400 px-3 py-1 rounded-xl transition-all"
                 >
-                  <span className="text-xl font-black tracking-tight text-white font-mono">{profile.symbol}</span>
+                  <span className="text-xl font-black tracking-tight text-slate-800 font-mono">{profile.symbol}</span>
                   <ChevronDown className="w-4 h-4 text-slate-400" />
                 </button>
 
                 {/* Stock Switcher Dropdown Menu */}
                 {isDropdownOpen && (
-                  <div className="absolute top-11 left-0 z-50 w-72 bg-[#151923] border border-[#232936] rounded-2xl shadow-2xl p-2 space-y-1 animate-fadeIn">
+                  <div className="absolute top-11 left-0 z-50 w-72 bg-white border border-[#E2E0D8] rounded-2xl shadow-xl p-2 space-y-1 animate-fadeIn">
                     <div className="px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                       Select Listed Stock
                     </div>
@@ -143,18 +143,18 @@ export default function StockHeader({
                         }}
                         className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left transition-all ${
                           s.symbol === activeSymbol
-                            ? 'bg-blue-600/20 border border-blue-500/40 text-white font-bold'
-                            : 'hover:bg-[#0B0E14] text-slate-300'
+                            ? 'bg-blue-50 border border-blue-300 text-slate-800 font-bold'
+                            : 'hover:bg-[#F7F6F1] text-slate-600'
                         }`}
                       >
                         <div>
-                          <div className="font-mono text-sm font-bold">{s.symbol}</div>
+                          <div className="font-mono text-sm font-bold text-slate-800">{s.symbol}</div>
                           <div className="text-xs text-slate-400 line-clamp-1">{s.name}</div>
                         </div>
                         <div className="text-right font-mono text-xs">
-                          <div className="text-white font-bold">₹{s.currentPrice?.toFixed(2)}</div>
-                          <div className={s.changePercent >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
-                            {s.changePercent >= 0 ? '+' : ''}{s.changePercent}%
+                          <div className="text-slate-800 font-bold">₹{Number(s.currentPrice || 0).toFixed(2)}</div>
+                          <div className={(s.changePercent || 0) >= 0 ? 'text-emerald-600 font-bold' : 'text-rose-500 font-bold'}>
+                            {(s.changePercent || 0) >= 0 ? '+' : ''}{s.changePercent || 0}%
                           </div>
                         </div>
                       </button>
@@ -167,8 +167,8 @@ export default function StockHeader({
                   onClick={onToggleLive}
                   className={`text-xs px-2.5 py-0.5 rounded-md font-mono font-bold flex items-center space-x-1.5 transition-all ${
                     isLiveActive
-                      ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 animate-pulse'
-                      : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'
+                      ? 'bg-rose-100 text-rose-600 border border-rose-300 animate-pulse'
+                      : 'bg-slate-100 text-slate-500 border border-slate-200 hover:text-slate-800'
                   }`}
                   title="Toggle live price fluctuations"
                 >
@@ -176,25 +176,68 @@ export default function StockHeader({
                   <span>{isLiveActive ? 'LIVE TICK' : 'PAUSED'}</span>
                 </button>
 
-                <span className="text-xs px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 font-medium hidden sm:inline">
-                  {profile.name}
+                <span className="text-xs px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 border border-emerald-200 font-medium hidden sm:inline">
+                  {profile?.name || 'STOCK'}
                 </span>
               </div>
 
-              {/* Price & Changes */}
-              <div className="flex items-baseline space-x-3 mt-1">
-                <span className="text-2xl sm:text-3xl font-extrabold text-white font-mono tracking-tight transition-all duration-300">
-                  ₹{profile.currentPrice.toFixed(2)}
+              {/* Price & Circuit Limits */}
+              <div className="flex flex-wrap items-center gap-3 mt-1">
+                <span className="text-2xl sm:text-3xl font-extrabold text-slate-800 font-mono tracking-tight transition-all duration-300">
+                  ₹{Number(profile?.currentPrice || 0).toFixed(2)}
                 </span>
                 
                 <div className={`flex items-center font-mono font-bold text-xs px-2 py-0.5 rounded-md transition-colors ${
                   isPositive 
-                    ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20' 
-                    : 'text-rose-400 bg-rose-500/10 border border-rose-500/20'
+                    ? 'text-emerald-600 bg-emerald-50 border border-emerald-200' 
+                    : 'text-rose-500 bg-rose-50 border border-rose-200'
                 }`}>
                   {isPositive ? <TrendingUp className="w-3.5 h-3.5 mr-1" /> : <TrendingDown className="w-3.5 h-3.5 mr-1" />}
-                  <span>{isPositive ? '+' : ''}{metrics.changeAmount.toFixed(2)} ({isPositive ? '+' : ''}{metrics.changePercent.toFixed(2)}%)</span>
+                  <span>{isPositive ? '+' : ''}{Number(metrics?.changeAmount || 0).toFixed(2)} ({isPositive ? '+' : ''}{Number(metrics?.changePercent || 0).toFixed(2)}%)</span>
                 </div>
+
+                {/* Dynamic Circuit Limits Badges based on Sentiment */}
+                {(() => {
+                  const activeStock = (stocks || []).find(s => s.symbol === (profile?.symbol || activeSymbol)) || {};
+                  const currentSentiment = activeStock.sentiment || metrics?.sentiment || profile?.sentiment || 'NEUTRAL';
+                  const currentScore = activeStock.sentimentScore ?? metrics?.sentimentScore ?? profile?.sentimentScore ?? 50;
+
+                  let sentimentUpperPct = 10;
+                  let sentimentLowerPct = 10;
+
+                  if (currentSentiment === 'VERY_BULLISH' || currentScore >= 80) {
+                    sentimentUpperPct = 20; sentimentLowerPct = 5;
+                  } else if (currentSentiment === 'BULLISH' || currentScore >= 60) {
+                    sentimentUpperPct = 15; sentimentLowerPct = 8;
+                  } else if (currentSentiment === 'BEARISH' || (currentScore >= 20 && currentScore < 40)) {
+                    sentimentUpperPct = 8; sentimentLowerPct = 15;
+                  } else if (currentSentiment === 'VERY_BEARISH' || currentScore < 20) {
+                    sentimentUpperPct = 5; sentimentLowerPct = 20;
+                  }
+
+                  const basePrice = profile?.startingPrice || 100;
+                  const displayUpperPct = metrics?.upperCircuitPct ?? sentimentUpperPct;
+                  const displayLowerPct = metrics?.lowerCircuitPct ?? sentimentLowerPct;
+                  const upperCircuitVal = metrics?.upperCircuit || Number((basePrice * (1 + displayUpperPct / 100)).toFixed(2));
+                  const lowerCircuitVal = metrics?.lowerCircuit || Number((basePrice * (1 - displayLowerPct / 100)).toFixed(2));
+
+                  return (
+                    <div className="flex items-center space-x-2 font-mono text-[11px]">
+                      <span 
+                        className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold transition-all hover:scale-105" 
+                        title={`Upper Circuit (+${displayUpperPct}%) limit based on ${currentSentiment.replace('_', ' ')} sentiment`}
+                      >
+                        UC (+{displayUpperPct}%): ₹{Number(upperCircuitVal).toFixed(2)}
+                      </span>
+                      <span 
+                        className="px-2 py-0.5 rounded bg-rose-50 text-rose-600 border border-rose-200 font-bold transition-all hover:scale-105" 
+                        title={`Lower Circuit (-${displayLowerPct}%) limit based on ${currentSentiment.replace('_', ' ')} sentiment`}
+                      >
+                        LC (-{displayLowerPct}%): ₹{Number(lowerCircuitVal).toFixed(2)}
+                      </span>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </div>
@@ -220,23 +263,23 @@ export default function StockHeader({
 
             <button
               onClick={onOpenAddModal}
-              className="flex-1 md:flex-none flex items-center justify-center space-x-1.5 bg-[#1E2536] hover:bg-[#283248] text-white font-semibold text-xs px-3.5 py-2 rounded-xl border border-[#2B354C] transition-all active:scale-95"
+              className="flex-1 md:flex-none flex items-center justify-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs px-3.5 py-2 rounded-xl border border-[#E2E0D8] transition-all active:scale-95"
             >
-              <PlusCircle className="w-3.5 h-3.5 text-emerald-400" />
+              <PlusCircle className="w-3.5 h-3.5 text-emerald-500" />
               <span>Log Event</span>
             </button>
 
             <button
               onClick={onOpenTradeModal}
-              className="flex-1 md:flex-none flex items-center justify-center space-x-1.5 bg-[#1E2536] hover:bg-[#283248] text-white font-semibold text-xs px-3 py-2 rounded-xl border border-[#2B354C] transition-all active:scale-95"
+              className="flex-1 md:flex-none flex items-center justify-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs px-3 py-2 rounded-xl border border-[#E2E0D8] transition-all active:scale-95"
             >
-              <ShoppingBag className="w-3.5 h-3.5 text-blue-400" />
+              <ShoppingBag className="w-3.5 h-3.5 text-blue-500" />
               <span>Trade</span>
             </button>
 
             <button
               onClick={onOpenSettingsModal}
-              className="p-2 bg-[#1E2536] hover:bg-[#283248] text-slate-300 hover:text-white rounded-xl border border-[#2B354C] transition-colors"
+              className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 rounded-xl border border-[#E2E0D8] transition-colors"
               title="Settings"
             >
               <Settings className="w-4 h-4" />
@@ -244,7 +287,7 @@ export default function StockHeader({
 
             <button
               onClick={onReset}
-              className="p-2 bg-[#1E2536] hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 rounded-xl border border-[#2B354C] hover:border-rose-500/30 transition-colors"
+              className="p-2 bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-xl border border-[#E2E0D8] hover:border-rose-200 transition-colors"
               title="Reset Stock Data"
             >
               <RotateCcw className="w-4 h-4" />
@@ -259,4 +302,3 @@ export default function StockHeader({
     </header>
   );
 }
-

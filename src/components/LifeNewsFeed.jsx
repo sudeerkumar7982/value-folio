@@ -17,16 +17,16 @@ export function LifeNewsFeed({ events, onClearEvents, onDeleteSingleEvent }) {
   });
 
   return (
-    <div className="bg-[#151923] border border-[#232936] rounded-2xl p-5 shadow-xl">
+    <div className="bg-white border border-[#E2E0D8] rounded-2xl p-5 shadow-sm">
       
       {/* Header & Controls */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
         <div>
-          <h2 className="text-lg font-bold text-white flex items-center space-x-2">
-            <Newspaper className="w-5 h-5 text-emerald-400" />
+          <h2 className="text-lg font-bold text-slate-800 flex items-center space-x-2">
+            <Newspaper className="w-5 h-5 text-emerald-600" />
             <span>Human Life Events Newsfeed</span>
           </h2>
-          <p className="text-xs text-slate-400">Chronological ledger of real-life catalysts impacting stock valuation</p>
+          <p className="text-xs text-slate-500">Chronological ledger of real-life catalysts impacting stock valuation</p>
         </div>
 
         {/* Filter Controls & Clear Button */}
@@ -34,7 +34,7 @@ export function LifeNewsFeed({ events, onClearEvents, onDeleteSingleEvent }) {
           {events.length > 0 && (
             <button
               onClick={onClearEvents}
-              className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs px-2.5 py-2 rounded-xl flex items-center space-x-1.5 transition-colors font-medium"
+              className="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs px-2.5 py-2 rounded-xl flex items-center space-x-1.5 transition-colors font-medium"
               title="Delete all news feed events"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -50,7 +50,7 @@ export function LifeNewsFeed({ events, onClearEvents, onDeleteSingleEvent }) {
               placeholder="Search life events..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-[#0B0E14] border border-[#232936] text-xs text-white placeholder-slate-500 rounded-xl pl-8 pr-3 py-2 outline-none focus:border-blue-500"
+              className="bg-[#F7F6F1] border border-[#E2E0D8] text-xs text-slate-800 placeholder-slate-400 rounded-xl pl-8 pr-3 py-2 outline-none focus:border-blue-500"
             />
           </div>
 
@@ -58,7 +58,7 @@ export function LifeNewsFeed({ events, onClearEvents, onDeleteSingleEvent }) {
           <select
             value={sectorFilter}
             onChange={(e) => setSectorFilter(e.target.value)}
-            className="bg-[#0B0E14] border border-[#232936] text-xs text-slate-300 rounded-xl px-3 py-2 outline-none cursor-pointer"
+            className="bg-[#F7F6F1] border border-[#E2E0D8] text-xs text-slate-700 rounded-xl px-3 py-2 outline-none cursor-pointer"
           >
             <option value="ALL">All Sectors</option>
             <option value="Career">Career</option>
@@ -74,7 +74,7 @@ export function LifeNewsFeed({ events, onClearEvents, onDeleteSingleEvent }) {
           <select
             value={sentimentFilter}
             onChange={(e) => setSentimentFilter(e.target.value)}
-            className="bg-[#0B0E14] border border-[#232936] text-xs text-slate-300 rounded-xl px-3 py-2 outline-none cursor-pointer"
+            className="bg-[#F7F6F1] border border-[#E2E0D8] text-xs text-slate-700 rounded-xl px-3 py-2 outline-none cursor-pointer"
           >
             <option value="ALL">All Sentiment</option>
             <option value="POSITIVE">Positive 📈</option>
@@ -98,7 +98,7 @@ export function LifeNewsFeed({ events, onClearEvents, onDeleteSingleEvent }) {
             return (
               <div
                 key={evt.id}
-                className="bg-[#0B0E14] border border-[#232936] hover:border-[#3B82F6]/50 rounded-xl p-4 transition-all group relative"
+                className="bg-[#F7F6F1] border border-[#E2E0D8] hover:border-blue-400 rounded-xl p-4 transition-all group relative"
               >
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                   
@@ -108,34 +108,34 @@ export function LifeNewsFeed({ events, onClearEvents, onDeleteSingleEvent }) {
                       {/* Sentiment Badge */}
                       <span className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded-md flex items-center ${
                         isPos
-                          ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+                          ? 'bg-emerald-100 text-emerald-700 border border-emerald-300'
+                          : 'bg-rose-100 text-rose-700 border border-rose-300'
                       }`}>
                         {isPos ? <ArrowUpRight className="w-3 h-3 mr-1" /> : <ArrowDownRight className="w-3 h-3 mr-1" />}
                         {isPos ? '+' : ''}{evt.impactPercent}%
                       </span>
 
                       {/* Sector Badge */}
-                      <span className="text-[11px] font-mono font-medium px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                      <span className="text-[11px] font-mono font-medium px-2 py-0.5 rounded-md bg-blue-100 text-blue-700 border border-blue-200">
                         {evt.sector}
                       </span>
 
                       {/* AI Confidence */}
-                      <span className="text-[10px] font-mono text-slate-400">
-                        AI Confidence: <strong className="text-slate-200">{evt.confidence}%</strong>
+                      <span className="text-[10px] font-mono text-slate-500">
+                        AI Confidence: <strong className="text-slate-700">{evt.confidence}%</strong>
                       </span>
 
-                      <span className="text-[10px] font-mono text-slate-500 ml-auto">
+                      <span className="text-[10px] font-mono text-slate-400 ml-auto">
                         {dateStr}
                       </span>
                     </div>
 
-                    <h4 className="text-sm font-bold text-white group-hover:text-blue-300 transition-colors">
+                    <h4 className="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
                       {evt.title}
                     </h4>
 
                     {evt.description && (
-                      <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
                         {evt.description}
                       </p>
                     )}
@@ -143,12 +143,12 @@ export function LifeNewsFeed({ events, onClearEvents, onDeleteSingleEvent }) {
 
                   {/* Price Movement Box & Delete Button */}
                   <div className="flex items-center space-x-2 self-start">
-                    <div className="bg-[#151923] border border-[#232936] px-3 py-2 rounded-xl text-right font-mono min-w-[110px]">
-                      <span className="text-[10px] text-slate-500 block">PRICE IMPACT</span>
-                      <div className="text-xs font-bold text-slate-400">
+                    <div className="bg-white border border-[#E2E0D8] px-3 py-2 rounded-xl text-right font-mono min-w-[110px]">
+                      <span className="text-[10px] text-slate-400 block">PRICE IMPACT</span>
+                      <div className="text-xs font-bold text-slate-500">
                         ₹{evt.previousPrice?.toFixed(2)} ➔
                       </div>
-                      <div className={`text-sm font-extrabold ${isPos ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      <div className={`text-sm font-extrabold ${isPos ? 'text-emerald-600' : 'text-rose-500'}`}>
                         ₹{evt.newPrice?.toFixed(2)}
                       </div>
                     </div>
@@ -156,7 +156,7 @@ export function LifeNewsFeed({ events, onClearEvents, onDeleteSingleEvent }) {
                     {/* Delete Single Event Button */}
                     <button
                       onClick={() => onDeleteSingleEvent && onDeleteSingleEvent(evt.id)}
-                      className="p-2 text-slate-500 hover:text-rose-400 bg-[#151923] hover:bg-rose-500/20 border border-[#232936] hover:border-rose-500/30 rounded-xl transition-all"
+                      className="p-2 text-slate-400 hover:text-rose-600 bg-white hover:bg-rose-50 border border-[#E2E0D8] hover:border-rose-200 rounded-xl transition-all"
                       title="Delete this news event"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -168,7 +168,7 @@ export function LifeNewsFeed({ events, onClearEvents, onDeleteSingleEvent }) {
             );
           })
         ) : (
-          <div className="text-center py-8 text-xs text-slate-500">
+          <div className="text-center py-8 text-xs text-slate-400">
             No life events match the selected filters.
           </div>
         )}

@@ -29,11 +29,11 @@ export function MarketDepth({ currentPrice = 100, symbol = '' }) {
   const { bids, asks, totalBidQty, totalAskQty, buyPercent } = generateLevel2Data(currentPrice);
 
   return (
-    <div className="bg-[#0B0E14] border border-[#232936] rounded-2xl p-4 space-y-3 font-mono text-xs text-slate-300">
+    <div className="bg-white border border-[#E2E0D8] rounded-2xl p-4 space-y-3 font-mono text-xs text-slate-700 shadow-sm">
       
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#232936] pb-2 font-['Plus_Jakarta_Sans',sans-serif]">
-        <h4 className="font-bold text-white text-xs uppercase tracking-wider flex items-center space-x-1.5">
+      <div className="flex items-center justify-between border-b border-[#E2E0D8] pb-2 font-['Plus_Jakarta_Sans',sans-serif]">
+        <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center space-x-1.5">
           <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
           <span>ValueFolio Level-2 Order Book ({symbol})</span>
         </h4>
@@ -43,10 +43,10 @@ export function MarketDepth({ currentPrice = 100, symbol = '' }) {
       {/* Buy / Sell Pressure Ratio Bar */}
       <div className="space-y-1 font-['Plus_Jakarta_Sans',sans-serif]">
         <div className="flex justify-between text-[11px] font-bold">
-          <span className="text-emerald-400">Buyers {buyPercent}%</span>
-          <span className="text-rose-400">Sellers {100 - buyPercent}%</span>
+          <span className="text-emerald-600">Buyers {buyPercent}%</span>
+          <span className="text-rose-500">Sellers {100 - buyPercent}%</span>
         </div>
-        <div className="w-full bg-rose-500/30 h-2 rounded-full overflow-hidden flex">
+        <div className="w-full bg-rose-100 h-2 rounded-full overflow-hidden flex">
           <div
             className="bg-emerald-500 h-full transition-all duration-500"
             style={{ width: `${buyPercent}%` }}
@@ -59,21 +59,21 @@ export function MarketDepth({ currentPrice = 100, symbol = '' }) {
         
         {/* BIDS Column (BUYERS) */}
         <div>
-          <div className="grid grid-cols-3 font-bold text-emerald-400 border-b border-[#232936] pb-1 mb-1">
+          <div className="grid grid-cols-3 font-bold text-emerald-600 border-b border-[#E2E0D8] pb-1 mb-1">
             <span>Orders</span>
             <span className="text-right">Qty</span>
             <span className="text-right">Bid (₹)</span>
           </div>
           <div className="space-y-1">
             {bids.map((b, idx) => (
-              <div key={idx} className="grid grid-cols-3 text-slate-300 hover:bg-emerald-500/10 rounded px-0.5">
-                <span className="text-slate-500">{b.orders}</span>
-                <span className="text-right text-slate-200">{b.qty}</span>
-                <span className="text-right font-bold text-emerald-400">{b.price.toFixed(2)}</span>
+              <div key={idx} className="grid grid-cols-3 text-slate-600 hover:bg-emerald-50 rounded px-0.5">
+                <span className="text-slate-400">{b.orders}</span>
+                <span className="text-right text-slate-700">{b.qty}</span>
+                <span className="text-right font-bold text-emerald-600">{b.price.toFixed(2)}</span>
               </div>
             ))}
           </div>
-          <div className="pt-2 mt-1 border-t border-[#232936] flex justify-between font-bold text-emerald-400">
+          <div className="pt-2 mt-1 border-t border-[#E2E0D8] flex justify-between font-bold text-emerald-600">
             <span>Total Bids</span>
             <span>{totalBidQty.toLocaleString()}</span>
           </div>
@@ -81,21 +81,21 @@ export function MarketDepth({ currentPrice = 100, symbol = '' }) {
 
         {/* ASKS Column (SELLERS) */}
         <div>
-          <div className="grid grid-cols-3 font-bold text-rose-400 border-b border-[#232936] pb-1 mb-1">
+          <div className="grid grid-cols-3 font-bold text-rose-500 border-b border-[#E2E0D8] pb-1 mb-1">
             <span>Ask (₹)</span>
             <span className="text-right">Qty</span>
             <span className="text-right">Orders</span>
           </div>
           <div className="space-y-1">
             {asks.map((a, idx) => (
-              <div key={idx} className="grid grid-cols-3 text-slate-300 hover:bg-rose-500/10 rounded px-0.5">
-                <span className="font-bold text-rose-400">{a.price.toFixed(2)}</span>
-                <span className="text-right text-slate-200">{a.qty}</span>
-                <span className="text-right text-slate-500">{a.orders}</span>
+              <div key={idx} className="grid grid-cols-3 text-slate-600 hover:bg-rose-50 rounded px-0.5">
+                <span className="font-bold text-rose-500">{a.price.toFixed(2)}</span>
+                <span className="text-right text-slate-700">{a.qty}</span>
+                <span className="text-right text-slate-400">{a.orders}</span>
               </div>
             ))}
           </div>
-          <div className="pt-2 mt-1 border-t border-[#232936] flex justify-between font-bold text-rose-400">
+          <div className="pt-2 mt-1 border-t border-[#E2E0D8] flex justify-between font-bold text-rose-500">
             <span>Total Asks</span>
             <span>{totalAskQty.toLocaleString()}</span>
           </div>

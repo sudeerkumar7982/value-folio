@@ -2,7 +2,31 @@
  * Client API Layer with LocalStorage & Express Backend Sync
  * Supports ValueFolio Multi-Stock Exchange and Human IPO Launchpad
  */
-import { analyzeLifeEvent } from '../../server/ai/sentimentEngine.js';
+function analyzeLifeEventLocal(eventTitle, description = '', preferredSector = null) {
+  const text = `${eventTitle} ${description}`.toLowerCase();
+  let sentiment = 'NEUTRAL';
+  let impactPercent = 3.5;
+  let primarySector = (preferredSector && preferredSector !== 'Auto') ? preferredSector : 'Projects';
+
+  if (text.includes('reject') || text.includes('fail') || text.includes('fire') || text.includes('loss') || text.includes('bug') || text.includes('cancel')) {
+    sentiment = 'NEGATIVE';
+    impactPercent = -4.5;
+  } else if (text.includes('offer') || text.includes('pass') || text.includes('win') || text.includes('promote') || text.includes('profit') || text.includes('hired') || text.includes('award')) {
+    sentiment = 'POSITIVE';
+    impactPercent = 6.2;
+  }
+
+  return {
+    sentiment,
+    confidence: 85,
+    importance: 'HIGH',
+    impactPercent,
+    primarySector,
+    sectorDelta: Math.round(impactPercent * 0.75),
+    summary: `Logged ${sentiment} life event impacting ${primarySector} sector by ${impactPercent}%.`,
+    keywordsMatched: []
+  };
+}
 
 const STORAGE_KEY = 'VALUEFOLIO_MULTI_STOCK_V8';
 
@@ -104,12 +128,61 @@ export function computeStockSentiment(stock) {
   };
 }
 
-function computeMetrics(priceTicks) {
+export function getCircuitLimitsBySentiment(basePrice, sentimentData) {
+  const base = Number(basePrice || 100);
+  const score = sentimentData?.sentimentScore ?? 50;
+  const sentiment = sentimentData?.sentiment ?? (
+    score >= 80 ? 'VERY_BULLISH' :
+    score >= 60 ? 'BULLISH' :
+    score >= 40 ? 'NEUTRAL' :
+    score >= 20 ? 'BEARISH' : 'VERY_BEARISH'
+  );
+
+  let upperCircuitPct = 10;
+  let lowerCircuitPct = 10;
+
+  if (sentiment === 'VERY_BULLISH' || score >= 80) {
+    upperCircuitPct = 20;
+    lowerCircuitPct = 5;
+  } else if (sentiment === 'BULLISH' || score >= 60) {
+    upperCircuitPct = 15;
+    lowerCircuitPct = 8;
+  } else if (sentiment === 'BEARISH' || (score >= 20 && score < 40)) {
+    upperCircuitPct = 8;
+    lowerCircuitPct = 15;
+  } else if (sentiment === 'VERY_BEARISH' || score < 20) {
+    upperCircuitPct = 5;
+    lowerCircuitPct = 20;
+  } else {
+    // NEUTRAL
+    upperCircuitPct = 10;
+    lowerCircuitPct = 10;
+  }
+
+  const upperCircuit = Number((base * (1 + upperCircuitPct / 100)).toFixed(2));
+  const lowerCircuit = Number((base * (1 - lowerCircuitPct / 100)).toFixed(2));
+
+  return {
+    upperCircuit,
+    lowerCircuit,
+    upperCircuitPct,
+    lowerCircuitPct,
+    sentiment,
+    sentimentScore: score,
+    sentimentLabel: sentimentData?.sentimentLabel || 'Neutral ⚖️'
+  };
+}
+
+function computeMetrics(priceTicks, stock = null) {
+  const sentimentData = stock ? computeStockSentiment(stock) : { sentimentScore: 50, sentiment: 'NEUTRAL' };
   if (!priceTicks || priceTicks.length === 0) {
+    const base = stock?.profile?.startingPrice || 100;
+    const circuits = getCircuitLimitsBySentiment(base, sentimentData);
     return {
-      currentPrice: 100, startingPrice: 100, previousPrice: 100,
+      currentPrice: base, startingPrice: base, previousPrice: base,
       changeAmount: 0, changePercent: 0, totalChangeAmount: 0, totalChangePercent: 0,
-      highPrice: 100, lowPrice: 100, totalEvents: 0
+      highPrice: base, lowPrice: base, totalEvents: 0,
+      ...circuits
     };
   }
   const prices = priceTicks.map(p => p.price);
@@ -122,6 +195,11 @@ function computeMetrics(priceTicks) {
   const totalChangeAmount = Number((currentPrice - startingPrice).toFixed(2));
   const totalChangePercent = Number(((totalChangeAmount / startingPrice) * 100).toFixed(2));
 
+  // Anchor circuit to latest life event price tick or starting price
+  const lastEventTick = [...priceTicks].reverse().find(t => t.eventId !== null);
+  const anchorPrice = lastEventTick ? lastEventTick.price : startingPrice;
+  const circuits = getCircuitLimitsBySentiment(anchorPrice, sentimentData);
+
   return {
     currentPrice,
     startingPrice,
@@ -132,7 +210,8 @@ function computeMetrics(priceTicks) {
     totalChangePercent,
     highPrice: Math.max(...prices),
     lowPrice: Math.min(...prices),
-    totalEvents: priceTicks.filter(h => h.eventId !== null).length
+    totalEvents: priceTicks.filter(h => h.eventId !== null).length,
+    ...circuits
   };
 }
 
@@ -162,6 +241,8 @@ export const API = {
       const changeAmount = Number((currentPrice - startingPrice).toFixed(2));
       const changePercent = Number(((changeAmount / startingPrice) * 100).toFixed(2));
 
+      const metrics = computeMetrics(stock.priceTicks, stock);
+
       return {
         symbol: sym,
         name: stock.profile.name,
@@ -170,6 +251,10 @@ export const API = {
         currentPrice,
         changeAmount,
         changePercent,
+        upperCircuit: metrics.upperCircuit,
+        lowerCircuit: metrics.lowerCircuit,
+        upperCircuitPct: metrics.upperCircuitPct,
+        lowerCircuitPct: metrics.lowerCircuitPct,
         walletBalance: stock.profile.walletBalance,
         sharesOwned: stock.profile.sharesOwned,
         eventsCount: stock.events.length,
@@ -253,7 +338,7 @@ export const API = {
     return {
       profile: stock.profile,
       sectors: stock.sectors,
-      metrics: computeMetrics(stock.priceTicks),
+      metrics: computeMetrics(stock.priceTicks, stock),
       priceTicks: stock.priceTicks || [],
       eventsCount: stock.events ? stock.events.length : 0,
       sentiment: computeStockSentiment(stock)
@@ -529,7 +614,7 @@ export const API = {
     const apiKey = activeStock?.profile?.apiKey || '';
     const currentPrice = activeStock?.profile?.currentPrice || 100;
 
-    const aiResult = await analyzeLifeEvent(title, description, sector, apiKey);
+    const aiResult = analyzeLifeEventLocal(title, description, sector);
     const multiplier = 1 + (aiResult.impactPercent / 100);
     const estimatedNewPrice = Math.max(Number((currentPrice * multiplier).toFixed(2)), 1.00);
 
@@ -597,7 +682,7 @@ export const API = {
       return { success: false, error: 'No stock available to commit event. Please create a stock first.' };
     }
 
-    const aiResult = await analyzeLifeEvent(title, description, sector, stock.profile?.apiKey || '');
+    const aiResult = analyzeLifeEventLocal(title, description, sector);
     const impactPercent = customImpact !== undefined && customImpact !== null ? Number(customImpact) : aiResult.impactPercent;
 
     const previousPrice = stock.profile.currentPrice || 100;
@@ -690,18 +775,31 @@ export const API = {
     const randomNoise = (Math.random() * 0.5 - 0.25);
     const noise = Number((sentimentBias + randomNoise).toFixed(3));
 
-    const newPrice = Math.max(Number((stock.profile.currentPrice * (1 + noise / 100)).toFixed(2)), 1.00);
+    // Anchor baseline is the price right after latest event or starting price
+    const lastEventTick = [...stock.priceTicks].reverse().find(t => t.eventId !== null);
+    const circuitAnchorPrice = lastEventTick ? lastEventTick.price : ((stock.priceTicks && stock.priceTicks.length > 0) ? stock.priceTicks[0].price : stock.profile.startingPrice);
+    const circuits = getCircuitLimitsBySentiment(circuitAnchorPrice, sentimentData);
+
+    const rawPrice = stock.profile.currentPrice * (1 + noise / 100);
+    // Enforce dynamic sentiment-based circuit boundaries
+    const newPrice = Math.min(Math.max(Number(rawPrice.toFixed(2)), circuits.lowerCircuit), circuits.upperCircuit);
 
     stock.profile.currentPrice = newPrice;
     const nowIso = new Date().toISOString();
     const currentMin = nowIso.slice(0, 16);
     const lastTick = stock.priceTicks.length > 0 ? stock.priceTicks[stock.priceTicks.length - 1] : null;
 
-    const tickLabel = noise > 0.1 
+    let tickLabel = noise > 0.1 
       ? '🔥 Bullish Sentiment Buying' 
       : noise < -0.1 
       ? '🔻 Bearish Market Selling' 
       : '⚖️ Neutral Fluctuation';
+
+    if (newPrice >= circuits.upperCircuit) {
+      tickLabel = `🔒 Upper Circuit Limit Hit (+${circuits.upperCircuitPct}%)`;
+    } else if (newPrice <= circuits.lowerCircuit) {
+      tickLabel = `🔒 Lower Circuit Limit Hit (-${circuits.lowerCircuitPct}%)`;
+    }
 
     if (lastTick && !lastTick.eventId && lastTick.timestamp && lastTick.timestamp.startsWith(currentMin)) {
       lastTick.price = newPrice;
@@ -720,9 +818,13 @@ export const API = {
 
     return {
       currentPrice: newPrice,
+      upperCircuit: circuits.upperCircuit,
+      lowerCircuit: circuits.lowerCircuit,
+      upperCircuitPct: circuits.upperCircuitPct,
+      lowerCircuitPct: circuits.lowerCircuitPct,
       noise,
       priceTicks: stock.priceTicks,
-      metrics: computeMetrics(stock.priceTicks)
+      metrics: computeMetrics(stock.priceTicks, stock)
     };
   },
 

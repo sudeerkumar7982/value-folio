@@ -37,21 +37,22 @@ export default function App() {
     try {
       const allStocks = await API.getAllStocks();
       const allIPOs = await API.getIPOs();
-      setStocksList(allStocks);
-      setIposList(allIPOs);
+      setStocksList(allStocks || []);
+      setIposList(allIPOs || []);
 
-      const availableSymbols = allStocks.map(s => s.symbol);
-      let targetSym = symbolToLoad || activeSymbol;
-      if ((!targetSym || !availableSymbols.includes(targetSym)) && allStocks.length > 0) {
-        targetSym = allStocks[0].symbol;
-      }
+      if (allStocks && allStocks.length > 0) {
+        const availableSymbols = allStocks.map(s => s.symbol);
+        let targetSym = symbolToLoad || activeSymbol;
+        
+        if (!targetSym || !availableSymbols.includes(targetSym)) {
+          targetSym = availableSymbols[0];
+        }
 
-      if (targetSym && allStocks.length > 0) {
         let profileData = await API.getProfile(targetSym);
         let eventsData = await API.getEvents(targetSym);
 
-        if ((!profileData || !profileData.profile) && allStocks.length > 0) {
-          targetSym = allStocks[0].symbol;
+        if (!profileData || !profileData.profile) {
+          targetSym = availableSymbols[0];
           profileData = await API.getProfile(targetSym);
           eventsData = await API.getEvents(targetSym);
         }
@@ -152,7 +153,7 @@ export default function App() {
 
   if (loading && stocksList.length > 0 && !data) {
     return (
-      <div className="min-h-screen bg-[#0B0E14] flex items-center justify-center text-slate-400 font-mono">
+      <div className="min-h-screen bg-[#F7F6F1] flex items-center justify-center text-slate-500 font-mono">
         <div className="flex flex-col items-center space-y-3">
           <Activity className="w-8 h-8 text-blue-500 animate-spin" />
           <span>Connecting to ValueFolio Human Life Stock Exchange...</span>
@@ -161,17 +162,20 @@ export default function App() {
     );
   }
 
-  const { profile, sectors, metrics, priceTicks } = data || {};
+  const profile = data?.profile || null;
+  const sectors = data?.sectors || null;
+  const metrics = data?.metrics || null;
+  const priceTicks = data?.priceTicks || [];
 
   return (
-    <div className="min-h-screen bg-[#0B0E14] text-slate-100 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
+    <div className="min-h-screen bg-[#F7F6F1] text-slate-800 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
       
       {/* Top Navigation / Stock Header */}
       <StockHeader
         profile={profile}
         metrics={metrics}
         stocks={stocksList}
-        activeSymbol={activeSymbol}
+        activeSymbol={activeSymbol || (stocksList[0]?.symbol || '')}
         onSelectStock={handleSelectStock}
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -190,16 +194,16 @@ export default function App() {
         
         {/* TAB 1: Main Active Stock Dashboard */}
         {activeTab === 'DASHBOARD' && (
-          stocksList.length > 0 && profile ? (
+          stocksList.length > 0 ? (
             <div className="space-y-6 animate-fadeIn">
               
               {/* Homepage All Listed Stocks Bar */}
-              <div className="bg-[#151923] border border-[#232936] rounded-2xl p-4 shadow-lg space-y-3">
+              <div className="bg-white border border-[#E2E0D8] rounded-2xl p-4 shadow-sm space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <Flame className="w-5 h-5 text-amber-400" />
-                    <h3 className="text-base font-bold text-white">All Listed Human Stocks ({stocksList.length})</h3>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                    <Flame className="w-5 h-5 text-amber-500" />
+                    <h3 className="text-base font-bold text-slate-800">All Listed Human Stocks ({stocksList.length})</h3>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-600 border border-blue-200">
                       Live Exchange Watchlist
                     </span>
                   </div>
@@ -225,41 +229,41 @@ export default function App() {
                         onClick={() => handleSelectStock(stock.symbol)}
                         className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between space-y-2 ${
                           isSelected
-                            ? 'bg-blue-600/10 border-blue-500/60 ring-1 ring-blue-500/30'
-                            : 'bg-[#0B0E14] border-[#232936] hover:border-slate-600'
+                            ? 'bg-blue-50 border-blue-400 ring-1 ring-blue-300'
+                            : 'bg-[#F7F6F1] border-[#E2E0D8] hover:border-slate-400'
                         }`}
                       >
                         <div className="flex items-start justify-between">
                           <div>
                             <div className="flex items-center space-x-1.5">
-                              <span className="font-mono font-bold text-white text-sm">{stock.symbol}</span>
+                              <span className="font-mono font-bold text-slate-800 text-sm">{stock.symbol}</span>
                               {isSelected && (
                                 <span className="text-[10px] font-extrabold bg-blue-500 text-white px-1.5 py-0.2 rounded">
                                   ACTIVE
                                 </span>
                               )}
                             </div>
-                            <span className="text-xs text-slate-400 line-clamp-1 font-sans">{stock.name}</span>
+                            <span className="text-xs text-slate-500 line-clamp-1 font-sans">{stock.name}</span>
                           </div>
 
                           <div className="text-right font-mono">
-                            <div className="text-sm font-bold text-white">₹{stock.currentPrice?.toFixed(2)}</div>
-                            <div className={`text-xs font-bold ${isGain ? 'text-emerald-400' : 'text-rose-400'}`}>
+                            <div className="text-sm font-bold text-slate-800">₹{stock.currentPrice?.toFixed(2)}</div>
+                            <div className={`text-xs font-bold ${isGain ? 'text-emerald-600' : 'text-rose-500'}`}>
                               {isGain ? '+' : ''}{stock.changePercent}%
                             </div>
                           </div>
                         </div>
 
                         {/* Footer Actions */}
-                        <div className="flex items-center justify-between pt-1 border-t border-[#232936]/60 text-xs">
-                          <span className="text-[11px] text-slate-400">{stock.sentimentLabel || 'Bullish 📈'}</span>
+                        <div className="flex items-center justify-between pt-1 border-t border-[#E2E0D8] text-xs">
+                          <span className="text-[11px] text-slate-500">{stock.sentimentLabel || 'Bullish 📈'}</span>
                           <div className="flex space-x-1 items-center">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleSelectStock(stock.symbol);
                               }}
-                              className="px-2 py-1 rounded bg-[#1C2230] text-blue-400 font-bold hover:bg-blue-600 hover:text-white"
+                              className="px-2 py-1 rounded bg-blue-50 text-blue-500 font-bold hover:bg-blue-600 hover:text-white"
                               title="View Stock Chart"
                             >
                               <BarChart2 className="w-3 h-3" />
@@ -270,7 +274,7 @@ export default function App() {
                                 handleSelectStock(stock.symbol);
                                 setIsTradeOpen(true);
                               }}
-                              className="px-2 py-1 rounded bg-emerald-600/20 text-emerald-400 font-bold hover:bg-emerald-600 hover:text-white"
+                              className="px-2 py-1 rounded bg-emerald-50 text-emerald-600 font-bold hover:bg-emerald-600 hover:text-white"
                               title="Trade Stock"
                             >
                               <DollarSign className="w-3 h-3" />
@@ -280,7 +284,7 @@ export default function App() {
                                 e.stopPropagation();
                                 handleDeleteStock(stock.symbol);
                               }}
-                              className="p-1 rounded text-slate-500 hover:text-rose-400 hover:bg-rose-500/10"
+                              className="p-1 rounded text-slate-400 hover:text-rose-500 hover:bg-rose-50"
                               title="Delete Stock Ticker"
                             >
                               <Trash2 className="w-3 h-3" />
@@ -316,10 +320,10 @@ export default function App() {
             </div>
           ) : (
             /* Clean Empty State Prompt when 0 stocks are present */
-            <div className="py-16 text-center bg-[#151923] border border-[#232936] rounded-2xl p-8 space-y-4 animate-fadeIn">
+            <div className="py-16 text-center bg-white border border-[#E2E0D8] rounded-2xl p-8 space-y-4 animate-fadeIn">
               <Rocket className="w-12 h-12 text-blue-500 mx-auto animate-bounce" />
-              <h2 className="text-xl font-bold text-white">No Human Stocks Currently Listed</h2>
-              <p className="text-sm text-slate-400 max-w-md mx-auto">
+              <h2 className="text-xl font-bold text-slate-800">No Human Stocks Currently Listed</h2>
+              <p className="text-sm text-slate-500 max-w-md mx-auto">
                 Launch your first personal human stock offering to start tracking interactive price charts, life newsfeed events, and market sentiment!
               </p>
               <button
@@ -357,14 +361,14 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-[#151923] border-t border-[#232936] py-5 px-4 text-center text-xs text-slate-500 font-mono">
+      <footer className="bg-white border-t border-[#E2E0D8] py-5 px-4 text-center text-xs text-slate-400 font-mono">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center space-x-2">
             <ShieldCheck className="w-4 h-4 text-blue-400" />
-            <span>ValueFolio Human Life Stock Exchange • Active Ticker: <strong className="text-white">{profile?.symbol || 'NONE'}</strong></span>
+            <span>ValueFolio Human Life Stock Exchange • Active Ticker: <strong className="text-slate-700">{profile?.symbol || 'NONE'}</strong></span>
           </div>
           <div className="flex items-center space-x-3">
-            <span className="flex items-center text-emerald-400 font-semibold">
+            <span className="flex items-center text-emerald-500 font-semibold">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping mr-1.5"></span>
               {stocksList.length} Listed Stocks Trading
             </span>

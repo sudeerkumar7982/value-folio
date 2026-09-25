@@ -15,14 +15,14 @@ export function TodayHighlights({ events }) {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       
       {/* Biggest Positive Highlight Card */}
-      <div className="bg-gradient-to-br from-[#151923] to-[#12231E] border border-emerald-500/30 rounded-2xl p-4.5 shadow-xl relative overflow-hidden group">
+      <div className="bg-gradient-to-br from-white to-emerald-50/60 border border-emerald-200 rounded-2xl p-4.5 shadow-sm relative overflow-hidden group">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-bold text-emerald-400 flex items-center space-x-1.5 uppercase tracking-wider">
-            <Flame className="w-4 h-4 text-emerald-400 fill-emerald-500/20" />
+          <span className="text-xs font-bold text-emerald-700 flex items-center space-x-1.5 uppercase tracking-wider">
+            <Flame className="w-4 h-4 text-emerald-600 fill-emerald-100" />
             <span>Top Positive Catalyst</span>
           </span>
           {topPositive && (
-            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
               +{topPositive.impactPercent}%
             </span>
           )}
@@ -30,32 +30,32 @@ export function TodayHighlights({ events }) {
 
         {topPositive ? (
           <div>
-            <h3 className="text-base font-extrabold text-white group-hover:text-emerald-300 transition-colors">
+            <h3 className="text-base font-extrabold text-slate-800 group-hover:text-emerald-700 transition-colors">
               "{topPositive.title}"
             </h3>
-            <p className="text-xs text-slate-300 mt-1 line-clamp-1">
+            <p className="text-xs text-slate-600 mt-1 line-clamp-1">
               {topPositive.description || 'Major breakthrough boosted human stock evaluation.'}
             </p>
-            <div className="mt-2.5 flex items-center space-x-3 text-[11px] font-mono text-slate-400">
-              <span>Sector: <strong className="text-emerald-400">{topPositive.sector}</strong></span>
+            <div className="mt-2.5 flex items-center space-x-3 text-[11px] font-mono text-slate-500">
+              <span>Sector: <strong className="text-emerald-700">{topPositive.sector}</strong></span>
               <span>•</span>
-              <span>AI Confidence: <strong className="text-white">{topPositive.confidence}%</strong></span>
+              <span>AI Confidence: <strong className="text-slate-700">{topPositive.confidence}%</strong></span>
             </div>
           </div>
         ) : (
-          <p className="text-xs text-slate-500 py-2">No positive events recorded yet</p>
+          <p className="text-xs text-slate-400 py-2">No positive events recorded yet</p>
         )}
       </div>
 
       {/* Biggest Negative Highlight Card */}
-      <div className="bg-gradient-to-br from-[#151923] to-[#25151A] border border-rose-500/30 rounded-2xl p-4.5 shadow-xl relative overflow-hidden group">
+      <div className="bg-gradient-to-br from-white to-rose-50/60 border border-rose-200 rounded-2xl p-4.5 shadow-sm relative overflow-hidden group">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-bold text-rose-400 flex items-center space-x-1.5 uppercase tracking-wider">
-            <AlertTriangle className="w-4 h-4 text-rose-400 fill-rose-500/20" />
+          <span className="text-xs font-bold text-rose-700 flex items-center space-x-1.5 uppercase tracking-wider">
+            <AlertTriangle className="w-4 h-4 text-rose-600 fill-rose-100" />
             <span>Market Setback / Challenge</span>
           </span>
           {topNegative && (
-            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">
+            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-800 border border-rose-300">
               {topNegative.impactPercent}%
             </span>
           )}
@@ -63,20 +63,20 @@ export function TodayHighlights({ events }) {
 
         {topNegative ? (
           <div>
-            <h3 className="text-base font-extrabold text-white group-hover:text-rose-300 transition-colors">
+            <h3 className="text-base font-extrabold text-slate-800 group-hover:text-rose-700 transition-colors">
               "{topNegative.title}"
             </h3>
-            <p className="text-xs text-slate-300 mt-1 line-clamp-1">
+            <p className="text-xs text-slate-600 mt-1 line-clamp-1">
               {topNegative.description || 'Setback caused market price correction.'}
             </p>
-            <div className="mt-2.5 flex items-center space-x-3 text-[11px] font-mono text-slate-400">
-              <span>Sector: <strong className="text-rose-400">{topNegative.sector}</strong></span>
+            <div className="mt-2.5 flex items-center space-x-3 text-[11px] font-mono text-slate-500">
+              <span>Sector: <strong className="text-rose-700">{topNegative.sector}</strong></span>
               <span>•</span>
-              <span>Importance: <strong className="text-white">{topNegative.importance}</strong></span>
+              <span>Importance: <strong className="text-slate-700">{topNegative.importance}</strong></span>
             </div>
           </div>
         ) : (
-          <p className="text-xs text-slate-500 py-2">No negative events recorded yet</p>
+          <p className="text-xs text-slate-400 py-2">No negative events recorded yet</p>
         )}
       </div>
 

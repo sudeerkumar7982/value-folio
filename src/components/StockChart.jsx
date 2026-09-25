@@ -6,91 +6,99 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
   // Default view: 1D
   const [timeRange, setTimeRange] = useState('1D');
 
-  if (!priceTicks || priceTicks.length === 0) {
-    return (
-      <div className="bg-[#151923] border border-[#232936] rounded-2xl p-6 text-center text-slate-400 font-mono">
-        No price history recorded yet.
-      </div>
-    );
-  }
+  const ticks = (priceTicks && priceTicks.length > 0)
+    ? priceTicks
+    : [{ timestamp: new Date().toISOString(), price: profile?.currentPrice || 100, eventId: null, label: `${profile?.symbol || symbol || 'STOCK'} Listing Price` }];
 
   const getFilteredData = () => {
     const now = new Date();
     // Sort all price ticks chronologically
-    const sortedTicks = [...priceTicks].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    const sortedTicks = [...ticks].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
     if (timeRange === '1D') {
       const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
       const startOfDayMs = startOfDay.getTime();
 
-      // Find opening baseline price before start of today
+      // Find opening baseline price at 12:00 AM daily
       const ticksBeforeToday = sortedTicks.filter(t => new Date(t.timestamp).getTime() < startOfDayMs);
-      const openingPrice = ticksBeforeToday.length > 0 
-        ? ticksBeforeToday[ticksBeforeToday.length - 1].price 
-        : (sortedTicks[0]?.price || 100);
-
-      // Today's ticks
-      let todayTicks = sortedTicks.filter(t => new Date(t.timestamp).getTime() >= startOfDayMs);
-      if (todayTicks.length === 0) {
-        todayTicks = sortedTicks;
+      let openingPrice;
+      if (ticksBeforeToday.length > 0) {
+        openingPrice = ticksBeforeToday[ticksBeforeToday.length - 1].price;
+      } else if (profile?.startingPrice) {
+        openingPrice = profile.startingPrice;
+      } else if (sortedTicks.length > 0) {
+        openingPrice = sortedTicks[0].price;
+      } else {
+        openingPrice = 100;
       }
 
-      // Build data points with timeMin (0..1439) for 24-hour X-axis
-      const pointsMap = new Map();
+      // Today's ticks starting from 12:00 AM
+      const todayTicks = sortedTicks.filter(t => new Date(t.timestamp).getTime() >= startOfDayMs);
+      const formattedData = [];
 
-      // 1. Start of day baseline (0 min = 12:00 AM)
-      const startOfDayLabel = startOfDay.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-      pointsMap.set(0, {
-        timeMin: 0,
+      // 1. Start line at 12:00 AM daily at the day's opening price
+      formattedData.push({
+        timeMs: startOfDayMs,
         timestamp: startOfDay.toISOString(),
-        dateLabel: startOfDayLabel,
+        dateLabel: '12:00 AM',
         fullDate: startOfDay.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
         price: openingPrice,
-        label: 'Market Opening Base Price',
+        label: 'Day Opening Price (12:00 AM)',
         eventId: null,
         diff: 0,
         diffPct: 0
       });
 
-      // 2. Map today's ticks to minute offsets (0..1439)
-      let prevP = openingPrice;
+      // 2. If the first tick of today happened after 12:00 AM, maintain opening baseline up to that moment
+      if (todayTicks.length > 0) {
+        const firstTickTime = new Date(todayTicks[0].timestamp).getTime();
+        if (firstTickTime - startOfDayMs > 60000) {
+          const preTickD = new Date(firstTickTime - 1000);
+          formattedData.push({
+            timeMs: preTickD.getTime(),
+            timestamp: preTickD.toISOString(),
+            dateLabel: preTickD.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }),
+            fullDate: preTickD.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
+            price: openingPrice,
+            label: 'Day Opening Baseline',
+            eventId: null,
+            diff: 0,
+            diffPct: 0
+          });
+        }
+      }
 
+      // 3. Continuous price ticks and events throughout the day
+      let prevP = openingPrice;
       todayTicks.forEach(tick => {
         const d = new Date(tick.timestamp);
-        let minOffset = Math.floor((d.getTime() - startOfDayMs) / 60000);
-        minOffset = Math.max(0, Math.min(minOffset, 1439));
-
-        const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
         const diff = Number((tick.price - prevP).toFixed(2));
         const diffPct = prevP > 0 ? Number(((diff / prevP) * 100).toFixed(2)) : 0;
         prevP = tick.price;
 
-        const existing = pointsMap.get(minOffset);
-        if (!existing || tick.eventId || !existing.eventId) {
-          pointsMap.set(minOffset, {
-            timeMin: minOffset,
-            timestamp: tick.timestamp,
-            dateLabel: timeStr,
-            fullDate: d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
-            price: tick.price,
-            label: tick.label || 'Price Fluctuation',
-            eventId: tick.eventId,
-            diff,
-            diffPct
-          });
-        }
+        formattedData.push({
+          timeMs: d.getTime(),
+          timestamp: tick.timestamp,
+          dateLabel: timeStr,
+          fullDate: d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'medium' }),
+          price: tick.price,
+          label: tick.label || 'Live Price Tick',
+          eventId: tick.eventId,
+          diff,
+          diffPct
+        });
       });
 
-      // 3. Always extend the price line to current minute right NOW
-      const nowMinOffset = Math.max(0, Math.min(Math.floor((now.getTime() - startOfDayMs) / 60000), 1439));
+      // 4. Always extend line continuously to current time right NOW
       const latestPrice = sortedTicks.length > 0 ? sortedTicks[sortedTicks.length - 1].price : openingPrice;
-      const nowTimeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      const lastPointMs = formattedData.length > 0 ? formattedData[formattedData.length - 1].timeMs : startOfDayMs;
 
-      if (!pointsMap.has(nowMinOffset)) {
-        pointsMap.set(nowMinOffset, {
-          timeMin: nowMinOffset,
+      if (now.getTime() - lastPointMs > 5000) {
+        formattedData.push({
+          timeMs: now.getTime(),
           timestamp: now.toISOString(),
-          dateLabel: nowTimeStr,
+          dateLabel: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }),
           fullDate: now.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
           price: latestPrice,
           label: 'Current Live Market Price',
@@ -100,21 +108,15 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
         });
       }
 
-      const formattedData = Array.from(pointsMap.values()).sort((a, b) => a.timeMin - b.timeMin);
-
       return {
         formattedData,
         openingPrice,
         isNumericDomain: true,
-        xDomain: [0, 1439],
-        xTicks: [0, 360, 720, 1080, 1439],
+        xDomain: [startOfDayMs, Math.max(now.getTime(), startOfDayMs + 3600000)],
+        xTicks: undefined,
         xFormatter: (val) => {
-          if (val === 0) return '12:00 AM';
-          if (val === 360) return '6:00 AM';
-          if (val === 720) return '12:00 PM';
-          if (val === 1080) return '6:00 PM';
-          if (val === 1439) return '11:59 PM';
-          return '';
+          const d = new Date(val);
+          return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
         }
       };
     }
@@ -240,7 +242,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
 
   const minVal = validPrices.length > 0 ? Math.min(...validPrices, openingPrice) : openingPrice;
   const maxVal = validPrices.length > 0 ? Math.max(...validPrices, openingPrice) : openingPrice;
-  const rangePadding = Math.max((maxVal - minVal) * 0.1, 2.5);
+  const rangePadding = Math.max((maxVal - minVal) * 0.1, 1.5);
 
   const minPrice = Math.max(Number((minVal - rangePadding).toFixed(2)), 0);
   const maxPrice = Number((maxVal + rangePadding).toFixed(2));
@@ -252,23 +254,23 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       const isPos = data.diff >= 0;
 
       return (
-        <div className="bg-[#1A202C] border border-[#2D3748] p-3 rounded-xl shadow-2xl max-w-xs font-mono">
-          <div className="flex items-center justify-between border-b border-[#2D3748] pb-1.5 mb-1.5">
+        <div className="bg-white border border-[#E2E0D8] p-3 rounded-xl shadow-xl max-w-xs font-mono">
+          <div className="flex items-center justify-between border-b border-[#E2E0D8] pb-1.5 mb-1.5">
             <span className="text-xs text-slate-400 font-semibold">{data.fullDate}</span>
-            <span className="text-xs px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-bold">
+            <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-600 font-bold">
               {profile?.symbol || symbol}
             </span>
           </div>
 
-          <div className="text-slate-100 font-bold text-sm mb-1">
+          <div className="text-slate-700 font-bold text-sm mb-1">
             {data.label}
           </div>
 
           <div className="flex items-baseline justify-between mt-1.5">
-            <span className="text-lg font-extrabold text-white">₹{data.price.toFixed(2)}</span>
+            <span className="text-lg font-extrabold text-slate-800">₹{data.price.toFixed(2)}</span>
             {data.eventId && (
               <span className={`text-xs font-bold px-2 py-0.5 rounded ${
-                isPos ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'
+                isPos ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-600'
               }`}>
                 {isPos ? '+' : ''}{data.diffPct}%
               </span>
@@ -280,27 +282,27 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
     return null;
   };
 
-  const xDataKey = timeRange === '1D' ? 'timeMin' : 'timeMs';
+  const xDataKey = 'timeMs';
 
   return (
-    <div className="bg-[#151923] border border-[#232936] rounded-2xl p-6 shadow-xl flex flex-col justify-between space-y-4 font-['Plus_Jakarta_Sans',sans-serif]">
+    <div className="bg-white border border-[#E2E0D8] rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-4 font-['Plus_Jakarta_Sans',sans-serif]">
       
-      {/* ── Top Header Section (Matching Professional Trading Layout) ── */}
+      {/* ── Top Header Section ── */}
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           {/* Logo Badge + Exchange Selector */}
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/60 flex items-center justify-center shadow-inner">
-              <span className="text-emerald-400 font-extrabold text-sm tracking-wider">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 border border-blue-500/30 flex items-center justify-center shadow">
+              <span className="text-white font-extrabold text-sm tracking-wider">
                 {(profile?.symbol || symbol).slice(0, 3)}
               </span>
             </div>
             <div>
               <div className="flex items-center space-x-1 text-xs text-slate-400 font-semibold">
                 <span>{profile?.symbol || symbol} &bull; HLSE</span>
-                <ArrowUpDown className="w-3 h-3 text-slate-500" />
+                <ArrowUpDown className="w-3 h-3 text-slate-400" />
               </div>
-              <h1 className="text-xl font-bold text-white tracking-tight">
+              <h1 className="text-xl font-bold text-slate-800 tracking-tight">
                 {profile?.name || 'HUMAN LIFE TICKER'}
               </h1>
             </div>
@@ -308,11 +310,11 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
 
           {/* Big Price + Percentage Change Row */}
           <div className="flex items-baseline space-x-3 pt-1">
-            <span className="text-3xl font-extrabold text-white tracking-tight">
+            <span className="text-3xl font-extrabold text-slate-800 tracking-tight">
               ₹{latestPrice.toFixed(2)}
             </span>
             <span className={`text-sm font-semibold flex items-center space-x-1 ${
-              isUpTrend ? 'text-emerald-400' : 'text-rose-500'
+              isUpTrend ? 'text-emerald-600' : 'text-rose-500'
             }`}>
               <span>{periodChangeAmt >= 0 ? '+' : ''}{periodChangeAmt.toFixed(2)}</span>
               <span>({periodChangePct >= 0 ? '+' : ''}{periodChangePct.toFixed(2)}%)</span>
@@ -323,25 +325,25 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
 
         {/* Top Right Quick Controls */}
         <div className="flex items-center space-x-2 text-slate-400">
-          <button className="p-2 rounded-full border border-slate-800 hover:border-slate-600 hover:text-white transition-all bg-[#0B0E14]">
+          <button className="p-2 rounded-full border border-[#E2E0D8] hover:border-slate-400 hover:text-slate-600 transition-all bg-[#F7F6F1]">
             <Link2 className="w-4 h-4" />
           </button>
-          <button className="p-2 rounded-full border border-slate-800 hover:border-slate-600 hover:text-white transition-all bg-[#0B0E14]">
+          <button className="p-2 rounded-full border border-[#E2E0D8] hover:border-slate-400 hover:text-slate-600 transition-all bg-[#F7F6F1]">
             <Bell className="w-4 h-4" />
           </button>
-          <button className="p-2 rounded-full border border-slate-800 hover:border-slate-600 hover:text-white transition-all bg-[#0B0E14]">
+          <button className="p-2 rounded-full border border-[#E2E0D8] hover:border-slate-400 hover:text-slate-600 transition-all bg-[#F7F6F1]">
             <Bookmark className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       {/* ── Main Line Chart with Horizontal Opening Price Reference Line ── */}
-      <div className="h-72 w-full pt-2">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-72 w-full pt-2 min-h-[280px]">
+        <ResponsiveContainer width="100%" height={280}>
           <AreaChart data={formattedData} margin={{ top: 15, right: 10, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={strokeColor} stopOpacity={0.25} />
+                <stop offset="5%" stopColor={strokeColor} stopOpacity={0.18} />
                 <stop offset="95%" stopColor={strokeColor} stopOpacity={0.0} />
               </linearGradient>
             </defs>
@@ -352,17 +354,17 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
               domain={xDomain}
               ticks={xTicks}
               tickFormatter={xFormatter}
-              stroke="#475569" 
+              stroke="#94A3B8" 
               fontSize={11} 
               tickLine={false} 
-              axisLine={{ stroke: '#232936' }} 
+              axisLine={{ stroke: '#E2E0D8' }} 
             />
             <YAxis 
               domain={[minPrice, maxPrice]} 
-              stroke="#475569" 
+              stroke="#94A3B8" 
               fontSize={11} 
               tickLine={false} 
-              axisLine={{ stroke: '#232936' }}
+              axisLine={{ stroke: '#E2E0D8' }}
               tickFormatter={(val) => `₹${val}`}
             />
             
@@ -371,9 +373,15 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
             {/* Horizontal Dashed Baseline Reference Line */}
             <ReferenceLine 
               y={openingPrice} 
-              stroke="#475569" 
+              stroke="#94A3B8" 
               strokeDasharray="4 4" 
-              strokeWidth={1.5}
+              strokeWidth={1.2}
+              label={{ 
+                value: timeRange === '1D' ? `Open (12:00 AM): ₹${openingPrice.toFixed(2)}` : `Base: ₹${openingPrice.toFixed(2)}`, 
+                fill: '#94A3B8', 
+                fontSize: 10, 
+                position: 'insideBottomRight' 
+              }}
             />
 
             <Area 
@@ -405,7 +413,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       </div>
 
       {/* ── Bottom Controls Bar ── */}
-      <div className="pt-3 border-t border-[#232936] flex flex-wrap items-center justify-between gap-3">
+      <div className="pt-3 border-t border-[#E2E0D8] flex flex-wrap items-center justify-between gap-3">
         {/* Centered Time Range Selector Pills */}
         <div className="flex items-center justify-center gap-1.5 flex-1 flex-wrap">
           {['1D', '1W', '1M', '3M', '6M', '1Y', '3Y', '5Y', 'All'].map((range) => {
@@ -417,8 +425,8 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
                 onClick={() => setTimeRange(rangeKey)}
                 className={`px-3 py-1 text-xs font-semibold rounded-full transition-all ${
                   isActive
-                    ? 'border-2 border-slate-300 text-white bg-slate-800/80 shadow-md scale-105'
-                    : 'text-slate-400 hover:text-slate-200 border border-transparent hover:border-slate-800'
+                    ? 'border-2 border-slate-400 text-slate-800 bg-slate-100 shadow-sm scale-105'
+                    : 'text-slate-400 hover:text-slate-700 border border-transparent hover:border-[#E2E0D8]'
                 }`}
               >
                 {range}
@@ -429,16 +437,16 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
 
         {/* Right Action Icons */}
         <div className="flex items-center space-x-2 text-xs text-slate-400">
-          <button className="p-1.5 rounded-lg border border-slate-800 hover:border-slate-700 hover:text-white bg-[#0B0E14]">
+          <button className="p-1.5 rounded-lg border border-[#E2E0D8] hover:border-slate-400 hover:text-slate-600 bg-[#F7F6F1]">
             <BarChart2 className="w-4 h-4" />
           </button>
-          <button className="px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 hover:text-white bg-[#0B0E14] font-semibold flex items-center space-x-1">
+          <button className="px-3 py-1.5 rounded-lg border border-[#E2E0D8] hover:border-slate-400 hover:text-slate-600 bg-[#F7F6F1] font-semibold flex items-center space-x-1">
             <span>Terminal</span>
             <span className="text-[10px] ml-0.5">⇂↾</span>
           </button>
         </div>
       </div>
-
     </div>
   );
 }
+

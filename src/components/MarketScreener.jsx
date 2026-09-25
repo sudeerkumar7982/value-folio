@@ -37,42 +37,42 @@ export function MarketScreener({ stocks = [], activeSymbol, onSelectStock, onOpe
     if (sentiment === 'VERY_BULLISH' || score >= 80) {
       return (
         <div className="flex items-center space-x-1.5">
-          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center space-x-1">
-            <Flame className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-300 flex items-center space-x-1">
+            <Flame className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
             <span>Very Bullish</span>
           </span>
-          <span className="font-mono text-xs font-bold text-emerald-400">{score}%</span>
+          <span className="font-mono text-xs font-bold text-emerald-700">{score}%</span>
         </div>
       );
     }
     if (sentiment === 'BULLISH' || score >= 60) {
       return (
         <div className="flex items-center space-x-1.5">
-          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center space-x-1">
-            <TrendingUp className="w-3.5 h-3.5 text-blue-400" />
+          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200 flex items-center space-x-1">
+            <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
             <span>Bullish</span>
           </span>
-          <span className="font-mono text-xs font-bold text-blue-400">{score}%</span>
+          <span className="font-mono text-xs font-bold text-blue-700">{score}%</span>
         </div>
       );
     }
     if (sentiment === 'BEARISH' || sentiment === 'VERY_BEARISH' || score <= 40) {
       return (
         <div className="flex items-center space-x-1.5">
-          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center space-x-1">
-            <TrendingDown className="w-3.5 h-3.5 text-rose-400" />
+          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700 border border-rose-300 flex items-center space-x-1">
+            <TrendingDown className="w-3.5 h-3.5 text-rose-600" />
             <span>Bearish</span>
           </span>
-          <span className="font-mono text-xs font-bold text-rose-400">{score}%</span>
+          <span className="font-mono text-xs font-bold text-rose-700">{score}%</span>
         </div>
       );
     }
     return (
       <div className="flex items-center space-x-1.5">
-        <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+        <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 border border-amber-300">
           <span>Neutral</span>
         </span>
-        <span className="font-mono text-xs font-bold text-amber-400">{score}%</span>
+        <span className="font-mono text-xs font-bold text-amber-700">{score}%</span>
       </div>
     );
   };
@@ -81,16 +81,16 @@ export function MarketScreener({ stocks = [], activeSymbol, onSelectStock, onOpe
     <div className="space-y-6 animate-fadeIn">
       
       {/* Header Overview Banner */}
-      <div className="bg-gradient-to-r from-[#151923] via-[#1A202C] to-[#121824] border border-[#232936] rounded-2xl p-6 shadow-xl relative overflow-hidden">
+      <div className="bg-white border border-[#E2E0D8] rounded-2xl p-6 shadow-sm relative overflow-hidden">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
+            <h1 className="text-2xl font-extrabold text-slate-800 flex items-center gap-2">
               ValueFolio Listed Stocks Watchlist
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono">
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 font-mono">
                 Sentiment Screener
               </span>
             </h1>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-slate-500">
               Filter and analyze all listed human stock tickers based on AI sentiment rating, gain % and sector strength.
             </p>
           </div>
@@ -103,7 +103,7 @@ export function MarketScreener({ stocks = [], activeSymbol, onSelectStock, onOpe
               placeholder="Search ticker or name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-[#0B0E14] border border-[#232936] focus:border-blue-500 rounded-xl pl-9 pr-4 py-2 text-white text-sm outline-none"
+              className="w-full bg-[#F7F6F1] border border-[#E2E0D8] focus:border-blue-500 rounded-xl pl-9 pr-4 py-2 text-slate-800 text-sm outline-none"
             />
           </div>
         </div>
@@ -113,47 +113,47 @@ export function MarketScreener({ stocks = [], activeSymbol, onSelectStock, onOpe
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         
         {/* Sentiment Filters */}
-        <div className="flex items-center bg-[#151923] border border-[#232936] p-1 rounded-xl space-x-1 overflow-x-auto max-w-full">
+        <div className="flex items-center bg-white border border-[#E2E0D8] p-1 rounded-xl space-x-1 overflow-x-auto max-w-full">
           <button
             onClick={() => setSentimentFilter('ALL')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${sentimentFilter === 'ALL' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${sentimentFilter === 'ALL' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-800'}`}
           >
             All Stocks ({stocks.length})
           </button>
           <button
             onClick={() => setSentimentFilter('VERY_BULLISH')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${sentimentFilter === 'VERY_BULLISH' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}`}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${sentimentFilter === 'VERY_BULLISH' ? 'bg-emerald-600 text-white' : 'text-slate-500 hover:text-slate-800'}`}
           >
             🔥 Very Bullish
           </button>
           <button
             onClick={() => setSentimentFilter('BULLISH')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${sentimentFilter === 'BULLISH' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${sentimentFilter === 'BULLISH' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-800'}`}
           >
             📈 Bullish
           </button>
           <button
             onClick={() => setSentimentFilter('NEUTRAL')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${sentimentFilter === 'NEUTRAL' ? 'bg-amber-600 text-white' : 'text-slate-400 hover:text-white'}`}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${sentimentFilter === 'NEUTRAL' ? 'bg-amber-600 text-white' : 'text-slate-500 hover:text-slate-800'}`}
           >
             ⚖️ Neutral
           </button>
           <button
             onClick={() => setSentimentFilter('BEARISH')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${sentimentFilter === 'BEARISH' ? 'bg-rose-600 text-white' : 'text-slate-400 hover:text-white'}`}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${sentimentFilter === 'BEARISH' ? 'bg-rose-600 text-white' : 'text-slate-500 hover:text-slate-800'}`}
           >
             📉 Bearish
           </button>
         </div>
 
         {/* Sort Selector */}
-        <div className="flex items-center space-x-2 text-xs text-slate-400 shrink-0">
-          <ArrowUpDown className="w-3.5 h-3.5 text-blue-400" />
+        <div className="flex items-center space-x-2 text-xs text-slate-500 shrink-0">
+          <ArrowUpDown className="w-3.5 h-3.5 text-blue-500" />
           <span>Sort by:</span>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="bg-[#151923] border border-[#232936] text-white font-bold rounded-lg px-3 py-1.5 text-xs outline-none"
+            className="bg-white border border-[#E2E0D8] text-slate-800 font-bold rounded-lg px-3 py-1.5 text-xs outline-none"
           >
             <option value="SENTIMENT">Highest Sentiment Score</option>
             <option value="GAINERS">Top % Gainers</option>
@@ -174,8 +174,8 @@ export function MarketScreener({ stocks = [], activeSymbol, onSelectStock, onOpe
           return (
             <div
               key={stock.symbol}
-              className={`bg-[#151923] border rounded-2xl p-5 shadow-lg flex flex-col justify-between space-y-4 transition-all ${
-                isSelected ? 'border-blue-500 ring-1 ring-blue-500/40' : 'border-[#232936] hover:border-slate-700'
+              className={`bg-white border rounded-2xl p-5 shadow-sm flex flex-col justify-between space-y-4 transition-all ${
+                isSelected ? 'border-blue-500 ring-1 ring-blue-300' : 'border-[#E2E0D8] hover:border-slate-300'
               }`}
             >
               {/* Header Info */}
@@ -187,39 +187,39 @@ export function MarketScreener({ stocks = [], activeSymbol, onSelectStock, onOpe
                     </div>
                     <div>
                       <div className="flex items-center space-x-2">
-                        <h3 className="text-lg font-bold text-white">{stock.symbol}</h3>
+                        <h3 className="text-lg font-bold text-slate-800">{stock.symbol}</h3>
                         {isSelected && (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 border border-blue-200">
                             ACTIVE
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-300 font-semibold">{stock.name}</p>
+                      <p className="text-xs text-slate-600 font-semibold">{stock.name}</p>
                     </div>
                   </div>
 
                   {/* Price & Change */}
                   <div className="text-right">
-                    <div className="text-lg font-extrabold font-mono text-white">
+                    <div className="text-lg font-extrabold font-mono text-slate-800">
                       ₹{stock.currentPrice?.toFixed(2)}
                     </div>
-                    <div className={`text-xs font-bold font-mono ${isGain ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    <div className={`text-xs font-bold font-mono ${isGain ? 'text-emerald-600' : 'text-rose-500'}`}>
                       {isGain ? '+' : ''}{stock.changeAmount} ({isGain ? '+' : ''}{stock.changePercent}%)
                     </div>
                   </div>
                 </div>
 
-                <p className="text-xs text-slate-400 line-clamp-2">{stock.bio}</p>
+                <p className="text-xs text-slate-500 line-clamp-2">{stock.bio}</p>
 
                 {/* Sentiment Meter Bar */}
-                <div className="bg-[#0B0E14] p-3 rounded-xl border border-[#232936] space-y-2">
+                <div className="bg-[#F7F6F1] p-3 rounded-xl border border-[#E2E0D8] space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-400 font-semibold">AI Sentiment Grade</span>
+                    <span className="text-xs text-slate-500 font-semibold">AI Sentiment Grade</span>
                     {getSentimentPill(stock.sentiment, stock.sentimentScore || 70)}
                   </div>
 
                   {/* Sentiment Bar */}
-                  <div className="w-full bg-[#151923] h-2 rounded-full overflow-hidden">
+                  <div className="w-full bg-white h-2 rounded-full overflow-hidden">
                     <div
                       className={`h-full transition-all duration-500 ${
                         (stock.sentimentScore || 70) >= 80 ? 'bg-gradient-to-r from-emerald-500 to-teal-400' :
@@ -235,7 +235,7 @@ export function MarketScreener({ stocks = [], activeSymbol, onSelectStock, onOpe
               </div>
 
               {/* Stock Footer Actions */}
-              <div className="pt-3 border-t border-[#232936] flex items-center justify-between gap-3">
+              <div className="pt-3 border-t border-[#E2E0D8] flex items-center justify-between gap-3">
                 <button
                   onClick={() => {
                     API.setActiveSymbol(stock.symbol);
@@ -243,8 +243,8 @@ export function MarketScreener({ stocks = [], activeSymbol, onSelectStock, onOpe
                   }}
                   className={`flex-1 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center space-x-1.5 transition-all ${
                     isSelected
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
-                      : 'bg-[#1F2633] hover:bg-[#2A3445] text-slate-200 border border-[#2D3648]'
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-[#E2E0D8]'
                   }`}
                 >
                   <BarChart2 className="w-4 h-4" />
@@ -266,7 +266,7 @@ export function MarketScreener({ stocks = [], activeSymbol, onSelectStock, onOpe
                 {onDeleteStock && (
                   <button
                     onClick={() => onDeleteStock(stock.symbol)}
-                    className="p-2.5 bg-[#1F2633] hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 rounded-xl border border-[#2D3648] hover:border-rose-500/30 transition-colors"
+                    className="p-2.5 bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-xl border border-[#E2E0D8] hover:border-rose-200 transition-colors"
                     title="Delete Stock"
                   >
                     <Trash2 className="w-4 h-4" />

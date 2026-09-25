@@ -38,22 +38,22 @@ export function SettingsModal({ isOpen, onClose, profile, onSaveSettings }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fadeIn">
-      <div className="bg-[#151923] border border-[#232936] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-md animate-fadeIn">
+      <div className="bg-white border border-[#E2E0D8] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col">
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#232936] flex items-center justify-between bg-[#1B212D]">
+        <div className="px-6 py-4 border-b border-[#E2E0D8] flex items-center justify-between bg-[#F7F6F1]">
           <div className="flex items-center space-x-2.5">
-            <div className="p-2 bg-[#1E2536] rounded-xl text-blue-400 border border-[#2B354C]">
+            <div className="p-2 bg-blue-50 rounded-xl text-blue-600 border border-blue-200">
               <Settings className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">Platform Settings</h2>
-              <p className="text-xs text-slate-400">Customize stock ticker profile and AI sentiment integrations</p>
+              <h2 className="text-lg font-bold text-slate-800">Platform Settings</h2>
+              <p className="text-xs text-slate-500">Customize stock ticker profile and AI sentiment integrations</p>
             </div>
           </div>
 
-          <button onClick={onClose} className="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-[#232936]">
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 p-2 rounded-lg hover:bg-[#E2E0D8]">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -63,46 +63,46 @@ export function SettingsModal({ isOpen, onClose, profile, onSaveSettings }) {
           
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-semibold text-slate-300 block mb-1">Stock Ticker Symbol</label>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">Stock Ticker Symbol</label>
               <input
                 type="text"
                 required
                 value={symbol}
                 onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-                className="w-full bg-[#0B0E14] border border-[#232936] rounded-xl px-3 py-2 text-white font-mono font-bold text-sm"
+                className="w-full bg-[#F7F6F1] border border-[#E2E0D8] rounded-xl px-3 py-2 text-slate-800 font-mono font-bold text-sm"
               />
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-300 block mb-1">Human Name</label>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">Human Name</label>
               <input
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-[#0B0E14] border border-[#232936] rounded-xl px-3 py-2 text-white text-sm"
+                className="w-full bg-[#F7F6F1] border border-[#E2E0D8] rounded-xl px-3 py-2 text-slate-800 text-sm"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1">IPO Starting Stock Price (₹)</label>
+            <label className="text-xs font-semibold text-slate-700 block mb-1">IPO Starting Stock Price (₹)</label>
             <input
               type="number"
               step="1"
               value={startingPrice}
               onChange={(e) => setStartingPrice(e.target.value)}
-              className="w-full bg-[#0B0E14] border border-[#232936] rounded-xl px-3 py-2 text-white font-mono text-sm"
+              className="w-full bg-[#F7F6F1] border border-[#E2E0D8] rounded-xl px-3 py-2 text-slate-800 font-mono text-sm"
             />
           </div>
 
           {/* Gemini LLM API Key Box */}
-          <div className="bg-[#0B0E14] border border-[#232936] rounded-xl p-3.5 space-y-2">
-            <div className="flex items-center space-x-2 text-xs font-bold text-indigo-400">
+          <div className="bg-[#F7F6F1] border border-[#E2E0D8] rounded-xl p-3.5 space-y-2">
+            <div className="flex items-center space-x-2 text-xs font-bold text-indigo-600">
               <Sparkles className="w-4 h-4" />
               <span>External LLM API Key (Optional)</span>
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-slate-500 leading-relaxed">
               The platform operates with a built-in zero-config offline NLP model. Optionally add your Google Gemini API key for deep contextual AI reasoning.
             </p>
             <input
@@ -110,7 +110,7 @@ export function SettingsModal({ isOpen, onClose, profile, onSaveSettings }) {
               placeholder="AIzaSy..."
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              className="w-full bg-[#151923] border border-[#232936] rounded-lg px-3 py-2 text-white font-mono text-xs outline-none focus:border-indigo-500"
+              className="w-full bg-white border border-[#E2E0D8] rounded-lg px-3 py-2 text-slate-800 font-mono text-xs outline-none focus:border-indigo-500"
             />
           </div>
 
