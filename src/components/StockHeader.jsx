@@ -20,7 +20,9 @@ export default function StockHeader({
 }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const isPositive = metrics ? metrics.changePercent >= 0 : true;
+  const displayedChangeAmount = metrics?.totalChangeAmount ?? metrics?.changeAmount ?? 0;
+  const displayedChangePercent = metrics?.totalChangePercent ?? metrics?.changePercent ?? 0;
+  const isPositive = displayedChangePercent >= 0;
 
   // Nav tabs
   const navTabs = (
@@ -193,7 +195,7 @@ export default function StockHeader({
                     : 'text-rose-500 bg-rose-50 border border-rose-200'
                 }`}>
                   {isPositive ? <TrendingUp className="w-3.5 h-3.5 mr-1" /> : <TrendingDown className="w-3.5 h-3.5 mr-1" />}
-                  <span>{isPositive ? '+' : ''}{Number(metrics?.changeAmount || 0).toFixed(2)} ({isPositive ? '+' : ''}{Number(metrics?.changePercent || 0).toFixed(2)}%)</span>
+                  <span>{isPositive ? '+' : ''}{Number(displayedChangeAmount).toFixed(2)} ({isPositive ? '+' : ''}{Number(displayedChangePercent).toFixed(2)}%)</span>
                 </div>
 
                 {/* Dynamic Circuit Limits Badges based on Sentiment */}
