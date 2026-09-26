@@ -1,3 +1,5 @@
+import { calculateMarketMovePercent } from '../../shared/marketSimulation.js';
+
 /**
  * Client API Layer with LocalStorage & Express Backend Sync
  * Supports ValueFolio Multi-Stock Exchange and Human IPO Launchpad
@@ -836,14 +838,16 @@ export const API = {
     const sentimentData = computeStockSentiment(stock);
     const score = sentimentData ? (sentimentData.sentimentScore || 50) : 50;
 
-    const sentimentBias = (score - 50) / 100 * 0.08;
-    const randomNoise = (Math.random() * 0.08 - 0.04);
-    const noise = Number((sentimentBias + randomNoise).toFixed(3));
-
     // Anchor baseline is the price right after latest event or starting price
     const lastEventTick = [...stock.priceTicks].reverse().find(t => t.eventId !== null);
     const circuitAnchorPrice = lastEventTick ? lastEventTick.price : ((stock.priceTicks && stock.priceTicks.length > 0) ? stock.priceTicks[0].price : stock.profile.startingPrice);
     const circuits = getCircuitLimitsBySentiment(circuitAnchorPrice, sentimentData);
+    const noise = calculateMarketMovePercent(
+      stock.profile.currentPrice,
+      circuitAnchorPrice,
+      score,
+      stockKey
+    );
 
     const rawPrice = stock.profile.currentPrice * (1 + noise / 100);
     // Enforce dynamic sentiment-based circuit boundaries
@@ -854,9 +858,9 @@ export const API = {
     const currentMin = nowIso.slice(0, 16);
     const lastTick = stock.priceTicks.length > 0 ? stock.priceTicks[stock.priceTicks.length - 1] : null;
 
-    let tickLabel = noise > 0.1 
+    let tickLabel = noise > 0.01
       ? '🔥 Bullish Sentiment Buying' 
-      : noise < -0.1 
+      : noise < -0.01
       ? '🔻 Bearish Market Selling' 
       : '⚖️ Neutral Fluctuation';
 

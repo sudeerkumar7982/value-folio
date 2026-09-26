@@ -3,6 +3,7 @@ import cors from 'cors';
 import { DB, computeStockSentiment } from './db/database.js';
 import { analyzeLifeEvent } from './ai/sentimentEngine.js';
 import { calculateNewPrice, calculateSectorUpdates, computeStockMetrics } from './engine/priceEngine.js';
+import { calculateMarketMovePercent } from '../shared/marketSimulation.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -358,15 +359,17 @@ app.post('/api/stock/tick', (req, res) => {
     const sentimentData = computeStockSentiment({ profile, events });
     const sentimentScore = sentimentData.sentimentScore;
 
-    const sentimentBias = (sentimentScore - 50) / 100 * 0.08;
-    const randomNoise = (Math.random() * 0.08 - 0.04);
-    const noise = Number((sentimentBias + randomNoise).toFixed(3));
-
     const priceTicks = DB.getPriceTicks(symbol);
     const metrics = computeStockMetrics(priceTicks, { profile, events, sectors, sentiment: sentimentData });
+    const noise = calculateMarketMovePercent(
+      profile ? profile.currentPrice : 100,
+      metrics.startingPrice,
+      sentimentScore,
+      symbol
+    );
 
     const newPrice = calculateNewPrice(profile ? profile.currentPrice : 100, noise, metrics.lowerCircuit, metrics.upperCircuit);
-    let label = noise > 0.1 ? '🔥 Bullish Sentiment Buying' : noise < -0.1 ? '🔻 Bearish Market Selling' : '⚖️ Neutral Fluctuation';
+    let label = noise > 0.01 ? '🔥 Bullish Sentiment Buying' : noise < -0.01 ? '🔻 Bearish Market Selling' : '⚖️ Neutral Fluctuation';
 
     if (newPrice >= metrics.upperCircuit) {
       label = `🔒 Upper Circuit Limit Hit (+${metrics.upperCircuitPct}%)`;
