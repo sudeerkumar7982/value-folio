@@ -55,6 +55,19 @@ function getLocalStore() {
       return migrated;
     }
 
+    // Auto-sanitize and clamp all stored stocks to respect circuit limits
+    for (const sym of Object.keys(store.stocks)) {
+      const stock = store.stocks[sym];
+      if (stock && stock.priceTicks && stock.profile) {
+        const metrics = computeMetrics(stock.priceTicks, stock);
+        stock.priceTicks = stock.priceTicks.map(t => ({
+          ...t,
+          price: Math.min(Math.max(Number(t.price), metrics.lowerCircuit), metrics.upperCircuit)
+        }));
+        stock.profile.currentPrice = metrics.currentPrice;
+      }
+    }
+
     return store;
   } catch (e) {
     return DEFAULT_STORE;
@@ -282,6 +295,8 @@ export const API = {
       return {
         ...stock,
         currentPrice: clampedPrice,
+        changeAmount: metrics.totalChangeAmount,
+        changePercent: metrics.totalChangePercent,
         upperCircuit: metrics.upperCircuit,
         lowerCircuit: metrics.lowerCircuit,
         upperCircuitPct: metrics.upperCircuitPct,

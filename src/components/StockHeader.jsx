@@ -184,7 +184,7 @@ export default function StockHeader({
               {/* Price & Circuit Limits */}
               <div className="flex flex-wrap items-center gap-3 mt-1">
                 <span className="text-2xl sm:text-3xl font-extrabold text-slate-800 font-mono tracking-tight transition-all duration-300">
-                  ₹{Number(profile?.currentPrice || 0).toFixed(2)}
+                  ₹{Number(metrics?.currentPrice || profile?.currentPrice || 0).toFixed(2)}
                 </span>
                 
                 <div className={`flex items-center font-mono font-bold text-xs px-2 py-0.5 rounded-md transition-colors ${

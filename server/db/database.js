@@ -5,6 +5,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { computeStockMetrics } from '../engine/priceEngine.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -265,20 +266,31 @@ export const DB = {
     const stock = store.stocks[sym];
     if (!stock) return null;
 
-    stock.profile.currentPrice = newPrice;
+    const metrics = computeStockMetrics(stock.priceTicks, stock);
+    const clampedPrice = Math.min(Math.max(Number(newPrice), metrics.lowerCircuit), metrics.upperCircuit);
+
+    let finalLabel = label;
+    if (clampedPrice >= metrics.upperCircuit) {
+      finalLabel = `🔒 Upper Circuit Limit Hit (+${metrics.upperCircuitPct}%)`;
+    } else if (clampedPrice <= metrics.lowerCircuit) {
+      finalLabel = `🔒 Lower Circuit Limit Hit (-${metrics.lowerCircuitPct}%)`;
+    }
+
+    stock.profile.currentPrice = clampedPrice;
     const nowIso = new Date().toISOString();
     const currentMin = nowIso.slice(0, 16);
     const lastTick = stock.priceTicks.length > 0 ? stock.priceTicks[stock.priceTicks.length - 1] : null;
 
     if (lastTick && !lastTick.eventId && lastTick.timestamp && lastTick.timestamp.startsWith(currentMin)) {
-      lastTick.price = newPrice;
+      lastTick.price = clampedPrice;
       lastTick.timestamp = nowIso;
+      lastTick.label = finalLabel;
     } else {
       stock.priceTicks.push({
         timestamp: nowIso,
-        price: newPrice,
+        price: clampedPrice,
         eventId: null,
-        label
+        label: finalLabel
       });
     }
 
@@ -291,10 +303,11 @@ export const DB = {
     return Object.keys(store.stocks).map(sym => {
       const stock = store.stocks[sym];
       const sentimentData = computeStockSentiment(stock);
-      const startingPrice = stock.profile.startingPrice;
-      const currentPrice = stock.profile.currentPrice;
-      const changeAmount = Number((currentPrice - startingPrice).toFixed(2));
-      const changePercent = Number(((changeAmount / startingPrice) * 100).toFixed(2));
+      const metrics = computeStockMetrics(stock.priceTicks, stock);
+      const startingPrice = metrics.startingPrice;
+      const currentPrice = metrics.currentPrice;
+      const changeAmount = metrics.totalChangeAmount;
+      const changePercent = metrics.totalChangePercent;
 
       return {
         symbol: sym,
@@ -308,6 +321,10 @@ export const DB = {
         sharesOwned: stock.profile.sharesOwned,
         eventsCount: stock.events.length,
         sectors: stock.sectors,
+        upperCircuit: metrics.upperCircuit,
+        lowerCircuit: metrics.lowerCircuit,
+        upperCircuitPct: metrics.upperCircuitPct,
+        lowerCircuitPct: metrics.lowerCircuitPct,
         ...sentimentData
       };
     });

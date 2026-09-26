@@ -191,7 +191,12 @@ app.post('/api/events/analyze', async (req, res) => {
       }
     }
 
-    const currentPrice = profile ? profile.currentPrice : 100;
+    const priceTicks = DB.getPriceTicks(targetSym);
+    const events = DB.getEvents(targetSym);
+    const sectors = DB.getSectors(targetSym);
+    const metrics = computeStockMetrics(priceTicks, { profile, events, sectors });
+
+    const currentPrice = metrics ? metrics.currentPrice : (profile ? profile.currentPrice : 100);
     const apiKey = profile ? profile.apiKey : '';
 
     if (!title || title.trim() === '') {
@@ -199,7 +204,7 @@ app.post('/api/events/analyze', async (req, res) => {
     }
 
     const aiResult = await analyzeLifeEvent(title, description, sector, apiKey);
-    const estimatedNewPrice = calculateNewPrice(currentPrice, aiResult.impactPercent);
+    const estimatedNewPrice = calculateNewPrice(currentPrice, aiResult.impactPercent, metrics.lowerCircuit, metrics.upperCircuit);
 
     res.json({
       ...aiResult,
@@ -366,19 +371,28 @@ app.post('/api/stock/tick', (req, res) => {
     const randomNoise = (Math.random() * 0.5 - 0.25);
     const noise = Number((sentimentBias + randomNoise).toFixed(3));
 
-    const newPrice = calculateNewPrice(profile ? profile.currentPrice : 100, noise);
-    const label = noise > 0.1 ? '🔥 Bullish Sentiment Buying' : noise < -0.1 ? '🔻 Bearish Market Selling' : '⚖️ Neutral Fluctuation';
+    const priceTicks = DB.getPriceTicks(symbol);
+    const metrics = computeStockMetrics(priceTicks, { profile, events, sectors });
+
+    const newPrice = calculateNewPrice(profile ? profile.currentPrice : 100, noise, metrics.lowerCircuit, metrics.upperCircuit);
+    let label = noise > 0.1 ? '🔥 Bullish Sentiment Buying' : noise < -0.1 ? '🔻 Bearish Market Selling' : '⚖️ Neutral Fluctuation';
+
+    if (newPrice >= metrics.upperCircuit) {
+      label = `🔒 Upper Circuit Limit Hit (+${metrics.upperCircuitPct}%)`;
+    } else if (newPrice <= metrics.lowerCircuit) {
+      label = `🔒 Lower Circuit Limit Hit (-${metrics.lowerCircuitPct}%)`;
+    }
 
     DB.addMarketTick(newPrice, label, symbol);
 
-    const priceTicks = DB.getPriceTicks(symbol);
-    const metrics = computeStockMetrics(priceTicks);
+    const updatedTicks = DB.getPriceTicks(symbol);
+    const updatedMetrics = computeStockMetrics(updatedTicks, { profile, events, sectors });
 
     res.json({
       currentPrice: newPrice,
       noise,
-      priceTicks,
-      metrics
+      priceTicks: updatedTicks,
+      metrics: updatedMetrics
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
