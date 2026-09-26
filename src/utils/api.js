@@ -55,19 +55,6 @@ function getLocalStore() {
       return migrated;
     }
 
-    // Auto-sanitize and clamp all stored stocks to respect circuit limits
-    for (const sym of Object.keys(store.stocks)) {
-      const stock = store.stocks[sym];
-      if (stock && stock.priceTicks && stock.profile) {
-        const metrics = computeMetrics(stock.priceTicks, stock);
-        stock.priceTicks = stock.priceTicks.map(t => ({
-          ...t,
-          price: Math.min(Math.max(Number(t.price), metrics.lowerCircuit), metrics.upperCircuit)
-        }));
-        stock.profile.currentPrice = metrics.currentPrice;
-      }
-    }
-
     return store;
   } catch (e) {
     return DEFAULT_STORE;
@@ -207,6 +194,8 @@ function computeMetrics(priceTicks, stock = null) {
   let openingPrice;
   if (ticksBeforeToday.length > 0) {
     openingPrice = ticksBeforeToday[ticksBeforeToday.length - 1].price;
+  } else if (stock?.profile?.listingPrice) {
+    openingPrice = stock.profile.listingPrice;
   } else if (stock?.profile?.startingPrice) {
     openingPrice = stock.profile.startingPrice;
   } else if (sorted.length > 0) {
@@ -217,12 +206,11 @@ function computeMetrics(priceTicks, stock = null) {
 
   const circuits = getCircuitLimitsBySentiment(openingPrice, sentimentData);
 
-  const rawPrices = sorted.map(p => p.price);
-  const clampedPrices = rawPrices.map(p => Math.min(Math.max(p, circuits.lowerCircuit), circuits.upperCircuit));
+  const prices = sorted.map(p => p.price);
 
-  const currentPrice = clampedPrices[clampedPrices.length - 1];
+  const currentPrice = prices[prices.length - 1];
   const startingPrice = openingPrice;
-  const previousPrice = clampedPrices.length > 1 ? clampedPrices[clampedPrices.length - 2] : startingPrice;
+  const previousPrice = prices.length > 1 ? prices[prices.length - 2] : startingPrice;
 
   const changeAmount = Number((currentPrice - previousPrice).toFixed(2));
   const changePercent = previousPrice > 0 ? Number(((changeAmount / previousPrice) * 100).toFixed(2)) : 0;
@@ -237,8 +225,8 @@ function computeMetrics(priceTicks, stock = null) {
     changePercent,
     totalChangeAmount,
     totalChangePercent,
-    highPrice: Math.max(...clampedPrices),
-    lowPrice: Math.min(...clampedPrices),
+    highPrice: Math.max(...prices),
+    lowPrice: Math.min(...prices),
     totalEvents: priceTicks.filter(h => h.eventId !== null).length,
     ...circuits
   };
@@ -289,20 +277,7 @@ export const API = {
       });
     }
 
-    return (stocksList || []).map(stock => {
-      const metrics = computeMetrics(stock.priceTicks || [], stock);
-      const clampedPrice = Math.min(Math.max(Number(stock.currentPrice || stock.startingPrice || 100), metrics.lowerCircuit), metrics.upperCircuit);
-      return {
-        ...stock,
-        currentPrice: clampedPrice,
-        changeAmount: metrics.totalChangeAmount,
-        changePercent: metrics.totalChangePercent,
-        upperCircuit: metrics.upperCircuit,
-        lowerCircuit: metrics.lowerCircuit,
-        upperCircuitPct: metrics.upperCircuitPct,
-        lowerCircuitPct: metrics.lowerCircuitPct
-      };
-    });
+    return stocksList || [];
   },
 
   getActiveSymbol: async () => {
@@ -389,17 +364,10 @@ export const API = {
 
     if (data && data.profile) {
       const metrics = computeMetrics(data.priceTicks || [], { profile: data.profile, events: data.events });
-      const clampedPrice = Math.min(Math.max(Number(data.profile.currentPrice), metrics.lowerCircuit), metrics.upperCircuit);
-      data.profile.currentPrice = clampedPrice;
-      if (data.priceTicks && Array.isArray(data.priceTicks)) {
-        data.priceTicks = data.priceTicks.map(t => ({
-          ...t,
-          price: Math.min(Math.max(Number(t.price), metrics.lowerCircuit), metrics.upperCircuit)
-        }));
-      }
+      data.profile.currentPrice = metrics.currentPrice;
       data.metrics = {
         ...metrics,
-        currentPrice: clampedPrice
+        currentPrice: metrics.currentPrice
       };
     }
 
@@ -435,8 +403,29 @@ export const API = {
   },
 
   createIPO: async (ipoData) => {
+    let response;
+    try {
+      response = await fetch('/api/ipos/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(ipoData)
+      });
+    } catch (e) {}
+
+    if (response) {
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || 'Unable to create IPO');
+      const store = getLocalStore();
+      store.ipos = [result, ...(store.ipos || []).filter(ipo => ipo.id !== result.id)];
+      saveLocalStore(store);
+      return result;
+    }
+
     const store = getLocalStore();
     const sym = ipoData.symbol ? ipoData.symbol.toUpperCase() : 'NEW';
+    if (store.stocks[sym] || store.ipos.some(ipo => ipo.symbol === sym)) {
+      throw new Error(`Ticker ${sym} is already in use`);
+    }
     const sectors = ipoData.initialSectors || ipoData.sectors || { Career: 50, Education: 50, Skills: 50, Projects: 50, Finance: 50, Social: 50, Wellbeing: 50 };
 
     const sectorVals = Object.values(sectors);
@@ -487,6 +476,7 @@ export const API = {
           name: newIPO.name,
           bio: newIPO.bio,
           startingPrice: newIPO.issuePrice,
+          listingPrice: Number((newIPO.issuePrice * (1 + newIPO.gmpPercent / 100)).toFixed(2)),
           currentPrice: Number((newIPO.issuePrice * (1 + newIPO.gmpPercent / 100)).toFixed(2)),
           walletBalance: 10000.00,
           sharesOwned: 0,
@@ -502,6 +492,12 @@ export const API = {
             price: newIPO.issuePrice,
             eventId: null,
             label: `${sym} Initial Public Offering (IPO)`
+          },
+          {
+            timestamp: new Date().toISOString(),
+            price: Number((newIPO.issuePrice * (1 + newIPO.gmpPercent / 100)).toFixed(2)),
+            eventId: null,
+            label: `${sym} IPO Listing Price`
           }
         ],
         trades: []
@@ -511,20 +507,33 @@ export const API = {
 
     saveLocalStore(store);
 
-    try {
-      await fetch('/api/ipos/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(ipoData)
-      });
-    } catch (e) {}
-
     return newIPO;
   },
 
   listIPOOnExchange: async (ipoId) => {
+    let response;
+    try {
+      response = await fetch('/api/ipos/list', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ipoId })
+      });
+    } catch (e) {}
+
+    if (response) {
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || 'Unable to list IPO');
+      const store = getLocalStore();
+      store.ipos = (store.ipos || []).map(ipo => ipo.id === result.ipo.id ? result.ipo : ipo);
+      store.stocks[result.ipo.symbol] = result.stock;
+      store.activeSymbol = result.ipo.symbol;
+      saveLocalStore(store);
+      return result;
+    }
+
     const store = getLocalStore();
     const ipo = store.ipos.find(i => i.id === ipoId);
+    if (!ipo) throw new Error('IPO not found in local storage');
     if (ipo) {
       ipo.status = 'LISTED';
       const sym = ipo.symbol;
@@ -537,6 +546,7 @@ export const API = {
             name: ipo.name,
             bio: ipo.bio,
             startingPrice: ipo.issuePrice,
+            listingPrice: listedPrice,
             currentPrice: listedPrice,
             walletBalance: 10000.00,
             sharesOwned: 0,
@@ -557,14 +567,6 @@ export const API = {
       store.activeSymbol = sym;
       saveLocalStore(store);
     }
-
-    try {
-      await fetch('/api/ipos/list', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ipoId })
-      });
-    } catch (e) {}
 
     return store;
   },
@@ -609,6 +611,7 @@ export const API = {
   createStock: async ({ symbol, name, bio, startingPrice = 100, walletBalance = 10000, initialSectors }) => {
     const store = getLocalStore();
     const sym = symbol ? symbol.toUpperCase() : 'NEW';
+    if (store.stocks[sym]) throw new Error(`Ticker ${sym} is already listed`);
 
     const freshStock = {
       profile: {
@@ -616,6 +619,7 @@ export const API = {
         name: name || 'Human Stock Ticker',
         bio: bio || 'Personal Human Life Ticker.',
         startingPrice: Number(startingPrice),
+        listingPrice: Number(startingPrice),
         currentPrice: Number(startingPrice),
         walletBalance: Number(walletBalance),
         sharesOwned: 0,
@@ -832,8 +836,8 @@ export const API = {
     const sentimentData = computeStockSentiment(stock);
     const score = sentimentData ? (sentimentData.sentimentScore || 50) : 50;
 
-    const sentimentBias = (score - 50) / 100 * 0.4;
-    const randomNoise = (Math.random() * 0.5 - 0.25);
+    const sentimentBias = (score - 50) / 100 * 0.08;
+    const randomNoise = (Math.random() * 0.08 - 0.04);
     const noise = Number((sentimentBias + randomNoise).toFixed(3));
 
     // Anchor baseline is the price right after latest event or starting price

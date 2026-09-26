@@ -99,7 +99,7 @@ export default function App() {
     }
   };
 
-  // Live Market Fluctuation Loop (Fires every 1s for continuous second-to-second sentiment motion)
+  // Apply small sentiment-driven market moves at a slower simulation cadence.
   useEffect(() => {
     if (!isLiveActive || loading || !activeSymbol) return;
 

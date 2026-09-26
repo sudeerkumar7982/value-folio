@@ -88,6 +88,8 @@ export function computeStockMetrics(priceHistory, stock = null) {
   let openingPrice;
   if (ticksBeforeToday.length > 0) {
     openingPrice = ticksBeforeToday[ticksBeforeToday.length - 1].price;
+  } else if (stock?.profile?.listingPrice) {
+    openingPrice = stock.profile.listingPrice;
   } else if (stock?.profile?.startingPrice) {
     openingPrice = stock.profile.startingPrice;
   } else if (sorted.length > 0) {
@@ -97,12 +99,11 @@ export function computeStockMetrics(priceHistory, stock = null) {
   }
 
   const circuits = getCircuitLimitsBySentiment(openingPrice, stock?.sentiment);
-  const rawPrices = sorted.map(p => p.price);
-  const clampedPrices = rawPrices.map(p => Math.min(Math.max(p, circuits.lowerCircuit), circuits.upperCircuit));
+  const prices = sorted.map(p => p.price);
 
-  const currentPrice = clampedPrices[clampedPrices.length - 1];
+  const currentPrice = prices[prices.length - 1];
   const startingPrice = openingPrice;
-  const previousPrice = clampedPrices.length > 1 ? clampedPrices[clampedPrices.length - 2] : startingPrice;
+  const previousPrice = prices.length > 1 ? prices[prices.length - 2] : startingPrice;
 
   const changeAmount = Number((currentPrice - previousPrice).toFixed(2));
   const changePercent = previousPrice > 0 ? Number(((changeAmount / previousPrice) * 100).toFixed(2)) : 0;
@@ -118,8 +119,8 @@ export function computeStockMetrics(priceHistory, stock = null) {
     changePercent,
     totalChangeAmount,
     totalChangePercent,
-    highPrice: Math.max(...clampedPrices),
-    lowPrice: Math.min(...clampedPrices),
+    highPrice: Math.max(...prices),
+    lowPrice: Math.min(...prices),
     totalEvents: priceHistory.filter(h => h.eventId !== null).length,
     ...circuits
   };

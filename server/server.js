@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { DB } from './db/database.js';
+import { DB, computeStockSentiment } from './db/database.js';
 import { analyzeLifeEvent } from './ai/sentimentEngine.js';
 import { calculateNewPrice, calculateSectorUpdates, computeStockMetrics } from './engine/priceEngine.js';
 
@@ -68,22 +68,18 @@ app.get('/api/stock/profile', (req, res) => {
     const sectors = DB.getSectors(symbol);
     const priceTicks = DB.getPriceTicks(symbol);
     const events = DB.getEvents(symbol);
-    const metrics = computeStockMetrics(priceTicks, { profile, events });
+    const sentiment = computeStockSentiment({ profile, events });
+    const metrics = computeStockMetrics(priceTicks, { profile, events, sentiment });
 
     if (profile) {
       profile.currentPrice = metrics.currentPrice;
     }
 
-    const clampedTicks = (priceTicks || []).map(t => ({
-      ...t,
-      price: Math.min(Math.max(t.price, metrics.lowerCircuit), metrics.upperCircuit)
-    }));
-
     res.json({
       profile,
       sectors,
       metrics,
-      priceTicks: clampedTicks,
+      priceTicks,
       eventsCount: events.length
     });
   } catch (err) {
@@ -105,7 +101,7 @@ app.post('/api/ipos/create', (req, res) => {
     const newIPO = DB.createIPO(req.body);
     res.json(newIPO);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(err.message.includes('already') ? 409 : 500).json({ error: err.message });
   }
 });
 
@@ -194,7 +190,8 @@ app.post('/api/events/analyze', async (req, res) => {
     const priceTicks = DB.getPriceTicks(targetSym);
     const events = DB.getEvents(targetSym);
     const sectors = DB.getSectors(targetSym);
-    const metrics = computeStockMetrics(priceTicks, { profile, events, sectors });
+    const sentiment = computeStockSentiment({ profile, events });
+    const metrics = computeStockMetrics(priceTicks, { profile, events, sectors, sentiment });
 
     const currentPrice = metrics ? metrics.currentPrice : (profile ? profile.currentPrice : 100);
     const apiKey = profile ? profile.apiKey : '';
@@ -244,7 +241,8 @@ app.post('/api/events/commit', async (req, res) => {
 
     const previousPrice = profile.currentPrice;
     const priceTicks = DB.getPriceTicks(targetSym);
-    const metrics = computeStockMetrics(priceTicks, profile);
+    const sentiment = computeStockSentiment({ profile, events: DB.getEvents(targetSym) });
+    const metrics = computeStockMetrics(priceTicks, { profile, sentiment });
     const newPrice = calculateNewPrice(previousPrice, impactPercent, metrics.lowerCircuit, metrics.upperCircuit);
 
     // Update Sector Scores
@@ -343,7 +341,7 @@ app.post('/api/stock/create', (req, res) => {
 
     res.json(freshStock);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(err.message.includes('already') ? 409 : 500).json({ error: err.message });
   }
 });
 
@@ -357,22 +355,15 @@ app.post('/api/stock/tick', (req, res) => {
     const stockData = { profile, sectors, events };
     
     // Import or compute stock sentiment score
-    const eventsArr = events || [];
-    let posCount = 0;
-    eventsArr.forEach(e => {
-      if (e.sentiment === 'POSITIVE' || e.impactPercent > 0) posCount++;
-    });
-    const positiveRatio = eventsArr.length > 0 ? Math.round((posCount / eventsArr.length) * 100) : 50;
-    const priceChangePercent = profile ? ((profile.currentPrice - profile.startingPrice) / profile.startingPrice) * 100 : 0;
-    let sentimentScore = Math.round(50 + (positiveRatio - 50) * 0.4 + Math.min(Math.max(priceChangePercent * 1.2, -25), 25));
-    sentimentScore = Math.min(Math.max(sentimentScore, 5), 98);
+    const sentimentData = computeStockSentiment({ profile, events });
+    const sentimentScore = sentimentData.sentimentScore;
 
-    const sentimentBias = (sentimentScore - 50) / 100 * 0.4;
-    const randomNoise = (Math.random() * 0.5 - 0.25);
+    const sentimentBias = (sentimentScore - 50) / 100 * 0.08;
+    const randomNoise = (Math.random() * 0.08 - 0.04);
     const noise = Number((sentimentBias + randomNoise).toFixed(3));
 
     const priceTicks = DB.getPriceTicks(symbol);
-    const metrics = computeStockMetrics(priceTicks, { profile, events, sectors });
+    const metrics = computeStockMetrics(priceTicks, { profile, events, sectors, sentiment: sentimentData });
 
     const newPrice = calculateNewPrice(profile ? profile.currentPrice : 100, noise, metrics.lowerCircuit, metrics.upperCircuit);
     let label = noise > 0.1 ? '🔥 Bullish Sentiment Buying' : noise < -0.1 ? '🔻 Bearish Market Selling' : '⚖️ Neutral Fluctuation';
@@ -386,7 +377,7 @@ app.post('/api/stock/tick', (req, res) => {
     DB.addMarketTick(newPrice, label, symbol);
 
     const updatedTicks = DB.getPriceTicks(symbol);
-    const updatedMetrics = computeStockMetrics(updatedTicks, { profile, events, sectors });
+    const updatedMetrics = computeStockMetrics(updatedTicks, { profile, events, sectors, sentiment: sentimentData });
 
     res.json({
       currentPrice: newPrice,

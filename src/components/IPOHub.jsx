@@ -28,10 +28,14 @@ export function IPOHub({ ipos = [], onRefresh, onSelectStock, onOpenCreateIPO })
 
   const handleListStock = async (ipo) => {
     if (window.confirm(`Allot shares and list ${ipo.symbol} on the live Human Stock Exchange?`)) {
-      await API.listIPOOnExchange(ipo.id);
-      await API.setActiveSymbol(ipo.symbol);
-      onRefresh();
-      onSelectStock(ipo.symbol);
+      try {
+        await API.listIPOOnExchange(ipo.id);
+        await API.setActiveSymbol(ipo.symbol);
+        onRefresh();
+        onSelectStock(ipo.symbol);
+      } catch (err) {
+        alert(`Unable to list ${ipo.symbol}: ${err.message}`);
+      }
     }
   };
 

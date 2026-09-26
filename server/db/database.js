@@ -266,7 +266,8 @@ export const DB = {
     const stock = store.stocks[sym];
     if (!stock) return null;
 
-    const metrics = computeStockMetrics(stock.priceTicks, stock);
+    const sentimentData = computeStockSentiment(stock);
+    const metrics = computeStockMetrics(stock.priceTicks, { ...stock, sentiment: sentimentData });
     const clampedPrice = Math.min(Math.max(Number(newPrice), metrics.lowerCircuit), metrics.upperCircuit);
 
     let finalLabel = label;
@@ -303,7 +304,7 @@ export const DB = {
     return Object.keys(store.stocks).map(sym => {
       const stock = store.stocks[sym];
       const sentimentData = computeStockSentiment(stock);
-      const metrics = computeStockMetrics(stock.priceTicks, stock);
+      const metrics = computeStockMetrics(stock.priceTicks, { ...stock, sentiment: sentimentData });
       const startingPrice = metrics.startingPrice;
       const currentPrice = metrics.currentPrice;
       const changeAmount = metrics.totalChangeAmount;
@@ -338,6 +339,9 @@ export const DB = {
   createIPO: (ipoData) => {
     const store = readStore();
     const sym = ipoData.symbol ? ipoData.symbol.toUpperCase() : 'NEW';
+    if (store.stocks[sym] || store.ipos.some(ipo => ipo.symbol === sym)) {
+      throw new Error(`Ticker ${sym} is already in use`);
+    }
     const sectors = ipoData.initialSectors || ipoData.sectors || { Career: 50, Education: 50, Skills: 50, Projects: 50, Finance: 50, Social: 50, Wellbeing: 50 };
     
     // Dynamically calculate initial GMP % and Sentiment Score based on sector ratings
@@ -390,6 +394,7 @@ export const DB = {
           name: newIPO.name,
           bio: newIPO.bio,
           startingPrice: newIPO.issuePrice,
+          listingPrice: Number((newIPO.issuePrice * (1 + newIPO.gmpPercent / 100)).toFixed(2)),
           currentPrice: Number((newIPO.issuePrice * (1 + newIPO.gmpPercent / 100)).toFixed(2)),
           walletBalance: 10000.00,
           sharesOwned: 0,
@@ -405,6 +410,12 @@ export const DB = {
             price: newIPO.issuePrice,
             eventId: null,
             label: `${sym} Initial Public Offering (IPO)`
+          },
+          {
+            timestamp: new Date().toISOString(),
+            price: Number((newIPO.issuePrice * (1 + newIPO.gmpPercent / 100)).toFixed(2)),
+            eventId: null,
+            label: `${sym} IPO Listing Price`
           }
         ],
         trades: []
@@ -432,6 +443,7 @@ export const DB = {
           name: ipo.name,
           bio: ipo.bio,
           startingPrice: ipo.issuePrice,
+          listingPrice: listedPrice,
           currentPrice: listedPrice,
           walletBalance: 10000.00,
           sharesOwned: 0,
@@ -480,6 +492,7 @@ export const DB = {
   createNewStock: ({ symbol, name, bio, startingPrice = 100, walletBalance = 10000, initialSectors }) => {
     const store = readStore();
     const sym = symbol ? symbol.toUpperCase() : 'NEW';
+    if (store.stocks[sym]) throw new Error(`Ticker ${sym} is already listed`);
 
     const freshStock = {
       profile: {
@@ -487,6 +500,7 @@ export const DB = {
         name: name || 'Human Stock Ticker',
         bio: bio || 'Personal Human Life Ticker.',
         startingPrice: Number(startingPrice),
+        listingPrice: Number(startingPrice),
         currentPrice: Number(startingPrice),
         walletBalance: Number(walletBalance),
         sharesOwned: 0,

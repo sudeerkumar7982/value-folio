@@ -43,6 +43,8 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       let openingPrice;
       if (ticksBeforeToday.length > 0) {
         openingPrice = ticksBeforeToday[ticksBeforeToday.length - 1].price;
+      } else if (profile?.listingPrice) {
+        openingPrice = profile.listingPrice;
       } else if (profile?.startingPrice) {
         openingPrice = profile.startingPrice;
       } else if (sortedTicks.length > 0) {
@@ -62,7 +64,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
         timestamp: startOfDay.toISOString(),
         dateLabel: '12:00 AM',
         fullDate: startOfDay.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
-        price: Math.min(Math.max(openingPrice, circuits.lowerCircuit), circuits.upperCircuit),
+        price: openingPrice,
         label: 'Day Opening Price (12:00 AM)',
         eventId: null, diff: 0, diffPct: 0
       });
@@ -76,7 +78,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
             timestamp: preTickD.toISOString(),
             dateLabel: preTickD.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
             fullDate: preTickD.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
-            price: Math.min(Math.max(openingPrice, circuits.lowerCircuit), circuits.upperCircuit),
+            price: openingPrice,
             label: 'Day Opening Baseline', eventId: null, diff: 0, diffPct: 0
           });
         }
@@ -86,21 +88,21 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       todayTicks.forEach(tick => {
         const d = new Date(tick.timestamp);
         const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-        const clampedP = Math.min(Math.max(tick.price, circuits.lowerCircuit), circuits.upperCircuit);
-        const diff = Number((clampedP - prevP).toFixed(2));
+        const price = tick.price;
+        const diff = Number((price - prevP).toFixed(2));
         const diffPct = prevP > 0 ? Number(((diff / prevP) * 100).toFixed(2)) : 0;
-        prevP = clampedP;
+        prevP = price;
         formattedData.push({
           timeMs: d.getTime(), timestamp: tick.timestamp,
           dateLabel: timeStr,
           fullDate: d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'medium' }),
-          price: clampedP, label: tick.label || 'Live Price Tick',
+          price, label: tick.label || 'Live Price Tick',
           eventId: tick.eventId, diff, diffPct
         });
       });
 
       const rawLatestPrice = sortedTicks.length > 0 ? sortedTicks[sortedTicks.length - 1].price : openingPrice;
-      const latestPrice = Math.min(Math.max(rawLatestPrice, circuits.lowerCircuit), circuits.upperCircuit);
+      const latestPrice = rawLatestPrice;
       const lastPointMs = formattedData.length > 0 ? formattedData[formattedData.length - 1].timeMs : startOfDayMs;
       if (now.getTime() - lastPointMs > 5000) {
         formattedData.push({
@@ -146,7 +148,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
     const sentimentData = { sentimentScore: profile?.sentimentScore ?? 50, sentiment: profile?.sentiment || 'NEUTRAL' };
     const circuits = getCircuitLimitsBySentiment(openingPrice, sentimentData);
 
-    let prevP = Math.min(Math.max(openingPrice, circuits.lowerCircuit), circuits.upperCircuit);
+    let prevP = openingPrice;
     const formattedData = [];
 
     const startDate = new Date(windowStartMs);
@@ -167,14 +169,14 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       else if (timeRange === '1M' || timeRange === '3M') dateLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       else dateLabel = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
 
-      const clampedP = Math.min(Math.max(tick.price, circuits.lowerCircuit), circuits.upperCircuit);
-      const diff = Number((clampedP - prevP).toFixed(2));
+      const price = tick.price;
+      const diff = Number((price - prevP).toFixed(2));
       const diffPct = prevP > 0 ? Number(((diff / prevP) * 100).toFixed(2)) : 0;
-      prevP = clampedP;
+      prevP = price;
       formattedData.push({
         timeMs: d.getTime(), timestamp: tick.timestamp, dateLabel,
         fullDate: d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
-        price: clampedP, label: tick.label || 'Price Tick',
+        price, label: tick.label || 'Price Tick',
         eventId: tick.eventId, diff, diffPct
       });
     });
