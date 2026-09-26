@@ -4,7 +4,6 @@ import {
   XAxis, YAxis, Tooltip, ReferenceLine, ReferenceDot, CartesianGrid
 } from 'recharts';
 import { Bell, Bookmark, Link2, BarChart2, ArrowUpDown } from 'lucide-react';
-import { getCircuitLimitsBySentiment } from '../utils/api.js';
 
 // ── Custom Crosshair Cursor (vertical line only, no box) ──
 const CrosshairCursor = ({ points, width, height, top }) => {
@@ -53,9 +52,6 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
         openingPrice = 100;
       }
 
-      const sentimentData = { sentimentScore: profile?.sentimentScore ?? 50, sentiment: profile?.sentiment || 'NEUTRAL' };
-      const circuits = getCircuitLimitsBySentiment(openingPrice, sentimentData);
-
       const todayTicks = sortedTicks.filter(t => new Date(t.timestamp).getTime() >= startOfDayMs);
       const formattedData = [];
 
@@ -101,10 +97,10 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
         });
       });
 
-      const rawLatestPrice = sortedTicks.length > 0 ? sortedTicks[sortedTicks.length - 1].price : openingPrice;
-      const latestPrice = rawLatestPrice;
+      const latestPrice = Number(profile?.currentPrice ?? (sortedTicks.length > 0 ? sortedTicks[sortedTicks.length - 1].price : openingPrice));
       const lastPointMs = formattedData.length > 0 ? formattedData[formattedData.length - 1].timeMs : startOfDayMs;
-      if (now.getTime() - lastPointMs > 5000) {
+      const lastPointPrice = formattedData.length > 0 ? formattedData[formattedData.length - 1].price : openingPrice;
+      if (Math.abs(lastPointPrice - latestPrice) >= 0.005 || now.getTime() - lastPointMs > 5000) {
         formattedData.push({
           timeMs: now.getTime(), timestamp: now.toISOString(),
           dateLabel: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
@@ -115,7 +111,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       }
 
       return {
-        formattedData, openingPrice, circuits, isNumericDomain: true,
+        formattedData, openingPrice, isNumericDomain: true,
         xDomain: [startOfDayMs, Math.max(now.getTime(), startOfDayMs + 3600000)],
         xFormatter: (val) => new Date(val).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
       };
@@ -144,9 +140,6 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       else if (sortedTicks.length > 0) openingPrice = sortedTicks[0].price;
       else if (profile?.startingPrice) openingPrice = profile.startingPrice;
     }
-
-    const sentimentData = { sentimentScore: profile?.sentimentScore ?? 50, sentiment: profile?.sentiment || 'NEUTRAL' };
-    const circuits = getCircuitLimitsBySentiment(openingPrice, sentimentData);
 
     let prevP = openingPrice;
     const formattedData = [];
@@ -181,10 +174,10 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       });
     });
 
-    const rawLatest = profile?.currentPrice || (sortedTicks.length > 0 ? sortedTicks[sortedTicks.length - 1].price : openingPrice);
-    const latestPrice = Math.min(Math.max(rawLatest, circuits.lowerCircuit), circuits.upperCircuit);
+    const latestPrice = Number(profile?.currentPrice ?? (sortedTicks.length > 0 ? sortedTicks[sortedTicks.length - 1].price : openingPrice));
     const lastPointMs = formattedData.length > 0 ? formattedData[formattedData.length - 1].timeMs : windowStartMs;
-    if (now.getTime() - lastPointMs > 60000) {
+    const lastPointPrice = formattedData.length > 0 ? formattedData[formattedData.length - 1].price : openingPrice;
+    if (Math.abs(lastPointPrice - latestPrice) >= 0.005 || now.getTime() - lastPointMs > 60000) {
       formattedData.push({
         timeMs: now.getTime(), timestamp: now.toISOString(),
         dateLabel: now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
@@ -195,7 +188,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
     }
 
     return {
-      formattedData, openingPrice, circuits, isNumericDomain: true,
+      formattedData, openingPrice, isNumericDomain: true,
       xDomain: [windowStartMs, Math.max(now.getTime(), windowStartMs + 86400000)],
       xFormatter: (val) => {
         const d = new Date(val);
@@ -206,11 +199,10 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
     };
   };
 
-  const { formattedData, openingPrice, circuits, isNumericDomain, xDomain, xFormatter } = getFilteredData();
+  const { formattedData, openingPrice, isNumericDomain, xDomain, xFormatter } = getFilteredData();
 
   const validPrices = formattedData.filter(d => d.price !== null && !isNaN(d.price)).map(d => d.price);
-  const rawLatestPrice = profile?.currentPrice ?? (validPrices.length > 0 ? validPrices[validPrices.length - 1] : openingPrice);
-  const latestPrice = Math.min(Math.max(rawLatestPrice, circuits.lowerCircuit), circuits.upperCircuit);
+  const latestPrice = Number(profile?.currentPrice ?? (validPrices.length > 0 ? validPrices[validPrices.length - 1] : openingPrice));
   const periodChangeAmt = Number((latestPrice - openingPrice).toFixed(2));
   const periodChangePct = openingPrice > 0 ? Number(((periodChangeAmt / openingPrice) * 100).toFixed(2)) : 0;
   const isUpTrend = periodChangeAmt >= 0;
