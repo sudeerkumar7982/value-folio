@@ -44,11 +44,7 @@ function readStore() {
 }
 
 function writeStore(data) {
-  try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-  } catch (err) {
-    console.error('Error writing store.json:', err);
-  }
+  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
 }
 
 export function computeStockSentiment(stock) {
@@ -552,12 +548,13 @@ export const DB = {
 
   deleteStock: (symbol) => {
     const store = readStore();
-    if (store.stocks && store.stocks[symbol]) {
-      delete store.stocks[symbol];
-      const remaining = Object.keys(store.stocks);
-      store.activeSymbol = remaining.length > 0 ? remaining[0] : '';
-      writeStore(store);
-    }
+    const sym = String(symbol || '').trim().toUpperCase();
+    if (!store.stocks?.[sym]) throw new Error(`Stock ${sym} not found`);
+
+    delete store.stocks[sym];
+    const remaining = Object.keys(store.stocks);
+    store.activeSymbol = remaining.length > 0 ? remaining[0] : '';
+    writeStore(store);
     return store;
   },
 

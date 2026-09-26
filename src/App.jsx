@@ -86,15 +86,19 @@ export default function App() {
 
   const handleDeleteStock = async (symbol) => {
     if (window.confirm(`Delete ${symbol} stock from the live exchange market?`)) {
-      await API.deleteStock(symbol);
-      const remaining = await API.getAllStocks();
-      if (remaining.length > 0) {
-        await handleSelectStock(remaining[0].symbol);
-      } else {
-        setData(null);
-        setActiveSymbol('');
-        setStocksList([]);
-        loadData();
+      try {
+        await API.deleteStock(symbol);
+        const remaining = await API.getAllStocks();
+        if (remaining.length > 0) {
+          await handleSelectStock(remaining[0].symbol);
+        } else {
+          setData(null);
+          setActiveSymbol('');
+          setStocksList([]);
+          await loadData();
+        }
+      } catch (err) {
+        window.alert(`Unable to delete ${symbol}: ${err.message}`);
       }
     }
   };

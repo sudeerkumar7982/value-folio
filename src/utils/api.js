@@ -314,6 +314,22 @@ export const API = {
   },
 
   deleteStock: async (symbol) => {
+    let response;
+    try {
+      response = await fetch('/api/stocks/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symbol })
+      });
+    } catch (e) {}
+
+    if (response) {
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || `Unable to delete ${symbol}`);
+      }
+    }
+
     const store = getLocalStore();
     if (store.stocks && store.stocks[symbol]) {
       delete store.stocks[symbol];
@@ -321,14 +337,6 @@ export const API = {
       store.activeSymbol = remaining.length > 0 ? remaining[0] : '';
       saveLocalStore(store);
     }
-
-    try {
-      await fetch('/api/stocks/delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symbol })
-      });
-    } catch (e) {}
 
     return store;
   },

@@ -55,9 +55,9 @@ app.post('/api/stocks/delete', (req, res) => {
     const { symbol } = req.body;
     if (!symbol) return res.status(400).json({ error: 'Symbol required' });
     const result = DB.deleteStock(symbol);
-    res.json({ success: true, store: result });
+    res.json({ success: true, activeSymbol: result.activeSymbol });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(err.message.endsWith('not found') ? 404 : 500).json({ error: err.message });
   }
 });
 
