@@ -377,16 +377,18 @@ app.post('/api/stock/tick', (req, res) => {
       label = `🔒 Lower Circuit Limit Hit (-${metrics.lowerCircuitPct}%)`;
     }
 
-    DB.addMarketTick(newPrice, label, symbol);
+    const updatedProfile = DB.addMarketTick(newPrice, label, symbol);
+    const persistedPrice = updatedProfile ? updatedProfile.currentPrice : newPrice;
 
     const updatedTicks = DB.getPriceTicks(symbol);
     const updatedMetrics = computeStockMetrics(updatedTicks, { profile, events, sectors, sentiment: sentimentData });
 
     res.json({
-      currentPrice: newPrice,
+      currentPrice: persistedPrice,
       noise,
       priceTicks: updatedTicks,
-      metrics: updatedMetrics
+      metrics: updatedMetrics,
+      sentiment: sentimentData
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

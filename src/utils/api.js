@@ -893,7 +893,8 @@ export const API = {
       lowerCircuitPct: circuits.lowerCircuitPct,
       noise,
       priceTicks: stock.priceTicks,
-      metrics: computeMetrics(stock.priceTicks, stock)
+      metrics: computeMetrics(stock.priceTicks, stock),
+      sentiment: sentimentData
     };
   },
 

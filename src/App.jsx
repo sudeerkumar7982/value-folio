@@ -103,27 +103,51 @@ export default function App() {
   useEffect(() => {
     if (!isLiveActive || loading || !activeSymbol) return;
 
+    let tickInFlight = false;
     const interval = setInterval(async () => {
+      if (tickInFlight) return;
+      tickInFlight = true;
+
       try {
         const tickResult = await API.tick(activeSymbol);
         if (tickResult && tickResult.currentPrice) {
+          const tickMetrics = tickResult.metrics || {};
+          const tickSentiment = tickResult.sentiment || {};
+
           setData(prev => {
             if (!prev) return prev;
             return {
               ...prev,
               profile: {
                 ...prev.profile,
-                currentPrice: tickResult.currentPrice
+                currentPrice: tickResult.currentPrice,
+                sentiment: tickSentiment.sentiment || tickMetrics.sentiment || prev.profile.sentiment,
+                sentimentScore: tickSentiment.sentimentScore ?? tickMetrics.sentimentScore ?? prev.profile.sentimentScore,
+                sentimentLabel: tickSentiment.sentimentLabel || prev.profile.sentimentLabel
               },
               priceTicks: tickResult.priceTicks || prev.priceTicks,
               metrics: tickResult.metrics || prev.metrics
             };
           });
 
-          setStocksList(prev => prev.map(s => s.symbol === activeSymbol ? { ...s, currentPrice: tickResult.currentPrice } : s));
+          setStocksList(prev => prev.map(stock => stock.symbol === activeSymbol ? {
+            ...stock,
+            currentPrice: tickResult.currentPrice,
+            changeAmount: tickMetrics.totalChangeAmount ?? stock.changeAmount,
+            changePercent: tickMetrics.totalChangePercent ?? stock.changePercent,
+            upperCircuit: tickMetrics.upperCircuit ?? stock.upperCircuit,
+            lowerCircuit: tickMetrics.lowerCircuit ?? stock.lowerCircuit,
+            upperCircuitPct: tickMetrics.upperCircuitPct ?? stock.upperCircuitPct,
+            lowerCircuitPct: tickMetrics.lowerCircuitPct ?? stock.lowerCircuitPct,
+            sentiment: tickSentiment.sentiment || tickMetrics.sentiment || stock.sentiment,
+            sentimentScore: tickSentiment.sentimentScore ?? tickMetrics.sentimentScore ?? stock.sentimentScore,
+            sentimentLabel: tickSentiment.sentimentLabel || stock.sentimentLabel
+          } : stock));
         }
       } catch (e) {
         console.warn('Live tick update error:', e.message);
+      } finally {
+        tickInFlight = false;
       }
     }, 1000);
 
