@@ -25,3 +25,16 @@ npm run dev
 # Run full-stack production server
 npm start
 ```
+
+## Free PostgreSQL Storage
+Render's free PostgreSQL databases expire after 30 days. For a no-cost database that is not a trial, use Neon Free and set its connection string as the Render service's `DATABASE_URL`:
+
+1. Create a project on [Neon](https://neon.com/) using the Free plan and copy its PostgreSQL connection string.
+2. In the Render Dashboard, open the `value-folio` service, go to **Environment**, and add or update `DATABASE_URL` with that string. Keep it secret.
+3. Save the change and redeploy the service. On first connection, the app creates its state table and seeds it from `server/db/store.json` only if the database is empty.
+
+Neon currently describes Free as a permanent plan, not a trial, with limits including 0.5 GB storage per project, 100 compute-unit hours per month, and 5 GB monthly public network transfer. Free compute scales to zero when idle. Provider plans and limits can change; Render may also restrict free web services that generate unusually high external database traffic.
+
+If you already deployed the Render Postgres Blueprint, changing this file does not delete that database or automatically replace an existing `DATABASE_URL` reference. Set `DATABASE_URL` to Neon manually in the Render Dashboard. Export and import any existing data you need before deleting the old database.
+
+Without `DATABASE_URL`, local development uses the JSON file; production startup requires the variable to avoid silently using Render's ephemeral filesystem.
