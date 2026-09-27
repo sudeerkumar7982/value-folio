@@ -5,11 +5,16 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import pg from 'pg';
 import { computeStockMetrics } from '../engine/priceEngine.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DATA_FILE = path.join(__dirname, 'store.json');
+const BUNDLED_DATA_FILE = path.join(__dirname, 'store.json');
+const DATA_FILE = process.env.DATA_FILE || BUNDLED_DATA_FILE;
+const pool = process.env.DATABASE_URL
+  ? new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 5 })
+  : null;
 
 const INITIAL_DATA = {
   activeSymbol: '',
@@ -17,11 +22,43 @@ const INITIAL_DATA = {
   ipos: []
 };
 
-function readStore() {
+function readBundledStore() {
+  try {
+    const store = JSON.parse(fs.readFileSync(BUNDLED_DATA_FILE, 'utf-8'));
+    if (store && typeof store === 'object' && store.stocks) return store;
+    return {
+      activeSymbol: store.activeSymbol || '',
+      stocks: {},
+      ipos: store.ipos || []
+    };
+  } catch (err) {
+    console.error('Error reading bundled store.json:', err);
+    return INITIAL_DATA;
+  }
+}
+
+async function readStore() {
+  if (pool) {
+    const { rows } = await pool.query('SELECT data FROM value_folio_state WHERE id = 1');
+    return rows[0]?.data || INITIAL_DATA;
+  }
+
   try {
     if (!fs.existsSync(DATA_FILE)) {
-      fs.writeFileSync(DATA_FILE, JSON.stringify(INITIAL_DATA, null, 2));
-      return INITIAL_DATA;
+      let initialData = INITIAL_DATA;
+      if (DATA_FILE !== BUNDLED_DATA_FILE && fs.existsSync(BUNDLED_DATA_FILE)) {
+        try {
+          const bundledData = JSON.parse(fs.readFileSync(BUNDLED_DATA_FILE, 'utf-8'));
+          if (bundledData && typeof bundledData === 'object' && bundledData.stocks) {
+            initialData = bundledData;
+          }
+        } catch (err) {
+          console.error('Error seeding persistent store from bundled data:', err);
+        }
+      }
+      fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
+      fs.writeFileSync(DATA_FILE, JSON.stringify(initialData, null, 2));
+      return initialData;
     }
     const raw = fs.readFileSync(DATA_FILE, 'utf-8');
     const store = JSON.parse(raw);
@@ -32,7 +69,7 @@ function readStore() {
         stocks: {},
         ipos: store.ipos || []
       };
-      writeStore(migrated);
+      await writeStore(migrated);
       return migrated;
     }
 
@@ -43,7 +80,16 @@ function readStore() {
   }
 }
 
-function writeStore(data) {
+async function writeStore(data) {
+  if (pool) {
+    await pool.query(
+      `INSERT INTO value_folio_state (id, data)
+       VALUES (1, $1::jsonb)
+       ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data`,
+      [JSON.stringify(data)]
+    );
+    return;
+  }
   fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
 }
 
@@ -108,60 +154,77 @@ export function computeStockSentiment(stock) {
   };
 }
 
-export const DB = {
-  getActiveSymbol: () => readStore().activeSymbol || '',
+const dbMethods = {
+  initialize: async () => {
+    if (process.env.NODE_ENV === 'production' && !pool) {
+      throw new Error('DATABASE_URL must be configured in production for persistent storage');
+    }
+    if (!pool) return;
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS value_folio_state (
+        id SMALLINT PRIMARY KEY CHECK (id = 1),
+        data JSONB NOT NULL
+      )
+    `);
+    await pool.query(
+      'INSERT INTO value_folio_state (id, data) VALUES (1, $1::jsonb) ON CONFLICT (id) DO NOTHING',
+      [JSON.stringify(readBundledStore())]
+    );
+  },
 
-  setActiveSymbol: (symbol) => {
-    const store = readStore();
+  getActiveSymbol: async () => (await readStore()).activeSymbol || '',
+
+  setActiveSymbol: async (symbol) => {
+    const store = await readStore();
     if (store.stocks[symbol]) {
       store.activeSymbol = symbol;
-      writeStore(store);
+      await writeStore(store);
     }
     return store.activeSymbol;
   },
 
-  getProfile: (symbol) => {
-    const store = readStore();
+  getProfile: async (symbol) => {
+    const store = await readStore();
     const sym = symbol || store.activeSymbol;
     return store.stocks[sym]?.profile || null;
   },
 
-  updateProfile: (updates, symbol) => {
-    const store = readStore();
+  updateProfile: async (updates, symbol) => {
+    const store = await readStore();
     const sym = symbol || store.activeSymbol;
     if (store.stocks[sym]) {
       store.stocks[sym].profile = { ...store.stocks[sym].profile, ...updates };
-      writeStore(store);
+      await writeStore(store);
       return store.stocks[sym].profile;
     }
     return null;
   },
 
-  getSectors: (symbol) => {
-    const store = readStore();
+  getSectors: async (symbol) => {
+    const store = await readStore();
     const sym = symbol || store.activeSymbol;
     return store.stocks[sym]?.sectors || { Career: 50, Education: 50, Skills: 50, Projects: 50, Finance: 50, Social: 50, Wellbeing: 50 };
   },
 
-  updateSectors: (newSectors, symbol) => {
-    const store = readStore();
+  updateSectors: async (newSectors, symbol) => {
+    const store = await readStore();
     const sym = symbol || store.activeSymbol;
     if (store.stocks[sym]) {
       store.stocks[sym].sectors = newSectors;
-      writeStore(store);
+      await writeStore(store);
       return store.stocks[sym].sectors;
     }
     return null;
   },
 
-  getEvents: (symbol) => {
-    const store = readStore();
+  getEvents: async (symbol) => {
+    const store = await readStore();
     const sym = symbol || store.activeSymbol;
     return store.stocks[sym]?.events || [];
   },
 
-  addEvent: (event, symbol) => {
-    const store = readStore();
+  addEvent: async (event, symbol) => {
+    const store = await readStore();
     const sym = symbol || store.activeSymbol;
     const stock = store.stocks[sym];
     if (!stock) return null;
@@ -175,12 +238,12 @@ export const DB = {
     });
     stock.profile.currentPrice = event.newPrice;
 
-    writeStore(store);
+    await writeStore(store);
     return event;
   },
 
-  deleteEvent: (eventId, symbol) => {
-    const store = readStore();
+  deleteEvent: async (eventId, symbol) => {
+    const store = await readStore();
     const sym = symbol || store.activeSymbol;
     const stock = store.stocks[sym];
     if (!stock) return store;
@@ -200,24 +263,24 @@ export const DB = {
       });
     }
 
-    writeStore(store);
+    await writeStore(store);
     return store;
   },
 
-  getPriceTicks: (symbol) => {
-    const store = readStore();
+  getPriceTicks: async (symbol) => {
+    const store = await readStore();
     const sym = symbol || store.activeSymbol;
     return store.stocks[sym]?.priceTicks || [];
   },
 
-  getTrades: (symbol) => {
-    const store = readStore();
+  getTrades: async (symbol) => {
+    const store = await readStore();
     const sym = symbol || store.activeSymbol;
     return store.stocks[sym]?.trades || [];
   },
 
-  executeTrade: (type, shares, currentPrice, symbol) => {
-    const store = readStore();
+  executeTrade: async (type, shares, currentPrice, symbol) => {
+    const store = await readStore();
     const sym = symbol || store.activeSymbol;
     const stock = store.stocks[sym];
     if (!stock) throw new Error('Stock not found');
@@ -252,12 +315,12 @@ export const DB = {
     };
 
     stock.trades.unshift(trade);
-    writeStore(store);
+    await writeStore(store);
     return { profile: stock.profile, trade };
   },
 
-  addMarketTick: (newPrice, label = 'Live Market Sentiment', symbol) => {
-    const store = readStore();
+  addMarketTick: async (newPrice, label = 'Live Market Sentiment', symbol) => {
+    const store = await readStore();
     const sym = symbol || store.activeSymbol;
     const stock = store.stocks[sym];
     if (!stock) return null;
@@ -291,12 +354,12 @@ export const DB = {
       });
     }
 
-    writeStore(store);
+    await writeStore(store);
     return stock.profile;
   },
 
-  getAllStocks: () => {
-    const store = readStore();
+  getAllStocks: async () => {
+    const store = await readStore();
     return Object.keys(store.stocks).map(sym => {
       const stock = store.stocks[sym];
       const sentimentData = computeStockSentiment(stock);
@@ -327,13 +390,13 @@ export const DB = {
     });
   },
 
-  getIPOs: () => {
-    const store = readStore();
+  getIPOs: async () => {
+    const store = await readStore();
     return store.ipos || [];
   },
 
-  createIPO: (ipoData) => {
-    const store = readStore();
+  createIPO: async (ipoData) => {
+    const store = await readStore();
     const sym = ipoData.symbol ? ipoData.symbol.toUpperCase() : 'NEW';
     if (store.stocks[sym] || store.ipos.some(ipo => ipo.symbol === sym)) {
       throw new Error(`Ticker ${sym} is already in use`);
@@ -419,12 +482,12 @@ export const DB = {
       store.activeSymbol = sym;
     }
 
-    writeStore(store);
+    await writeStore(store);
     return newIPO;
   },
 
-  listIPOOnExchange: (ipoId) => {
-    const store = readStore();
+  listIPOOnExchange: async (ipoId) => {
+    const store = await readStore();
     const ipo = store.ipos.find(i => i.id === ipoId);
     if (!ipo) throw new Error('IPO not found');
 
@@ -468,12 +531,12 @@ export const DB = {
     }
 
     store.activeSymbol = sym;
-    writeStore(store);
+    await writeStore(store);
     return { ipo, stock: store.stocks[sym] };
   },
 
-  bidIPO: (ipoId, bidsCount = 1) => {
-    const store = readStore();
+  bidIPO: async (ipoId, bidsCount = 1) => {
+    const store = await readStore();
     const ipo = store.ipos.find(i => i.id === ipoId);
     if (!ipo) throw new Error('IPO not found');
 
@@ -481,12 +544,12 @@ export const DB = {
     const subMultiplier = Math.min((ipo.bidsCount / 100).toFixed(1), 99.9);
     ipo.subscriptionRatio = `${subMultiplier}x`;
 
-    writeStore(store);
+    await writeStore(store);
     return ipo;
   },
 
-  createNewStock: ({ symbol, name, bio, startingPrice = 100, walletBalance = 10000, initialSectors }) => {
-    const store = readStore();
+  createNewStock: async ({ symbol, name, bio, startingPrice = 100, walletBalance = 10000, initialSectors }) => {
+    const store = await readStore();
     const sym = symbol ? symbol.toUpperCase() : 'NEW';
     if (store.stocks[sym]) throw new Error(`Ticker ${sym} is already listed`);
 
@@ -521,12 +584,12 @@ export const DB = {
 
     store.stocks[sym] = freshStock;
     store.activeSymbol = sym;
-    writeStore(store);
+    await writeStore(store);
     return freshStock;
   },
 
-  clearEvents: (symbol) => {
-    const store = readStore();
+  clearEvents: async (symbol) => {
+    const store = await readStore();
     const sym = symbol || store.activeSymbol;
     const stock = store.stocks[sym];
     if (!stock) return store;
@@ -542,32 +605,46 @@ export const DB = {
       });
     }
     stock.profile.currentPrice = stock.profile.startingPrice;
-    writeStore(store);
+    await writeStore(store);
     return store;
   },
 
-  deleteStock: (symbol) => {
-    const store = readStore();
+  deleteStock: async (symbol) => {
+    const store = await readStore();
     const sym = String(symbol || '').trim().toUpperCase();
     if (!store.stocks?.[sym]) throw new Error(`Stock ${sym} not found`);
 
     delete store.stocks[sym];
     const remaining = Object.keys(store.stocks);
     store.activeSymbol = remaining.length > 0 ? remaining[0] : '';
-    writeStore(store);
+    await writeStore(store);
     return store;
   },
 
-  deleteIPO: (ipoId) => {
-    const store = readStore();
+  deleteIPO: async (ipoId) => {
+    const store = await readStore();
     store.ipos = (store.ipos || []).filter(i => i.id !== ipoId);
-    writeStore(store);
+    await writeStore(store);
     return store.ipos;
   },
 
-  resetData: () => {
+  resetData: async () => {
     const emptyState = { activeSymbol: '', stocks: {}, ipos: [] };
-    writeStore(emptyState);
+    await writeStore(emptyState);
     return emptyState;
   }
 };
+
+let operationQueue = Promise.resolve();
+
+export const DB = new Proxy(dbMethods, {
+  get(target, property) {
+    const method = target[property];
+    if (typeof method !== 'function') return method;
+    return (...args) => {
+      const operation = operationQueue.then(() => method(...args));
+      operationQueue = operation.catch(() => {});
+      return operation;
+    };
+  }
+});

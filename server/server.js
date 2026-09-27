@@ -21,9 +21,9 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../dist')));
 
 // Get all listed stocks with sentiment scores & metrics
-app.get('/api/stocks', (req, res) => {
+app.get('/api/stocks', async (req, res) => {
   try {
-    const stocks = DB.getAllStocks();
+    const stocks = await DB.getAllStocks();
     res.json(stocks);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -31,30 +31,30 @@ app.get('/api/stocks', (req, res) => {
 });
 
 // Get/Set active stock symbol
-app.get('/api/stocks/active', (req, res) => {
+app.get('/api/stocks/active', async (req, res) => {
   try {
-    res.json({ activeSymbol: DB.getActiveSymbol() });
+    res.json({ activeSymbol: await DB.getActiveSymbol() });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.post('/api/stocks/active', (req, res) => {
+app.post('/api/stocks/active', async (req, res) => {
   try {
     const { symbol } = req.body;
     if (!symbol) return res.status(400).json({ error: 'Symbol required' });
-    const active = DB.setActiveSymbol(symbol);
+    const active = await DB.setActiveSymbol(symbol);
     res.json({ activeSymbol: active });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.post('/api/stocks/delete', (req, res) => {
+app.post('/api/stocks/delete', async (req, res) => {
   try {
     const { symbol } = req.body;
     if (!symbol) return res.status(400).json({ error: 'Symbol required' });
-    const result = DB.deleteStock(symbol);
+    const result = await DB.deleteStock(symbol);
     res.json({ success: true, activeSymbol: result.activeSymbol });
   } catch (err) {
     res.status(err.message.endsWith('not found') ? 404 : 500).json({ error: err.message });
@@ -62,13 +62,13 @@ app.post('/api/stocks/delete', (req, res) => {
 });
 
 // Get complete profile for active or specific stock
-app.get('/api/stock/profile', (req, res) => {
+app.get('/api/stock/profile', async (req, res) => {
   try {
-    const symbol = req.query.symbol || DB.getActiveSymbol();
-    const profile = DB.getProfile(symbol);
-    const sectors = DB.getSectors(symbol);
-    const priceTicks = DB.getPriceTicks(symbol);
-    const events = DB.getEvents(symbol);
+    const symbol = req.query.symbol || await DB.getActiveSymbol();
+    const profile = await DB.getProfile(symbol);
+    const sectors = await DB.getSectors(symbol);
+    const priceTicks = await DB.getPriceTicks(symbol);
+    const events = await DB.getEvents(symbol);
     const sentiment = computeStockSentiment({ profile, events });
     const metrics = computeStockMetrics(priceTicks, { profile, events, sentiment });
 
@@ -89,50 +89,50 @@ app.get('/api/stock/profile', (req, res) => {
 });
 
 // --- IPO ENDPOINTS (ValueFolio Launchpad) ---
-app.get('/api/ipos', (req, res) => {
+app.get('/api/ipos', async (req, res) => {
   try {
-    res.json(DB.getIPOs());
+    res.json(await DB.getIPOs());
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.post('/api/ipos/create', (req, res) => {
+app.post('/api/ipos/create', async (req, res) => {
   try {
-    const newIPO = DB.createIPO(req.body);
+    const newIPO = await DB.createIPO(req.body);
     res.json(newIPO);
   } catch (err) {
     res.status(err.message.includes('already') ? 409 : 500).json({ error: err.message });
   }
 });
 
-app.post('/api/ipos/list', (req, res) => {
+app.post('/api/ipos/list', async (req, res) => {
   try {
     const { ipoId } = req.body;
     if (!ipoId) return res.status(400).json({ error: 'ipoId is required' });
-    const result = DB.listIPOOnExchange(ipoId);
+    const result = await DB.listIPOOnExchange(ipoId);
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.post('/api/ipos/bid', (req, res) => {
+app.post('/api/ipos/bid', async (req, res) => {
   try {
     const { ipoId, bidsCount } = req.body;
     if (!ipoId) return res.status(400).json({ error: 'ipoId is required' });
-    const updated = DB.bidIPO(ipoId, bidsCount || 1);
+    const updated = await DB.bidIPO(ipoId, bidsCount || 1);
     res.json(updated);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.post('/api/ipos/delete', (req, res) => {
+app.post('/api/ipos/delete', async (req, res) => {
   try {
     const { ipoId } = req.body;
     if (!ipoId) return res.status(400).json({ error: 'ipoId is required' });
-    const ipos = DB.deleteIPO(ipoId);
+    const ipos = await DB.deleteIPO(ipoId);
     res.json({ success: true, ipos });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -140,11 +140,11 @@ app.post('/api/ipos/delete', (req, res) => {
 });
 
 // Delete single news event
-app.post('/api/events/delete', (req, res) => {
+app.post('/api/events/delete', async (req, res) => {
   try {
     const { id, symbol } = req.body;
     if (!id) return res.status(400).json({ error: 'Event ID required' });
-    const data = DB.deleteEvent(id, symbol);
+    const data = await DB.deleteEvent(id, symbol);
     res.json({ success: true, data });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -152,10 +152,10 @@ app.post('/api/events/delete', (req, res) => {
 });
 
 // Clear all newsfeed events
-app.post('/api/events/clear', (req, res) => {
+app.post('/api/events/clear', async (req, res) => {
   try {
     const { symbol } = req.body;
-    const data = DB.clearEvents(symbol);
+    const data = await DB.clearEvents(symbol);
     res.json({ success: true, data });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -163,10 +163,10 @@ app.post('/api/events/clear', (req, res) => {
 });
 
 // Get life newsfeed events
-app.get('/api/events', (req, res) => {
+app.get('/api/events', async (req, res) => {
   try {
-    const symbol = req.query.symbol || DB.getActiveSymbol();
-    const events = DB.getEvents(symbol);
+    const symbol = req.query.symbol || await DB.getActiveSymbol();
+    const events = await DB.getEvents(symbol);
     res.json(events);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -177,20 +177,20 @@ app.get('/api/events', (req, res) => {
 app.post('/api/events/analyze', async (req, res) => {
   try {
     const { title, description, sector, symbol } = req.body;
-    let targetSym = symbol || DB.getActiveSymbol();
-    let profile = DB.getProfile(targetSym);
+    let targetSym = symbol || await DB.getActiveSymbol();
+    let profile = await DB.getProfile(targetSym);
 
     if (!profile) {
-      const all = DB.getAllStocks();
+      const all = await DB.getAllStocks();
       if (all.length > 0) {
         targetSym = all[0].symbol;
-        profile = DB.getProfile(targetSym);
+        profile = await DB.getProfile(targetSym);
       }
     }
 
-    const priceTicks = DB.getPriceTicks(targetSym);
-    const events = DB.getEvents(targetSym);
-    const sectors = DB.getSectors(targetSym);
+    const priceTicks = await DB.getPriceTicks(targetSym);
+    const events = await DB.getEvents(targetSym);
+    const sectors = await DB.getSectors(targetSym);
     const sentiment = computeStockSentiment({ profile, events });
     const metrics = computeStockMetrics(priceTicks, { profile, events, sectors, sentiment });
 
@@ -219,14 +219,14 @@ app.post('/api/events/analyze', async (req, res) => {
 app.post('/api/events/commit', async (req, res) => {
   try {
     const { title, description, sector, customImpact, date, symbol } = req.body;
-    let targetSym = symbol || DB.getActiveSymbol();
-    let profile = DB.getProfile(targetSym);
+    let targetSym = symbol || await DB.getActiveSymbol();
+    let profile = await DB.getProfile(targetSym);
 
     if (!targetSym || !profile) {
-      const allStocks = DB.getAllStocks();
+      const allStocks = await DB.getAllStocks();
       if (allStocks.length > 0) {
         targetSym = allStocks[0].symbol;
-        profile = DB.getProfile(targetSym);
+        profile = await DB.getProfile(targetSym);
       }
     }
 
@@ -241,15 +241,15 @@ app.post('/api/events/commit', async (req, res) => {
     const impactPercent = customImpact !== undefined && customImpact !== null ? Number(customImpact) : aiResult.impactPercent;
 
     const previousPrice = profile.currentPrice;
-    const priceTicks = DB.getPriceTicks(targetSym);
-    const sentiment = computeStockSentiment({ profile, events: DB.getEvents(targetSym) });
+    const priceTicks = await DB.getPriceTicks(targetSym);
+    const sentiment = computeStockSentiment({ profile, events: await DB.getEvents(targetSym) });
     const metrics = computeStockMetrics(priceTicks, { profile, sentiment });
     const newPrice = calculateNewPrice(previousPrice, impactPercent, metrics.lowerCircuit, metrics.upperCircuit);
 
     // Update Sector Scores
-    const currentSectors = DB.getSectors(targetSym);
+    const currentSectors = await DB.getSectors(targetSym);
     const updatedSectors = calculateSectorUpdates(currentSectors, aiResult.primarySector, aiResult.sectorDelta);
-    DB.updateSectors(updatedSectors, targetSym);
+    await DB.updateSectors(updatedSectors, targetSym);
 
     const todayStr = new Date().toISOString().split('T')[0];
     const eventTimestamp = (date && date !== todayStr)
@@ -271,7 +271,7 @@ app.post('/api/events/commit', async (req, res) => {
       timestamp: eventTimestamp
     };
 
-    DB.addEvent(newEvent, targetSym);
+    await DB.addEvent(newEvent, targetSym);
 
     res.json({
       success: true,
@@ -285,16 +285,16 @@ app.post('/api/events/commit', async (req, res) => {
 });
 
 // Execute virtual trading order
-app.post('/api/trade', (req, res) => {
+app.post('/api/trade', async (req, res) => {
   try {
     const { type, shares, symbol } = req.body;
-    const targetSym = symbol || DB.getActiveSymbol();
-    const profile = DB.getProfile(targetSym);
+    const targetSym = symbol || await DB.getActiveSymbol();
+    const profile = await DB.getProfile(targetSym);
 
     if (!['BUY', 'SELL'].includes(type)) return res.status(400).json({ error: 'Invalid trade type' });
     if (!shares || shares <= 0) return res.status(400).json({ error: 'Shares must be > 0' });
 
-    const result = DB.executeTrade(type, Number(shares), profile.currentPrice, targetSym);
+    const result = await DB.executeTrade(type, Number(shares), profile.currentPrice, targetSym);
     res.json(result);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -302,21 +302,21 @@ app.post('/api/trade', (req, res) => {
 });
 
 // Get user trades
-app.get('/api/trades', (req, res) => {
+app.get('/api/trades', async (req, res) => {
   try {
-    const symbol = req.query.symbol || DB.getActiveSymbol();
-    res.json(DB.getTrades(symbol));
+    const symbol = req.query.symbol || await DB.getActiveSymbol();
+    res.json(await DB.getTrades(symbol));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
 // Update Profile settings
-app.post('/api/settings', (req, res) => {
+app.post('/api/settings', async (req, res) => {
   try {
     const { symbol, ...updates } = req.body;
-    const targetSym = symbol || DB.getActiveSymbol();
-    const updated = DB.updateProfile(updates, targetSym);
+    const targetSym = symbol || await DB.getActiveSymbol();
+    const updated = await DB.updateProfile(updates, targetSym);
     res.json(updated);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -324,14 +324,14 @@ app.post('/api/settings', (req, res) => {
 });
 
 // Issue New Human Stock IPO Endpoint
-app.post('/api/stock/create', (req, res) => {
+app.post('/api/stock/create', async (req, res) => {
   try {
     const { symbol, name, bio, startingPrice, walletBalance, initialSectors } = req.body;
     if (!symbol || !name) {
       return res.status(400).json({ error: 'Ticker symbol and name are required' });
     }
 
-    const freshStock = DB.createNewStock({
+    const freshStock = await DB.createNewStock({
       symbol,
       name,
       bio,
@@ -347,19 +347,19 @@ app.post('/api/stock/create', (req, res) => {
 });
 
 // Live Market Fluctuation Tick Endpoint
-app.post('/api/stock/tick', (req, res) => {
+app.post('/api/stock/tick', async (req, res) => {
   try {
-    const symbol = req.body.symbol || DB.getActiveSymbol();
-    const profile = DB.getProfile(symbol);
-    const sectors = DB.getSectors(symbol);
-    const events = DB.getEvents(symbol);
+    const symbol = req.body.symbol || await DB.getActiveSymbol();
+    const profile = await DB.getProfile(symbol);
+    const sectors = await DB.getSectors(symbol);
+    const events = await DB.getEvents(symbol);
     const stockData = { profile, sectors, events };
     
     // Import or compute stock sentiment score
     const sentimentData = computeStockSentiment({ profile, events });
     const sentimentScore = sentimentData.sentimentScore;
 
-    const priceTicks = DB.getPriceTicks(symbol);
+    const priceTicks = await DB.getPriceTicks(symbol);
     const metrics = computeStockMetrics(priceTicks, { profile, events, sectors, sentiment: sentimentData });
     const noise = calculateMarketMovePercent(
       profile ? profile.currentPrice : 100,
@@ -377,10 +377,10 @@ app.post('/api/stock/tick', (req, res) => {
       label = `🔒 Lower Circuit Limit Hit (-${metrics.lowerCircuitPct}%)`;
     }
 
-    const updatedProfile = DB.addMarketTick(newPrice, label, symbol);
+    const updatedProfile = await DB.addMarketTick(newPrice, label, symbol);
     const persistedPrice = updatedProfile ? updatedProfile.currentPrice : newPrice;
 
-    const updatedTicks = DB.getPriceTicks(symbol);
+    const updatedTicks = await DB.getPriceTicks(symbol);
     const updatedMetrics = computeStockMetrics(updatedTicks, { profile, events, sectors, sentiment: sentimentData });
 
     res.json({
@@ -396,9 +396,9 @@ app.post('/api/stock/tick', (req, res) => {
 });
 
 // Reset Stock Data
-app.post('/api/reset', (req, res) => {
+app.post('/api/reset', async (req, res) => {
   try {
-    const fresh = DB.resetData();
+    const fresh = await DB.resetData();
     res.json(fresh);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -406,10 +406,15 @@ app.post('/api/reset', (req, res) => {
 });
 
 // SPA Fallback Route
-app.get('*', (req, res) => {
+app.get('*', async (req, res) => {
   res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 ValueFolio Human Life Stock Server running on port ${PORT}`);
+DB.initialize().then(() => {
+  app.listen(PORT, () => {
+    console.log(`🚀 ValueFolio Human Life Stock Server running on port ${PORT}`);
+  });
+}).catch(err => {
+  console.error('Failed to initialize persistent storage:', err);
+  process.exit(1);
 });

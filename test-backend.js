@@ -23,7 +23,7 @@ async function runTests() {
   console.log(`Previous: ₹${prevPrice} -> New: ₹${newPrice} (+${test1.impactPercent}%)`);
 
   console.log('--- Testing Database Persistence ---');
-  const profile = DB.getProfile();
+  const profile = await DB.getProfile();
   console.log('Current Stock Profile:', profile.symbol, 'Price: ₹' + profile.currentPrice);
   
   console.log('✅ ALL BACKEND & AI TESTS PASSED PERFECTLY!');
