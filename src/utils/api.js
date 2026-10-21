@@ -378,21 +378,13 @@ export const API = {
   },
 
   deleteStock: async (symbol) => {
-    let response;
     try {
-      response = await apiFetch('/api/stocks/delete', {
+      await apiFetch('/api/stocks/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ symbol })
       });
     } catch (e) {}
-
-    if (response) {
-      const result = await response.json().catch(() => ({}));
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || `Unable to delete ${symbol}`);
-      }
-    }
 
     const store = getLocalStore();
     if (store.stocks && store.stocks[symbol]) {
@@ -477,22 +469,27 @@ export const API = {
   },
 
   createIPO: async (ipoData) => {
-    let response;
     try {
-      response = await apiFetch('/api/ipos/create', {
+      const response = await apiFetch('/api/ipos/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ipoData)
       });
-    } catch (e) {}
-
-    if (response) {
-      const result = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(result.error || 'Unable to create IPO');
-      const store = getLocalStore();
-      store.ipos = [result, ...(store.ipos || []).filter(ipo => ipo.id !== result.id)];
-      saveLocalStore(store);
-      return result;
+      if (response && response.ok) {
+        const result = await response.json().catch(() => null);
+        if (result && result.id) {
+          const store = getLocalStore();
+          store.ipos = [result, ...(store.ipos || []).filter(ipo => ipo.id !== result.id)];
+          saveLocalStore(store);
+          return result;
+        }
+      } else if (response && response.status === 409) {
+        const errJson = await response.json().catch(() => ({}));
+        throw new Error(errJson.error || 'Ticker symbol is already in use');
+      }
+    } catch (e) {
+      if (e.message && e.message.includes('already in use')) throw e;
+      console.warn('Backend server createIPO unavailable, using local store:', e.message);
     }
 
     const store = getLocalStore();
@@ -585,24 +582,25 @@ export const API = {
   },
 
   listIPOOnExchange: async (ipoId) => {
-    let response;
     try {
-      response = await apiFetch('/api/ipos/list', {
+      const response = await apiFetch('/api/ipos/list', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ipoId })
       });
-    } catch (e) {}
-
-    if (response) {
-      const result = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(result.error || 'Unable to list IPO');
-      const store = getLocalStore();
-      store.ipos = (store.ipos || []).map(ipo => ipo.id === result.ipo.id ? result.ipo : ipo);
-      store.stocks[result.ipo.symbol] = result.stock;
-      store.activeSymbol = result.ipo.symbol;
-      saveLocalStore(store);
-      return result;
+      if (response && response.ok) {
+        const result = await response.json().catch(() => null);
+        if (result && result.ipo && result.stock) {
+          const store = getLocalStore();
+          store.ipos = (store.ipos || []).map(ipo => ipo.id === result.ipo.id ? result.ipo : ipo);
+          store.stocks[result.ipo.symbol] = result.stock;
+          store.activeSymbol = result.ipo.symbol;
+          saveLocalStore(store);
+          return result;
+        }
+      }
+    } catch (e) {
+      console.warn('Backend server listIPO unavailable, using local store:', e.message);
     }
 
     const store = getLocalStore();

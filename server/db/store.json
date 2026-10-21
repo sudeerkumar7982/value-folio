@@ -8,7 +8,7 @@
         "bio": "Full Stack Engineer & Tech Investor",
         "startingPrice": 100,
         "listingPrice": 100,
-        "currentPrice": 100.05,
+        "currentPrice": 114.21,
         "walletBalance": 10000,
         "sharesOwned": 0,
         "avgBuyPrice": 0,
@@ -16,7 +16,7 @@
         "createdAt": "2026-10-21T17:03:26.577Z"
       },
       "sectors": {
-        "Career": 50,
+        "Career": 65,
         "Education": 50,
         "Skills": 50,
         "Projects": 50,
@@ -24,7 +24,21 @@
         "Social": 50,
         "Wellbeing": 50
       },
-      "events": [],
+      "events": [
+        {
+          "id": "evt-1792602832810",
+          "title": "💼 Got software engineering job offer",
+          "description": "",
+          "sector": "Career",
+          "sentiment": "POSITIVE",
+          "confidence": 99,
+          "importance": "HIGH",
+          "impactPercent": 20.38,
+          "previousPrice": 100.03,
+          "newPrice": 115,
+          "timestamp": "2026-10-21T17:13:52.810Z"
+        }
+      ],
       "priceTicks": [
         {
           "timestamp": "2026-10-21T17:03:59.191Z",
@@ -51,8 +65,62 @@
           "label": "🔻 Bearish Market Selling"
         },
         {
-          "timestamp": "2026-10-21T17:07:49.338Z",
-          "price": 100.05,
+          "timestamp": "2026-10-21T17:07:59.419Z",
+          "price": 100.41,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-21T17:08:59.831Z",
+          "price": 100.33,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-21T17:09:59.220Z",
+          "price": 100.36,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-21T17:10:59.703Z",
+          "price": 100.35,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-21T17:11:59.155Z",
+          "price": 100.35,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-21T17:12:59.621Z",
+          "price": 100.29,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-21T17:13:51.952Z",
+          "price": 100.03,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-21T17:13:52.810Z",
+          "price": 115,
+          "eventId": "evt-1792602832810",
+          "label": "💼 Got software engineering job offer"
+        },
+        {
+          "timestamp": "2026-10-21T17:13:59.983Z",
+          "price": 115.1,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-21T17:14:38.198Z",
+          "price": 114.21,
           "eventId": null,
           "label": "⚖️ Neutral Fluctuation"
         }
