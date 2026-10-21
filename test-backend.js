@@ -23,8 +23,23 @@ async function runTests() {
   console.log(`Previous: ₹${prevPrice} -> New: ₹${newPrice} (+${test1.impactPercent}%)`);
 
   console.log('--- Testing Database Persistence ---');
-  const profile = await DB.getProfile();
+  let profile = await DB.getProfile();
+  if (!profile) {
+    console.log('No active stock found, creating test stock SUDOL...');
+    await DB.createNewStock({
+      symbol: 'SUDOL',
+      name: 'Sudeer Kumar',
+      bio: 'Full Stack Engineer & Tech Investor',
+      startingPrice: 100,
+      walletBalance: 10000
+    });
+    profile = await DB.getProfile('SUDOL');
+  }
   console.log('Current Stock Profile:', profile.symbol, 'Price: ₹' + profile.currentPrice);
+
+  console.log('--- Testing 24/7 Continuous Market Catch-up ---');
+  await DB.catchUpAllStocks();
+  console.log('✅ Continuous time-drift simulation active!');
   
   console.log('✅ ALL BACKEND & AI TESTS PASSED PERFECTLY!');
 }

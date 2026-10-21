@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Settings, Key, Sparkles, X, Check, RefreshCw } from 'lucide-react';
+import { Settings, Key, Sparkles, X, Check, RefreshCw, Globe, Activity } from 'lucide-react';
+import { apiFetch, getApiBaseUrl, setApiBaseUrl } from '../utils/api.js';
 
 export function SettingsModal({ isOpen, onClose, profile, onSaveSettings }) {
   const [symbol, setSymbol] = useState(profile?.symbol || '');
@@ -7,6 +8,7 @@ export function SettingsModal({ isOpen, onClose, profile, onSaveSettings }) {
   const [bio, setBio] = useState(profile?.bio || '');
   const [startingPrice, setStartingPrice] = useState(profile?.startingPrice || 100);
   const [apiKey, setApiKey] = useState(profile?.apiKey || '');
+  const [backendUrl, setBackendUrlState] = useState(getApiBaseUrl());
   const [isSaved, setIsSaved] = useState(false);
 
   if (!isOpen || !profile) return null;
@@ -14,7 +16,8 @@ export function SettingsModal({ isOpen, onClose, profile, onSaveSettings }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/settings', {
+      setApiBaseUrl(backendUrl);
+      const res = await apiFetch('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -25,8 +28,10 @@ export function SettingsModal({ isOpen, onClose, profile, onSaveSettings }) {
           apiKey
         })
       });
-      const updated = await res.json();
-      onSaveSettings(updated);
+      if (res.ok) {
+        const updated = await res.json();
+        onSaveSettings(updated);
+      }
       setIsSaved(true);
       setTimeout(() => {
         setIsSaved(false);
@@ -94,6 +99,32 @@ export function SettingsModal({ isOpen, onClose, profile, onSaveSettings }) {
               onChange={(e) => setStartingPrice(e.target.value)}
               className="w-full bg-[#F7F6F1] border border-[#E2E0D8] rounded-xl px-3 py-2 text-slate-800 font-mono text-sm"
             />
+          </div>
+
+          {/* Backend Cloud Server URL (Optional for Render) */}
+          <div className="bg-[#F7F6F1] border border-[#E2E0D8] rounded-xl p-3.5 space-y-2">
+            <div className="flex items-center space-x-2 text-xs font-bold text-blue-700">
+              <Globe className="w-4 h-4" />
+              <span>Backend Server Cloud URL (Render)</span>
+            </div>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              If accessing via GitHub Pages, enter your deployed Render backend URL (e.g. <code className="bg-slate-200 px-1 py-0.5 rounded text-[11px]">https://value-folio.onrender.com</code>). Leave empty for same-origin or local offline storage.
+            </p>
+            <input
+              type="text"
+              placeholder="https://your-service.onrender.com"
+              value={backendUrl}
+              onChange={(e) => setBackendUrlState(e.target.value)}
+              className="w-full bg-white border border-[#E2E0D8] rounded-lg px-3 py-2 text-slate-800 font-mono text-xs outline-none focus:border-blue-500"
+            />
+          </div>
+
+          {/* Continuous Market Simulation Banner */}
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-start space-x-2.5">
+            <Activity className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+            <div className="text-xs text-emerald-800">
+              <span className="font-bold">24/7 Continuous Market Drift Active:</span> Stock prices and timeline charts simulate continuously across time gaps even when you close the tab or when the cloud server sleeps.
+            </div>
           </div>
 
           {/* Gemini LLM API Key Box */}

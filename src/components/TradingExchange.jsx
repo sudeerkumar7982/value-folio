@@ -3,6 +3,7 @@ import { X, Bell, Bookmark, BarChart2 } from 'lucide-react';
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip
 } from 'recharts';
+import { API } from '../utils/api.js';
 
 const TIME_RANGES = ['1D', '1W', '1M', '3M', '6M', '1Y', '3Y', '5Y', 'All'];
 const QTY_PRESETS = [1, 5, 10];
@@ -44,12 +45,11 @@ export function TradingExchange({ isOpen, onClose, profile, priceTicks = [], onT
 
   useEffect(() => {
     if (isOpen) {
-      fetch('/api/trades')
-        .then(r => r.json())
+      API.getTrades(profile?.symbol)
         .then(d => setTradesHistory(Array.isArray(d) ? d : []))
         .catch(() => {});
     }
-  }, [isOpen]);
+  }, [isOpen, profile?.symbol]);
 
   if (!isOpen || !profile) return null;
 
@@ -123,15 +123,15 @@ export function TradingExchange({ isOpen, onClose, profile, priceTicks = [], onT
     setErrorMsg('');
     setIsProcessing(true);
     try {
-      const res = await fetch('/api/trade', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: tradeType, shares: sharesNum })
+      const data = await API.executeTrade({
+        type: tradeType,
+        shares: sharesNum,
+        currentPrice,
+        symbol: profile?.symbol
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Trade failed');
+      if (!data) throw new Error('Trade failed');
       onTradeSuccess && onTradeSuccess(data);
-      const updated = await fetch('/api/trades').then(r => r.json());
+      const updated = await API.getTrades(profile?.symbol);
       setTradesHistory(Array.isArray(updated) ? updated : []);
       setShares('');
     } catch (err) {

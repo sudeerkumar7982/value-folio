@@ -20,11 +20,8 @@ export function PortfolioModal({ isOpen, onClose, onSelectStock, onOpenTradeModa
       setStocks(allStocks);
 
       try {
-        const res = await fetch('/api/trades');
-        if (res.ok) {
-          const data = await res.json();
-          setTradesHistory(Array.isArray(data) ? data : []);
-        }
+        const data = await API.getTrades();
+        setTradesHistory(Array.isArray(data) ? data : []);
       } catch (e) {}
     } catch (e) {
       console.error(e);

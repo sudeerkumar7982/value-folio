@@ -7,6 +7,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import pg from 'pg';
 import { computeStockMetrics } from '../engine/priceEngine.js';
+import { simulateCatchUpTicks } from '../../shared/marketSimulation.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,6 +22,22 @@ const INITIAL_DATA = {
   stocks: {},
   ipos: []
 };
+
+function catchUpStoreStocks(store) {
+  if (!store || !store.stocks) return false;
+  let modified = false;
+  const nowMs = Date.now();
+  for (const sym of Object.keys(store.stocks)) {
+    const stock = store.stocks[sym];
+    const prevTicksLen = stock.priceTicks ? stock.priceTicks.length : 0;
+    const prevPrice = stock.profile ? stock.profile.currentPrice : null;
+    simulateCatchUpTicks(stock, nowMs);
+    if ((stock.priceTicks && stock.priceTicks.length !== prevTicksLen) || (stock.profile && stock.profile.currentPrice !== prevPrice)) {
+      modified = true;
+    }
+  }
+  return modified;
+}
 
 function readBundledStore() {
   try {
@@ -38,46 +55,53 @@ function readBundledStore() {
 }
 
 async function readStore() {
+  let store = INITIAL_DATA;
   if (pool) {
     const { rows } = await pool.query('SELECT data FROM value_folio_state WHERE id = 1');
-    return rows[0]?.data || INITIAL_DATA;
-  }
-
-  try {
-    if (!fs.existsSync(DATA_FILE)) {
-      let initialData = INITIAL_DATA;
-      if (DATA_FILE !== BUNDLED_DATA_FILE && fs.existsSync(BUNDLED_DATA_FILE)) {
-        try {
-          const bundledData = JSON.parse(fs.readFileSync(BUNDLED_DATA_FILE, 'utf-8'));
-          if (bundledData && typeof bundledData === 'object' && bundledData.stocks) {
-            initialData = bundledData;
+    store = rows[0]?.data || INITIAL_DATA;
+  } else {
+    try {
+      if (!fs.existsSync(DATA_FILE)) {
+        let initialData = INITIAL_DATA;
+        if (DATA_FILE !== BUNDLED_DATA_FILE && fs.existsSync(BUNDLED_DATA_FILE)) {
+          try {
+            const bundledData = JSON.parse(fs.readFileSync(BUNDLED_DATA_FILE, 'utf-8'));
+            if (bundledData && typeof bundledData === 'object' && bundledData.stocks) {
+              initialData = bundledData;
+            }
+          } catch (err) {
+            console.error('Error seeding persistent store from bundled data:', err);
           }
-        } catch (err) {
-          console.error('Error seeding persistent store from bundled data:', err);
+        }
+        fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
+        fs.writeFileSync(DATA_FILE, JSON.stringify(initialData, null, 2));
+        store = initialData;
+      } else {
+        const raw = fs.readFileSync(DATA_FILE, 'utf-8');
+        store = JSON.parse(raw);
+
+        if (!store.stocks) {
+          const migrated = {
+            activeSymbol: store.activeSymbol || '',
+            stocks: {},
+            ipos: store.ipos || []
+          };
+          await writeStore(migrated);
+          store = migrated;
         }
       }
-      fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
-      fs.writeFileSync(DATA_FILE, JSON.stringify(initialData, null, 2));
-      return initialData;
+    } catch (err) {
+      console.error('Error reading store.json, re-initializing:', err);
+      store = INITIAL_DATA;
     }
-    const raw = fs.readFileSync(DATA_FILE, 'utf-8');
-    const store = JSON.parse(raw);
-
-    if (!store.stocks) {
-      const migrated = {
-        activeSymbol: store.activeSymbol || '',
-        stocks: {},
-        ipos: store.ipos || []
-      };
-      await writeStore(migrated);
-      return migrated;
-    }
-
-    return store;
-  } catch (err) {
-    console.error('Error reading store.json, re-initializing:', err);
-    return INITIAL_DATA;
   }
+
+  // Seamlessly bridge any time gap when server was sleeping or offline
+  if (catchUpStoreStocks(store)) {
+    writeStore(store).catch(err => console.error('Error persisting catch-up ticks:', err));
+  }
+
+  return store;
 }
 
 async function writeStore(data) {
@@ -171,6 +195,8 @@ const dbMethods = {
       [JSON.stringify(readBundledStore())]
     );
   },
+
+  catchUpAllStocks: async () => await readStore(),
 
   getActiveSymbol: async () => (await readStore()).activeSymbol || '',
 

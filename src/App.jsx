@@ -76,6 +76,18 @@ export default function App() {
     loadData();
   }, []);
 
+  useEffect(() => {
+    API.getMarketLive().then(setIsLiveActive);
+  }, []);
+
+  const handleToggleLive = async () => {
+    const nextLiveState = !isLiveActive;
+    setIsLiveActive(nextLiveState);
+    if (!await API.setMarketLive(nextLiveState)) {
+      setIsLiveActive(!nextLiveState);
+    }
+  };
+
   const handleSelectStock = async (symbol) => {
     setLoading(true);
     await API.setActiveSymbol(symbol);
@@ -103,55 +115,46 @@ export default function App() {
     }
   };
 
-  // Apply small sentiment-driven market moves at a slower simulation cadence.
+  // Refresh the server-owned market price while live updates are enabled.
   useEffect(() => {
     if (!isLiveActive || loading || !activeSymbol) return;
 
-    let tickInFlight = false;
+    let refreshInFlight = false;
     const interval = setInterval(async () => {
-      if (tickInFlight) return;
-      tickInFlight = true;
+      if (refreshInFlight) return;
+      refreshInFlight = true;
 
       try {
-        const tickResult = await API.tick(activeSymbol);
-        if (tickResult && tickResult.currentPrice) {
-          const tickMetrics = tickResult.metrics || {};
-          const tickSentiment = tickResult.sentiment || {};
+        const profileData = await API.getProfile(activeSymbol);
+        if (profileData?.profile) {
+          const tickMetrics = profileData.metrics || {};
 
           setData(prev => {
             if (!prev) return prev;
             return {
               ...prev,
-              profile: {
-                ...prev.profile,
-                currentPrice: tickResult.currentPrice,
-                sentiment: tickSentiment.sentiment || tickMetrics.sentiment || prev.profile.sentiment,
-                sentimentScore: tickSentiment.sentimentScore ?? tickMetrics.sentimentScore ?? prev.profile.sentimentScore,
-                sentimentLabel: tickSentiment.sentimentLabel || prev.profile.sentimentLabel
-              },
-              priceTicks: tickResult.priceTicks || prev.priceTicks,
-              metrics: tickResult.metrics || prev.metrics
+              ...profileData,
+              profile: { ...prev.profile, ...profileData.profile },
+              priceTicks: profileData.priceTicks || prev.priceTicks,
+              metrics: profileData.metrics || prev.metrics
             };
           });
 
           setStocksList(prev => prev.map(stock => stock.symbol === activeSymbol ? {
             ...stock,
-            currentPrice: tickResult.currentPrice,
+            currentPrice: profileData.profile.currentPrice,
             changeAmount: tickMetrics.totalChangeAmount ?? stock.changeAmount,
             changePercent: tickMetrics.totalChangePercent ?? stock.changePercent,
             upperCircuit: tickMetrics.upperCircuit ?? stock.upperCircuit,
             lowerCircuit: tickMetrics.lowerCircuit ?? stock.lowerCircuit,
             upperCircuitPct: tickMetrics.upperCircuitPct ?? stock.upperCircuitPct,
-            lowerCircuitPct: tickMetrics.lowerCircuitPct ?? stock.lowerCircuitPct,
-            sentiment: tickSentiment.sentiment || tickMetrics.sentiment || stock.sentiment,
-            sentimentScore: tickSentiment.sentimentScore ?? tickMetrics.sentimentScore ?? stock.sentimentScore,
-            sentimentLabel: tickSentiment.sentimentLabel || stock.sentimentLabel
+            lowerCircuitPct: tickMetrics.lowerCircuitPct ?? stock.lowerCircuitPct
           } : stock));
         }
       } catch (e) {
-        console.warn('Live tick update error:', e.message);
+        console.warn('Live market refresh error:', e.message);
       } finally {
-        tickInFlight = false;
+        refreshInFlight = false;
       }
     }, 1000);
 
@@ -214,7 +217,7 @@ export default function App() {
         onOpenSettingsModal={() => setIsSettingsOpen(true)}
         onReset={handleResetData}
         isLiveActive={isLiveActive}
-        onToggleLive={() => setIsLiveActive(!isLiveActive)}
+        onToggleLive={handleToggleLive}
       />
 
       {/* Main Container */}

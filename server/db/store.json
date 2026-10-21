@@ -1,64 +1,64 @@
 {
-  "activeSymbol": "",
-  "stocks": {},
-  "ipos": [
-    {
-      "id": "ipo-1790188086339",
-      "symbol": "KSK_FIN",
-      "name": "KALLA_FIN",
-      "bio": "FINANCE",
-      "status": "UPCOMING",
-      "priceRange": "₹90 - ₹99",
-      "issuePrice": 90,
-      "lotSize": 500,
-      "issueSize": "₹50 Cr",
-      "gmpPercent": -15,
-      "gmpValue": -13.5,
-      "subscriptionRatio": "3.5x",
-      "bidsCount": 150,
-      "sentiment": "VERY_BEARISH",
-      "sentimentScore": 5,
-      "openingDate": "2026-09-23",
-      "closingDate": "2026-09-28",
-      "listingDate": "2026-10-01",
+  "activeSymbol": "SUDOL",
+  "stocks": {
+    "SUDOL": {
+      "profile": {
+        "symbol": "SUDOL",
+        "name": "Sudeer Kumar",
+        "bio": "Full Stack Engineer & Tech Investor",
+        "startingPrice": 100,
+        "listingPrice": 100,
+        "currentPrice": 100.05,
+        "walletBalance": 10000,
+        "sharesOwned": 0,
+        "avgBuyPrice": 0,
+        "apiKey": "",
+        "createdAt": "2026-10-21T17:03:26.577Z"
+      },
       "sectors": {
-        "Career": 0,
-        "Education": 0,
-        "Skills": 0,
-        "Projects": 0,
-        "Finance": 0,
-        "Social": 0,
-        "Wellbeing": 0
-      }
-    },
-    {
-      "id": "ipo-1790187550419",
-      "symbol": "KSK",
-      "name": "KALLA",
-      "bio": "ALL SECTOR",
-      "status": "LISTED",
-      "priceRange": "₹145 - ₹160",
-      "issuePrice": 145,
-      "lotSize": 500,
-      "issueSize": "₹50 Cr",
-      "gmpPercent": -15,
-      "gmpValue": -21.75,
-      "subscriptionRatio": "3.5x",
-      "bidsCount": 150,
-      "sentiment": "VERY_BEARISH",
-      "sentimentScore": 5,
-      "openingDate": "2026-09-23",
-      "closingDate": "2026-09-28",
-      "listingDate": "2026-10-01",
-      "sectors": {
-        "Career": 0,
-        "Education": 0,
-        "Skills": 0,
-        "Projects": 0,
-        "Finance": 0,
-        "Social": 0,
-        "Wellbeing": 0
-      }
+        "Career": 50,
+        "Education": 50,
+        "Skills": 50,
+        "Projects": 50,
+        "Finance": 50,
+        "Social": 50,
+        "Wellbeing": 50
+      },
+      "events": [],
+      "priceTicks": [
+        {
+          "timestamp": "2026-10-21T17:03:59.191Z",
+          "price": 100.31,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-21T17:04:59.012Z",
+          "price": 100.59,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-21T17:05:59.510Z",
+          "price": 100.5,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-21T17:06:59.977Z",
+          "price": 100.43,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-21T17:07:49.338Z",
+          "price": 100.05,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        }
+      ],
+      "trades": []
     }
-  ]
+  },
+  "ipos": []
 }

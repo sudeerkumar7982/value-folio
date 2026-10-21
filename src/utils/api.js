@@ -1,4 +1,31 @@
-import { calculateMarketMovePercent } from '../../shared/marketSimulation.js';
+import { calculateMarketMovePercent, simulateCatchUpTicks } from '../../shared/marketSimulation.js';
+
+export function getApiBaseUrl() {
+  try {
+    const custom = localStorage.getItem('VALUEFOLIO_API_URL');
+    if (custom && custom.trim()) return custom.trim().replace(/\/$/, '');
+  } catch (e) {}
+  if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL.replace(/\/$/, '');
+  }
+  return '';
+}
+
+export function setApiBaseUrl(url) {
+  try {
+    if (url && url.trim()) {
+      localStorage.setItem('VALUEFOLIO_API_URL', url.trim().replace(/\/$/, ''));
+    } else {
+      localStorage.removeItem('VALUEFOLIO_API_URL');
+    }
+  } catch (e) {}
+}
+
+export async function apiFetch(path, options) {
+  const base = getApiBaseUrl();
+  const url = `${base}${path}`;
+  return fetch(url, options);
+}
 
 /**
  * Client API Layer with LocalStorage & Express Backend Sync
@@ -55,6 +82,22 @@ function getLocalStore() {
       };
       saveLocalStore(migrated);
       return migrated;
+    }
+
+    // Continuously simulate elapsed time while the site tab was closed
+    let storeChanged = false;
+    const nowMs = Date.now();
+    for (const sym of Object.keys(store.stocks || {})) {
+      const stock = store.stocks[sym];
+      const prevTicksCount = stock.priceTicks ? stock.priceTicks.length : 0;
+      const prevCurrentPrice = stock.profile ? stock.profile.currentPrice : null;
+      simulateCatchUpTicks(stock, nowMs);
+      if ((stock.priceTicks && stock.priceTicks.length !== prevTicksCount) || (stock.profile && stock.profile.currentPrice !== prevCurrentPrice)) {
+        storeChanged = true;
+      }
+    }
+    if (storeChanged) {
+      saveLocalStore(store);
     }
 
     return store;
@@ -238,7 +281,7 @@ export const API = {
   getAllStocks: async () => {
     let stocksList = null;
     try {
-      const res = await fetch('/api/stocks');
+      const res = await apiFetch('/api/stocks');
       if (res.ok) {
         stocksList = await res.json();
         if (Array.isArray(stocksList) && stocksList.length > 0) {
@@ -284,7 +327,7 @@ export const API = {
 
   getActiveSymbol: async () => {
     try {
-      const res = await fetch('/api/stocks/active');
+      const res = await apiFetch('/api/stocks/active');
       if (res.ok) {
         const data = await res.json();
         if (data.activeSymbol) return data.activeSymbol;
@@ -295,6 +338,27 @@ export const API = {
     return store.activeSymbol || '';
   },
 
+  getMarketLive: async () => {
+    try {
+      const res = await apiFetch('/api/market/live');
+      if (res.ok) return (await res.json()).enabled;
+    } catch (e) {}
+    return true;
+  },
+
+  setMarketLive: async (enabled) => {
+    try {
+      const res = await apiFetch('/api/market/live', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled })
+      });
+      return res.ok;
+    } catch (e) {
+      return false;
+    }
+  },
+
   setActiveSymbol: async (symbol) => {
     const store = getLocalStore();
     if (symbol) {
@@ -303,7 +367,7 @@ export const API = {
     }
 
     try {
-      await fetch('/api/stocks/active', {
+      await apiFetch('/api/stocks/active', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ symbol })
@@ -316,7 +380,7 @@ export const API = {
   deleteStock: async (symbol) => {
     let response;
     try {
-      response = await fetch('/api/stocks/delete', {
+      response = await apiFetch('/api/stocks/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ symbol })
@@ -345,7 +409,7 @@ export const API = {
     let data = null;
     try {
       const symQuery = symbol ? `?symbol=${symbol}` : '';
-      const res = await fetch(`/api/stock/profile${symQuery}`);
+      const res = await apiFetch(`/api/stock/profile${symQuery}`);
       if (res.ok) {
         data = await res.json();
       }
@@ -387,7 +451,7 @@ export const API = {
   getEvents: async (symbol = null) => {
     try {
       const symQuery = symbol ? `?symbol=${symbol}` : '';
-      const res = await fetch(`/api/events${symQuery}`);
+      const res = await apiFetch(`/api/events${symQuery}`);
       if (res.ok) return await res.json();
     } catch (e) {}
 
@@ -404,7 +468,7 @@ export const API = {
 
   getIPOs: async () => {
     try {
-      const res = await fetch('/api/ipos');
+      const res = await apiFetch('/api/ipos');
       if (res.ok) return await res.json();
     } catch (e) {}
 
@@ -415,7 +479,7 @@ export const API = {
   createIPO: async (ipoData) => {
     let response;
     try {
-      response = await fetch('/api/ipos/create', {
+      response = await apiFetch('/api/ipos/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ipoData)
@@ -523,7 +587,7 @@ export const API = {
   listIPOOnExchange: async (ipoId) => {
     let response;
     try {
-      response = await fetch('/api/ipos/list', {
+      response = await apiFetch('/api/ipos/list', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ipoId })
@@ -592,7 +656,7 @@ export const API = {
     }
 
     try {
-      await fetch('/api/ipos/bid', {
+      await apiFetch('/api/ipos/bid', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ipoId, bidsCount })
@@ -608,7 +672,7 @@ export const API = {
     saveLocalStore(store);
 
     try {
-      await fetch('/api/ipos/delete', {
+      await apiFetch('/api/ipos/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ipoId })
@@ -655,7 +719,7 @@ export const API = {
     saveLocalStore(store);
 
     try {
-      await fetch('/api/stock/create', {
+      await apiFetch('/api/stock/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ symbol: sym, name, bio, startingPrice, walletBalance, initialSectors })
@@ -675,7 +739,7 @@ export const API = {
     }
 
     try {
-      const res = await fetch('/api/events/analyze', {
+      const res = await apiFetch('/api/events/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, description, sector, symbol: activeSym })
@@ -707,7 +771,7 @@ export const API = {
 
     // Attempt Express server POST first if connected to backend
     try {
-      const res = await fetch('/api/events/commit', {
+      const res = await apiFetch('/api/events/commit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, description, sector, customImpact, date, symbol: sym })
@@ -811,7 +875,7 @@ export const API = {
 
     // Attempt Express server tick POST first when deployed/connected
     try {
-      const res = await fetch('/api/stock/tick', {
+      const res = await apiFetch('/api/stock/tick', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ symbol: sym })
@@ -930,7 +994,7 @@ export const API = {
     saveLocalStore(store);
 
     try {
-      await fetch('/api/events/delete', {
+      await apiFetch('/api/events/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, symbol: sym })
@@ -960,7 +1024,7 @@ export const API = {
     saveLocalStore(store);
 
     try {
-      await fetch('/api/events/clear', {
+      await apiFetch('/api/events/clear', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ symbol: sym })
@@ -970,12 +1034,77 @@ export const API = {
     return store;
   },
 
+  getTrades: async (symbol = null) => {
+    try {
+      const symQuery = symbol ? `?symbol=${symbol}` : '';
+      const res = await apiFetch(`/api/trades${symQuery}`);
+      if (res.ok) return await res.json();
+    } catch (e) {}
+
+    const store = getLocalStore();
+    const sym = symbol || store.activeSymbol;
+    return store.stocks[sym]?.trades || [];
+  },
+
+  executeTrade: async ({ type, shares, currentPrice, symbol = null }) => {
+    let result = null;
+    try {
+      const res = await apiFetch('/api/trade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, shares, currentPrice, symbol })
+      });
+      if (res.ok) {
+        result = await res.json();
+      }
+    } catch (e) {}
+
+    const store = getLocalStore();
+    const sym = symbol || store.activeSymbol;
+    const stock = store.stocks[sym];
+    if (stock) {
+      if (result && result.profile) {
+        stock.profile = result.profile;
+        if (result.trade) {
+          stock.trades = [result.trade, ...(stock.trades || [])];
+        }
+      } else {
+        const cost = Number((shares * currentPrice).toFixed(2));
+        if (type === 'BUY') {
+          if (stock.profile.walletBalance < cost) throw new Error('Insufficient virtual cash balance');
+          const totalCostBefore = stock.profile.sharesOwned * stock.profile.avgBuyPrice;
+          const newTotalShares = stock.profile.sharesOwned + shares;
+          stock.profile.walletBalance = Number((stock.profile.walletBalance - cost).toFixed(2));
+          stock.profile.avgBuyPrice = Number(((totalCostBefore + cost) / newTotalShares).toFixed(2));
+          stock.profile.sharesOwned = newTotalShares;
+        } else if (type === 'SELL') {
+          if (stock.profile.sharesOwned < shares) throw new Error('Not enough shares to sell');
+          stock.profile.walletBalance = Number((stock.profile.walletBalance + cost).toFixed(2));
+          stock.profile.sharesOwned -= shares;
+          if (stock.profile.sharesOwned === 0) stock.profile.avgBuyPrice = 0;
+        }
+        const trade = {
+          id: `trd-${Date.now()}`,
+          type,
+          shares,
+          price: currentPrice,
+          totalAmount: cost,
+          timestamp: new Date().toISOString()
+        };
+        stock.trades = [trade, ...(stock.trades || [])];
+        result = { profile: stock.profile, trade };
+      }
+      saveLocalStore(store);
+    }
+    return result;
+  },
+
   reset: async () => {
     localStorage.removeItem(STORAGE_KEY);
     saveLocalStore(DEFAULT_STORE);
 
     try {
-      await fetch('/api/reset', { method: 'POST' });
+      await apiFetch('/api/reset', { method: 'POST' });
     } catch (e) {}
 
     return DEFAULT_STORE;

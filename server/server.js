@@ -13,12 +13,26 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+let marketLiveEnabled = true;
 
 app.use(cors());
 app.use(express.json());
 
 // Serve static frontend assets from Vite build dist folder
 app.use(express.static(path.join(__dirname, '../dist')));
+
+app.get('/api/market/live', (req, res) => {
+  res.json({ enabled: marketLiveEnabled });
+});
+
+app.post('/api/market/live', (req, res) => {
+  const { enabled } = req.body;
+  if (typeof enabled !== 'boolean') {
+    return res.status(400).json({ error: 'enabled must be a boolean' });
+  }
+  marketLiveEnabled = enabled;
+  res.json({ enabled: marketLiveEnabled });
+});
 
 // Get all listed stocks with sentiment scores & metrics
 app.get('/api/stocks', async (req, res) => {
@@ -346,50 +360,49 @@ app.post('/api/stock/create', async (req, res) => {
   }
 });
 
+async function advanceMarket(symbol) {
+  if (!symbol) return null;
+
+  const profile = await DB.getProfile(symbol);
+  const sectors = await DB.getSectors(symbol);
+  const events = await DB.getEvents(symbol);
+  const sentimentData = computeStockSentiment({ profile, events });
+  const priceTicks = await DB.getPriceTicks(symbol);
+  const metrics = computeStockMetrics(priceTicks, { profile, events, sectors, sentiment: sentimentData });
+  const noise = calculateMarketMovePercent(
+    profile ? profile.currentPrice : 100,
+    metrics.startingPrice,
+    sentimentData.sentimentScore,
+    symbol
+  );
+
+  const newPrice = calculateNewPrice(profile ? profile.currentPrice : 100, noise, metrics.lowerCircuit, metrics.upperCircuit);
+  let label = noise > 0.01 ? '🔥 Bullish Sentiment Buying' : noise < -0.01 ? '🔻 Bearish Market Selling' : '⚖️ Neutral Fluctuation';
+
+  if (newPrice >= metrics.upperCircuit) {
+    label = `🔒 Upper Circuit Limit Hit (+${metrics.upperCircuitPct}%)`;
+  } else if (newPrice <= metrics.lowerCircuit) {
+    label = `🔒 Lower Circuit Limit Hit (-${metrics.lowerCircuitPct}%)`;
+  }
+
+  const updatedProfile = await DB.addMarketTick(newPrice, label, symbol);
+  const updatedTicks = await DB.getPriceTicks(symbol);
+  const updatedMetrics = computeStockMetrics(updatedTicks, { profile, events, sectors, sentiment: sentimentData });
+
+  return {
+    currentPrice: updatedProfile ? updatedProfile.currentPrice : newPrice,
+    noise,
+    priceTicks: updatedTicks,
+    metrics: updatedMetrics,
+    sentiment: sentimentData
+  };
+}
+
 // Live Market Fluctuation Tick Endpoint
 app.post('/api/stock/tick', async (req, res) => {
   try {
     const symbol = req.body.symbol || await DB.getActiveSymbol();
-    const profile = await DB.getProfile(symbol);
-    const sectors = await DB.getSectors(symbol);
-    const events = await DB.getEvents(symbol);
-    const stockData = { profile, sectors, events };
-    
-    // Import or compute stock sentiment score
-    const sentimentData = computeStockSentiment({ profile, events });
-    const sentimentScore = sentimentData.sentimentScore;
-
-    const priceTicks = await DB.getPriceTicks(symbol);
-    const metrics = computeStockMetrics(priceTicks, { profile, events, sectors, sentiment: sentimentData });
-    const noise = calculateMarketMovePercent(
-      profile ? profile.currentPrice : 100,
-      metrics.startingPrice,
-      sentimentScore,
-      symbol
-    );
-
-    const newPrice = calculateNewPrice(profile ? profile.currentPrice : 100, noise, metrics.lowerCircuit, metrics.upperCircuit);
-    let label = noise > 0.01 ? '🔥 Bullish Sentiment Buying' : noise < -0.01 ? '🔻 Bearish Market Selling' : '⚖️ Neutral Fluctuation';
-
-    if (newPrice >= metrics.upperCircuit) {
-      label = `🔒 Upper Circuit Limit Hit (+${metrics.upperCircuitPct}%)`;
-    } else if (newPrice <= metrics.lowerCircuit) {
-      label = `🔒 Lower Circuit Limit Hit (-${metrics.lowerCircuitPct}%)`;
-    }
-
-    const updatedProfile = await DB.addMarketTick(newPrice, label, symbol);
-    const persistedPrice = updatedProfile ? updatedProfile.currentPrice : newPrice;
-
-    const updatedTicks = await DB.getPriceTicks(symbol);
-    const updatedMetrics = computeStockMetrics(updatedTicks, { profile, events, sectors, sentiment: sentimentData });
-
-    res.json({
-      currentPrice: persistedPrice,
-      noise,
-      priceTicks: updatedTicks,
-      metrics: updatedMetrics,
-      sentiment: sentimentData
-    });
+    res.json(await advanceMarket(symbol));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -411,6 +424,45 @@ app.get('*', async (req, res) => {
 });
 
 DB.initialize().then(() => {
+  let marketTickInFlight = false;
+  setInterval(async () => {
+    if (!marketLiveEnabled || marketTickInFlight) return;
+    marketTickInFlight = true;
+    try {
+      const allStocks = await DB.getAllStocks();
+      if (Array.isArray(allStocks) && allStocks.length > 0) {
+        for (const stock of allStocks) {
+          if (stock && stock.symbol) {
+            await advanceMarket(stock.symbol);
+          }
+        }
+      } else {
+        const activeSymbol = await DB.getActiveSymbol();
+        if (activeSymbol) {
+          await advanceMarket(activeSymbol);
+        }
+      }
+    } catch (err) {
+      console.error('Background market tick failed:', err.message);
+    } finally {
+      marketTickInFlight = false;
+    }
+  }, 1000);
+
+  // Self-ping to prevent Render free-tier idle spin-down when deployed
+  const keepAliveUrl = process.env.RENDER_EXTERNAL_URL || process.env.KEEP_ALIVE_URL;
+  if (keepAliveUrl) {
+    console.log(`📡 Render keep-alive enabled for: ${keepAliveUrl}`);
+    setInterval(async () => {
+      try {
+        const pingTarget = `${keepAliveUrl.replace(/\/$/, '')}/api/market/live`;
+        await fetch(pingTarget);
+      } catch (err) {
+        // Silently ignore ping errors
+      }
+    }, 10 * 60 * 1000);
+  }
+
   app.listen(PORT, () => {
     console.log(`🚀 ValueFolio Human Life Stock Server running on port ${PORT}`);
   });
