@@ -8,7 +8,7 @@
         "bio": "Full Stack Engineer & Tech Investor",
         "startingPrice": 100,
         "listingPrice": 100,
-        "currentPrice": 115.17,
+        "currentPrice": 114.92,
         "walletBalance": 10000,
         "sharesOwned": 0,
         "avgBuyPrice": 0,
@@ -1997,8 +1997,20 @@
           "label": "⚖️ Neutral Fluctuation"
         },
         {
-          "timestamp": "2026-10-31T09:37:32.313Z",
-          "price": 115.17,
+          "timestamp": "2026-10-31T09:37:59.496Z",
+          "price": 115.4,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-31T09:38:59.914Z",
+          "price": 115.3,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-31T09:39:10.960Z",
+          "price": 114.92,
           "eventId": null,
           "label": "🔥 Bullish Sentiment Buying"
         }
