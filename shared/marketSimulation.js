@@ -200,7 +200,16 @@ export function ensureRichIntradayHistory(stock, targetNowMs = Date.now()) {
   if (todayTicks.length >= 120) return stock;  // already rich enough
 
   const { symbol, sentimentScore, upperCircuit, lowerCircuit } = getStockMarketParams(stock);
-  const startingPrice = Number(stock.profile.startingPrice || stock.profile.listingPrice || 100);
+  // Start the GBM walk from the CURRENT price (not IPO startingPrice).
+  // This centers the generated chart around the actual live price so the
+  // oscillations look realistic and don't appear as a sloping line from IPO.
+  const openAnchor = Number(
+    stock.profile.currentPrice ||
+    stock.profile.listingPrice ||
+    stock.profile.startingPrice ||
+    100
+  );
+  const realCurrentPrice = openAnchor; // preserve for after backfill
 
   const priorTicks         = stock.priceTicks.filter(t => new Date(t.timestamp).getTime() <  marketOpenMs);
   const existingEventsToday = stock.priceTicks.filter(t => new Date(t.timestamp).getTime() >= marketOpenMs && t.eventId);
@@ -209,7 +218,7 @@ export function ensureRichIntradayHistory(stock, targetNowMs = Date.now()) {
   const numSteps   = Math.min(360, Math.max(80, Math.floor(durationMs / 30000))); // ~30s per step
   const stepMs     = Math.floor(durationMs / numSteps);
 
-  let currentP     = startingPrice;
+  let currentP    = openAnchor;
   const generated  = [];
 
   for (let i = 0; i <= numSteps; i++) {
@@ -223,7 +232,7 @@ export function ensureRichIntradayHistory(stock, targetNowMs = Date.now()) {
 
     // Unbiased pseudo-random pair
     const u1    = pseudoHash(tMs * 0.001731 + i * 127.1);
-    const noise = calculateMarketMovePercent(currentP, startingPrice, sentimentScore, symbol, tMs, u1);
+    const noise = calculateMarketMovePercent(currentP, openAnchor, sentimentScore, symbol, tMs, u1);
 
     const rawPrice = currentP * (1 + noise / 100);
     currentP = Number(Math.min(Math.max(rawPrice, lowerCircuit), upperCircuit).toFixed(2));
@@ -238,9 +247,8 @@ export function ensureRichIntradayHistory(stock, targetNowMs = Date.now()) {
   generated.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
   stock.priceTicks = [...priorTicks, ...generated];
-  if (stock.priceTicks.length > 0) {
-    stock.profile.currentPrice = stock.priceTicks[stock.priceTicks.length - 1].price;
-  }
+  // Keep the actual live currentPrice — don't overwrite with GBM endpoint
+  stock.profile.currentPrice = realCurrentPrice;
 
   return stock;
 }

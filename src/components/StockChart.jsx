@@ -86,7 +86,15 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       });
 
       let prevP = openPrice;
-      todayTicks.forEach(tick => {
+      todayTicks
+        .filter(tick => {
+          // Filter out circuit-reset synthetic ticks — they cause V-shaped spikes
+          if (tick.eventId && String(tick.eventId).startsWith('circuit-reset')) return false;
+          // Filter out any single tick that jumps >5% (simulation artifact)
+          const jump = prevP > 0 ? Math.abs((tick.price - prevP) / prevP) * 100 : 0;
+          return jump <= 5;
+        })
+        .forEach(tick => {
         const d = new Date(tick.timestamp);
         const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
         const price = tick.price;
@@ -106,6 +114,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
           diffPct
         });
       });
+
 
       // Ensure the latest point anchors to right now
       const latestPrice = Number(profile?.currentPrice ?? (sortedTicks.length > 0 ? sortedTicks[sortedTicks.length - 1].price : openPrice));
