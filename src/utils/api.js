@@ -1,4 +1,4 @@
-import { calculateMarketMovePercent, simulateCatchUpTicks } from '../../shared/marketSimulation.js';
+import { calculateMarketMovePercent, simulateCatchUpTicks, ensureRichIntradayHistory } from '../../shared/marketSimulation.js';
 
 export function getApiBaseUrl() {
   try {
@@ -91,6 +91,7 @@ function getLocalStore() {
       const stock = store.stocks[sym];
       const prevTicksCount = stock.priceTicks ? stock.priceTicks.length : 0;
       const prevCurrentPrice = stock.profile ? stock.profile.currentPrice : null;
+      ensureRichIntradayHistory(stock, nowMs);
       simulateCatchUpTicks(stock, nowMs);
       if ((stock.priceTicks && stock.priceTicks.length !== prevTicksCount) || (stock.profile && stock.profile.currentPrice !== prevCurrentPrice)) {
         storeChanged = true;
@@ -940,7 +941,10 @@ export const API = {
       tickLabel = `🔒 Lower Circuit Limit Hit (-${circuits.lowerCircuitPct}%)`;
     }
 
-    if (lastTick && !lastTick.eventId && lastTick.timestamp && lastTick.timestamp.startsWith(currentMin)) {
+    const nowMs = Date.now();
+    const lastTickMs = lastTick ? new Date(lastTick.timestamp).getTime() : 0;
+
+    if (lastTick && !lastTick.eventId && (nowMs - lastTickMs < 3500)) {
       lastTick.price = newPrice;
       lastTick.timestamp = nowIso;
       lastTick.label = tickLabel;

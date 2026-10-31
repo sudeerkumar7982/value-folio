@@ -8,7 +8,7 @@
         "bio": "Full Stack Engineer & Tech Investor",
         "startingPrice": 100,
         "listingPrice": 100,
-        "currentPrice": 114.21,
+        "currentPrice": 115.17,
         "walletBalance": 10000,
         "sharesOwned": 0,
         "avgBuyPrice": 0,
@@ -119,10 +119,1888 @@
           "label": "🔻 Bearish Market Selling"
         },
         {
-          "timestamp": "2026-10-21T17:14:38.198Z",
-          "price": 114.21,
+          "timestamp": "2026-10-21T17:14:59.339Z",
+          "price": 113.68,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-21T17:15:59.782Z",
+          "price": 112.15,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-21T17:16:13.889Z",
+          "price": 111.64,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-21T18:49:03.057Z",
+          "price": 111.61,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-21T20:21:52.225Z",
+          "price": 111.7,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-21T21:54:41.393Z",
+          "price": 111.69,
           "eventId": null,
           "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-21T23:27:30.561Z",
+          "price": 111.75,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-22T01:00:19.729Z",
+          "price": 111.77,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-22T02:33:08.897Z",
+          "price": 111.8,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-22T04:05:58.065Z",
+          "price": 111.85,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-22T05:38:47.233Z",
+          "price": 111.85,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-22T07:11:36.401Z",
+          "price": 111.93,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-22T08:44:25.569Z",
+          "price": 111.9,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-22T10:17:14.737Z",
+          "price": 112,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-22T11:50:03.905Z",
+          "price": 111.96,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-22T13:22:53.073Z",
+          "price": 112.06,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-22T14:55:42.241Z",
+          "price": 112.04,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-22T16:28:31.409Z",
+          "price": 112.11,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-22T18:01:20.577Z",
+          "price": 112.11,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-22T19:34:09.745Z",
+          "price": 112.16,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-22T21:06:58.913Z",
+          "price": 112.19,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-22T22:39:48.081Z",
+          "price": 112.21,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-23T00:12:37.249Z",
+          "price": 112.28,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-23T01:45:26.417Z",
+          "price": 112.26,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-23T03:18:15.585Z",
+          "price": 112.35,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-23T04:51:04.753Z",
+          "price": 112.31,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-23T06:23:53.921Z",
+          "price": 112.41,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-23T07:56:43.089Z",
+          "price": 112.38,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-23T09:29:32.257Z",
+          "price": 112.47,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-23T11:02:21.425Z",
+          "price": 112.46,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-23T12:35:10.593Z",
+          "price": 112.52,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-23T14:07:59.761Z",
+          "price": 112.53,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-23T15:40:48.929Z",
+          "price": 112.56,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-23T17:13:38.097Z",
+          "price": 112.6,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-23T18:46:27.265Z",
+          "price": 112.6,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-23T20:19:16.433Z",
+          "price": 112.68,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-23T21:52:05.601Z",
+          "price": 112.65,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-23T23:24:54.769Z",
+          "price": 112.75,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-24T00:57:43.937Z",
+          "price": 112.71,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-24T02:30:33.105Z",
+          "price": 112.8,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-24T04:03:22.273Z",
+          "price": 112.77,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-24T05:36:11.441Z",
+          "price": 112.84,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-24T07:09:00.609Z",
+          "price": 112.84,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-24T08:41:49.777Z",
+          "price": 112.88,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-24T10:14:38.945Z",
+          "price": 112.9,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-24T11:47:28.113Z",
+          "price": 112.91,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-24T13:20:17.281Z",
+          "price": 112.97,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-24T14:53:06.449Z",
+          "price": 112.95,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-24T16:25:55.617Z",
+          "price": 113.04,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-24T17:58:44.785Z",
+          "price": 112.99,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-24T19:31:33.953Z",
+          "price": 113.08,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-24T21:04:23.121Z",
+          "price": 113.04,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-24T22:37:12.289Z",
+          "price": 113.12,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-25T00:10:01.457Z",
+          "price": 113.1,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-25T01:42:50.625Z",
+          "price": 113.16,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-25T03:15:39.793Z",
+          "price": 113.17,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-25T04:48:28.961Z",
+          "price": 113.2,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-25T06:21:18.129Z",
+          "price": 113.24,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-25T07:54:07.297Z",
+          "price": 113.23,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-25T09:26:56.465Z",
+          "price": 113.3,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-25T10:59:45.633Z",
+          "price": 113.26,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-25T12:32:34.801Z",
+          "price": 113.35,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-25T14:05:23.969Z",
+          "price": 113.3,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-25T15:38:13.137Z",
+          "price": 113.39,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-25T17:11:02.305Z",
+          "price": 113.36,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-25T18:43:51.473Z",
+          "price": 113.42,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-25T20:16:40.641Z",
+          "price": 113.41,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-25T21:49:29.809Z",
+          "price": 113.45,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-25T23:22:18.977Z",
+          "price": 113.47,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-26T00:55:08.145Z",
+          "price": 113.48,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-26T02:27:57.313Z",
+          "price": 113.53,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-26T04:00:46.481Z",
+          "price": 113.5,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-26T05:33:35.649Z",
+          "price": 113.58,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-26T07:06:24.817Z",
+          "price": 113.53,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-26T08:39:13.985Z",
+          "price": 113.62,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-26T10:12:03.153Z",
+          "price": 113.57,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-26T11:44:52.321Z",
+          "price": 113.64,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-26T13:17:41.489Z",
+          "price": 113.61,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-26T14:50:30.657Z",
+          "price": 113.66,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-26T16:23:19.825Z",
+          "price": 113.66,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-26T17:56:08.993Z",
+          "price": 113.68,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-26T19:28:58.161Z",
+          "price": 113.71,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-26T21:01:47.329Z",
+          "price": 113.7,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-26T22:34:36.497Z",
+          "price": 113.77,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-27T00:07:25.665Z",
+          "price": 113.72,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-27T01:40:14.833Z",
+          "price": 113.81,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-27T03:13:04.001Z",
+          "price": 113.76,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-27T04:45:53.169Z",
+          "price": 113.84,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-27T06:18:42.337Z",
+          "price": 113.8,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-27T07:51:31.505Z",
+          "price": 113.86,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-27T09:24:20.673Z",
+          "price": 113.84,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-27T10:57:09.841Z",
+          "price": 113.88,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-27T12:29:59.009Z",
+          "price": 113.89,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-27T14:02:48.177Z",
+          "price": 113.89,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-27T15:35:37.345Z",
+          "price": 113.94,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-27T17:08:26.513Z",
+          "price": 113.91,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-27T18:41:15.681Z",
+          "price": 113.99,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-27T20:14:04.849Z",
+          "price": 113.94,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-27T21:46:54.017Z",
+          "price": 114.03,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-27T23:19:43.185Z",
+          "price": 113.98,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-28T00:52:32.353Z",
+          "price": 114.05,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-28T02:25:21.521Z",
+          "price": 114.02,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-28T03:58:10.689Z",
+          "price": 114.07,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-28T05:30:59.857Z",
+          "price": 114.06,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-28T07:03:49.025Z",
+          "price": 114.08,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-28T08:36:38.193Z",
+          "price": 114.11,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-28T10:09:27.361Z",
+          "price": 114.09,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-28T11:42:16.529Z",
+          "price": 114.15,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-28T13:15:05.697Z",
+          "price": 114.1,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-28T14:47:54.865Z",
+          "price": 114.18,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-28T16:20:44.033Z",
+          "price": 114.12,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-28T17:53:33.201Z",
+          "price": 114.2,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-28T19:26:22.369Z",
+          "price": 114.16,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-28T20:59:11.537Z",
+          "price": 114.22,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-28T22:32:00.705Z",
+          "price": 114.2,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-29T00:04:49.873Z",
+          "price": 114.23,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-29T01:37:39.041Z",
+          "price": 114.24,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-29T03:10:28.209Z",
+          "price": 114.24,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-29T04:43:17.377Z",
+          "price": 114.29,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-29T06:16:06.545Z",
+          "price": 114.25,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-29T07:48:55.713Z",
+          "price": 114.32,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-29T09:21:44.881Z",
+          "price": 114.26,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-29T10:54:34.049Z",
+          "price": 114.34,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-29T12:27:23.217Z",
+          "price": 114.29,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-29T14:00:12.385Z",
+          "price": 114.36,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-29T15:33:01.553Z",
+          "price": 114.33,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-29T17:05:50.721Z",
+          "price": 114.38,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-29T18:38:39.889Z",
+          "price": 114.37,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-29T20:11:29.057Z",
+          "price": 114.39,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-29T21:44:18.225Z",
+          "price": 114.42,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-29T23:17:07.393Z",
+          "price": 114.4,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-30T00:49:56.561Z",
+          "price": 114.46,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-30T02:22:45.729Z",
+          "price": 114.41,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-30T03:55:34.897Z",
+          "price": 114.49,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-30T05:28:24.065Z",
+          "price": 114.43,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-30T07:01:13.233Z",
+          "price": 114.51,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-30T08:34:02.401Z",
+          "price": 114.46,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-30T10:06:51.569Z",
+          "price": 114.52,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-30T11:39:40.737Z",
+          "price": 114.49,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-30T13:12:29.905Z",
+          "price": 114.52,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-30T14:45:19.073Z",
+          "price": 114.52,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-30T16:18:08.241Z",
+          "price": 114.52,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-30T17:50:57.409Z",
+          "price": 114.56,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-30T19:23:46.577Z",
+          "price": 114.52,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-30T20:56:35.745Z",
+          "price": 114.59,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-30T22:29:24.913Z",
+          "price": 114.53,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-31T00:02:14.081Z",
+          "price": 114.61,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-31T01:35:03.249Z",
+          "price": 114.55,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-31T03:07:52.417Z",
+          "price": 114.61,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
+        },
+        {
+          "timestamp": "2026-10-31T03:45:00.000Z",
+          "price": 105.8,
+          "eventId": null,
+          "label": "🔔 Market Open (9:15 AM)"
+        },
+        {
+          "timestamp": "2026-10-31T03:47:10.520Z",
+          "price": 105.8,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T03:49:21.040Z",
+          "price": 105.93,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T03:51:31.560Z",
+          "price": 105.96,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T03:53:42.080Z",
+          "price": 106.3,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T03:55:52.600Z",
+          "price": 106.39,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T03:58:03.120Z",
+          "price": 106.57,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T04:00:13.640Z",
+          "price": 106.63,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T04:02:24.160Z",
+          "price": 106.67,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T04:04:34.680Z",
+          "price": 106.61,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T04:06:45.200Z",
+          "price": 106.82,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T04:08:55.720Z",
+          "price": 106.86,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T04:11:06.240Z",
+          "price": 107.16,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T04:13:16.760Z",
+          "price": 107.38,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T04:15:27.280Z",
+          "price": 107.57,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T04:17:37.800Z",
+          "price": 107.62,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T04:19:48.320Z",
+          "price": 107.7,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T04:21:58.840Z",
+          "price": 107.48,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T04:24:09.360Z",
+          "price": 107.48,
+          "eventId": null,
+          "label": "⚖️ Market Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-31T04:26:19.880Z",
+          "price": 107.43,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T04:28:30.400Z",
+          "price": 107.53,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T04:30:40.920Z",
+          "price": 107.76,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T04:32:51.440Z",
+          "price": 108.13,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T04:35:01.960Z",
+          "price": 108.34,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T04:37:12.480Z",
+          "price": 108.69,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T04:39:23.000Z",
+          "price": 108.76,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T04:41:33.520Z",
+          "price": 108.78,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T04:43:44.040Z",
+          "price": 108.77,
+          "eventId": null,
+          "label": "⚖️ Market Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-31T04:45:54.560Z",
+          "price": 108.75,
+          "eventId": null,
+          "label": "⚖️ Market Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-31T04:48:05.080Z",
+          "price": 108.69,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T04:50:15.600Z",
+          "price": 108.88,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T04:52:26.120Z",
+          "price": 108.94,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T04:54:36.640Z",
+          "price": 109.11,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T04:56:47.160Z",
+          "price": 109.25,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T04:58:57.680Z",
+          "price": 109.28,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T05:01:08.200Z",
+          "price": 109.28,
+          "eventId": null,
+          "label": "⚖️ Market Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-31T05:03:18.720Z",
+          "price": 109.41,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T05:05:29.240Z",
+          "price": 109.45,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T05:07:39.760Z",
+          "price": 109.72,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T05:09:50.280Z",
+          "price": 110.04,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T05:12:00.800Z",
+          "price": 110.31,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T05:14:11.320Z",
+          "price": 110.56,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T05:16:21.840Z",
+          "price": 110.7,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T05:18:32.360Z",
+          "price": 110.55,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T05:20:42.880Z",
+          "price": 110.43,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T05:22:53.400Z",
+          "price": 110.22,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T05:25:03.920Z",
+          "price": 110.08,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T05:27:14.440Z",
+          "price": 110.21,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T05:29:24.960Z",
+          "price": 110.48,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T05:31:35.480Z",
+          "price": 110.81,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T05:33:46.000Z",
+          "price": 111.29,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T05:35:56.520Z",
+          "price": 111.57,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T05:38:07.040Z",
+          "price": 111.67,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T05:40:17.560Z",
+          "price": 111.71,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T05:42:28.080Z",
+          "price": 111.54,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T05:44:38.600Z",
+          "price": 111.4,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T05:46:49.120Z",
+          "price": 111.44,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T05:48:59.640Z",
+          "price": 111.52,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T05:51:10.160Z",
+          "price": 111.75,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T05:53:20.680Z",
+          "price": 112.1,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T05:55:31.200Z",
+          "price": 112.25,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T05:57:41.720Z",
+          "price": 112.37,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T05:59:52.240Z",
+          "price": 112.38,
+          "eventId": null,
+          "label": "⚖️ Market Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-31T06:02:02.760Z",
+          "price": 112.24,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T06:04:13.280Z",
+          "price": 112.19,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T06:06:23.800Z",
+          "price": 112.28,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T06:08:34.320Z",
+          "price": 112.38,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T06:10:44.840Z",
+          "price": 112.74,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T06:12:55.360Z",
+          "price": 113.06,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T06:15:05.880Z",
+          "price": 113.27,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T06:17:16.400Z",
+          "price": 113.39,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T06:19:26.920Z",
+          "price": 113.34,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T06:21:37.440Z",
+          "price": 113.07,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T06:23:47.960Z",
+          "price": 112.99,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T06:25:58.480Z",
+          "price": 112.87,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T06:28:09.000Z",
+          "price": 112.98,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T06:30:19.520Z",
+          "price": 113.3,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T06:32:30.040Z",
+          "price": 113.68,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T06:34:40.560Z",
+          "price": 113.98,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T06:36:51.080Z",
+          "price": 114.31,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T06:39:01.600Z",
+          "price": 114.23,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T06:41:12.120Z",
+          "price": 114.1,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T06:43:22.640Z",
+          "price": 113.85,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T06:45:33.160Z",
+          "price": 113.62,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T06:47:43.680Z",
+          "price": 113.52,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T06:49:54.200Z",
+          "price": 113.77,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T06:52:04.720Z",
+          "price": 113.97,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T06:54:15.240Z",
+          "price": 114.44,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T06:56:25.760Z",
+          "price": 114.76,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T06:58:36.280Z",
+          "price": 114.94,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T07:00:46.800Z",
+          "price": 114.93,
+          "eventId": null,
+          "label": "⚖️ Market Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-31T07:02:57.320Z",
+          "price": 114.89,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T07:05:07.840Z",
+          "price": 114.59,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T07:07:18.360Z",
+          "price": 114.59,
+          "eventId": null,
+          "label": "⚖️ Market Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-31T07:09:28.880Z",
+          "price": 114.54,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T07:11:39.400Z",
+          "price": 114.69,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T07:13:49.920Z",
+          "price": 114.89,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T07:16:00.440Z",
+          "price": 115.14,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T07:18:10.960Z",
+          "price": 115.12,
+          "eventId": null,
+          "label": "⚖️ Market Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-31T07:20:21.480Z",
+          "price": 115.26,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T07:22:32.000Z",
+          "price": 115.08,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T07:24:42.520Z",
+          "price": 115.06,
+          "eventId": null,
+          "label": "⚖️ Market Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-31T07:26:53.040Z",
+          "price": 115.07,
+          "eventId": null,
+          "label": "⚖️ Market Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-31T07:29:03.560Z",
+          "price": 115.25,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T07:31:14.080Z",
+          "price": 115.42,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T07:33:24.600Z",
+          "price": 115.87,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T07:35:35.120Z",
+          "price": 115.96,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T07:37:45.640Z",
+          "price": 116.14,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T07:39:56.160Z",
+          "price": 116.01,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T07:42:06.680Z",
+          "price": 115.8,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T07:44:17.200Z",
+          "price": 115.48,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T07:46:27.720Z",
+          "price": 115.44,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T07:48:38.240Z",
+          "price": 115.27,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T07:50:48.760Z",
+          "price": 115.57,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T07:52:59.280Z",
+          "price": 115.79,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T07:55:09.800Z",
+          "price": 116.15,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T07:57:20.320Z",
+          "price": 116.37,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T07:59:30.840Z",
+          "price": 116.62,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T08:01:41.360Z",
+          "price": 116.47,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T08:03:51.880Z",
+          "price": 116.55,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T08:06:02.400Z",
+          "price": 116.33,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T08:08:12.920Z",
+          "price": 116.32,
+          "eventId": null,
+          "label": "⚖️ Market Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-31T08:10:23.440Z",
+          "price": 116.29,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T08:12:33.960Z",
+          "price": 116.43,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T08:14:44.480Z",
+          "price": 116.36,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T08:16:55.000Z",
+          "price": 116.59,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T08:19:05.520Z",
+          "price": 116.45,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T08:21:16.040Z",
+          "price": 116.53,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T08:23:26.560Z",
+          "price": 116.47,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T08:25:37.080Z",
+          "price": 116.57,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T08:27:47.600Z",
+          "price": 116.58,
+          "eventId": null,
+          "label": "⚖️ Market Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-31T08:29:58.120Z",
+          "price": 116.95,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T08:32:08.640Z",
+          "price": 116.98,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T08:34:19.160Z",
+          "price": 117.29,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T08:36:29.680Z",
+          "price": 117.27,
+          "eventId": null,
+          "label": "⚖️ Market Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-31T08:38:40.200Z",
+          "price": 117.25,
+          "eventId": null,
+          "label": "⚖️ Market Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-31T08:40:50.720Z",
+          "price": 117,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T08:43:01.240Z",
+          "price": 116.97,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T08:45:11.760Z",
+          "price": 116.66,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T08:47:22.280Z",
+          "price": 116.85,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T08:49:32.800Z",
+          "price": 116.88,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T08:51:43.320Z",
+          "price": 117.18,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T08:53:53.840Z",
+          "price": 117.37,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T08:56:04.360Z",
+          "price": 117.67,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T08:58:14.880Z",
+          "price": 117.53,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T09:00:25.400Z",
+          "price": 117.64,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T09:02:35.920Z",
+          "price": 117.33,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T09:04:46.440Z",
+          "price": 117.29,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T09:06:56.960Z",
+          "price": 117.19,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T09:09:07.480Z",
+          "price": 117.36,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T09:11:18.000Z",
+          "price": 117.38,
+          "eventId": null,
+          "label": "⚖️ Market Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-31T09:13:28.520Z",
+          "price": 117.78,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T09:15:39.040Z",
+          "price": 117.74,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T09:17:49.560Z",
+          "price": 117.91,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T09:20:00.080Z",
+          "price": 117.77,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T09:22:10.600Z",
+          "price": 117.72,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T09:24:21.120Z",
+          "price": 117.49,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T09:26:31.640Z",
+          "price": 117.67,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T09:28:42.160Z",
+          "price": 117.59,
+          "eventId": null,
+          "label": "🔻 Bearish Selling"
+        },
+        {
+          "timestamp": "2026-10-31T09:30:52.680Z",
+          "price": 117.97,
+          "eventId": null,
+          "label": "🔥 Bullish Buying"
+        },
+        {
+          "timestamp": "2026-10-31T09:33:59.576Z",
+          "price": 116.96,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-31T09:34:59.074Z",
+          "price": 116.21,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-31T09:35:59.637Z",
+          "price": 115.76,
+          "eventId": null,
+          "label": "🔻 Bearish Market Selling"
+        },
+        {
+          "timestamp": "2026-10-31T09:36:59.085Z",
+          "price": 115.54,
+          "eventId": null,
+          "label": "⚖️ Neutral Fluctuation"
+        },
+        {
+          "timestamp": "2026-10-31T09:37:32.313Z",
+          "price": 115.17,
+          "eventId": null,
+          "label": "🔥 Bullish Sentiment Buying"
         }
       ],
       "trades": []

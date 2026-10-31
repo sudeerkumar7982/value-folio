@@ -7,7 +7,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import pg from 'pg';
 import { computeStockMetrics } from '../engine/priceEngine.js';
-import { simulateCatchUpTicks } from '../../shared/marketSimulation.js';
+import { simulateCatchUpTicks, ensureRichIntradayHistory } from '../../shared/marketSimulation.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,6 +31,7 @@ function catchUpStoreStocks(store) {
     const stock = store.stocks[sym];
     const prevTicksLen = stock.priceTicks ? stock.priceTicks.length : 0;
     const prevPrice = stock.profile ? stock.profile.currentPrice : null;
+    ensureRichIntradayHistory(stock, nowMs);
     simulateCatchUpTicks(stock, nowMs);
     if ((stock.priceTicks && stock.priceTicks.length !== prevTicksLen) || (stock.profile && stock.profile.currentPrice !== prevPrice)) {
       modified = true;
@@ -363,11 +364,12 @@ const dbMethods = {
     }
 
     stock.profile.currentPrice = clampedPrice;
-    const nowIso = new Date().toISOString();
-    const currentMin = nowIso.slice(0, 16);
+    const nowMs = Date.now();
+    const nowIso = new Date(nowMs).toISOString();
     const lastTick = stock.priceTicks.length > 0 ? stock.priceTicks[stock.priceTicks.length - 1] : null;
+    const lastTickMs = lastTick ? new Date(lastTick.timestamp).getTime() : 0;
 
-    if (lastTick && !lastTick.eventId && lastTick.timestamp && lastTick.timestamp.startsWith(currentMin)) {
+    if (lastTick && !lastTick.eventId && (nowMs - lastTickMs < 3500)) {
       lastTick.price = clampedPrice;
       lastTick.timestamp = nowIso;
       lastTick.label = finalLabel;
