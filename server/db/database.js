@@ -356,10 +356,13 @@ const dbMethods = {
     const metrics = computeStockMetrics(stock.priceTicks, { ...stock, sentiment: sentimentData });
     const clampedPrice = Math.min(Math.max(Number(newPrice), metrics.lowerCircuit), metrics.upperCircuit);
 
+    const hitUpper = clampedPrice >= metrics.upperCircuit;
+    const hitLower = clampedPrice <= metrics.lowerCircuit;
+
     let finalLabel = label;
-    if (clampedPrice >= metrics.upperCircuit) {
+    if (hitUpper) {
       finalLabel = `🔒 Upper Circuit Limit Hit (+${metrics.upperCircuitPct}%)`;
-    } else if (clampedPrice <= metrics.lowerCircuit) {
+    } else if (hitLower) {
       finalLabel = `🔒 Lower Circuit Limit Hit (-${metrics.lowerCircuitPct}%)`;
     }
 
@@ -368,10 +371,11 @@ const dbMethods = {
     const nowIso = new Date(nowMs).toISOString();
     const lastTick = stock.priceTicks.length > 0 ? stock.priceTicks[stock.priceTicks.length - 1] : null;
     const lastTickMs = lastTick ? new Date(lastTick.timestamp).getTime() : 0;
+    const prevWasCircuit = lastTick && lastTick.label && lastTick.label.includes('Circuit Limit Hit');
 
-    // Save a new distinct tick every 30 seconds (up from 3.5s) so the chart
+    // Save a new distinct tick every 30 seconds so the chart
     // accumulates ~120 unique price points per hour for realistic wave patterns.
-    if (lastTick && !lastTick.eventId && (nowMs - lastTickMs < 30000)) {
+    if (lastTick && !lastTick.eventId && (nowMs - lastTickMs < 30000) && !prevWasCircuit) {
       lastTick.price = clampedPrice;
       lastTick.timestamp = nowIso;
       lastTick.label = finalLabel;
@@ -382,19 +386,35 @@ const dbMethods = {
         eventId: null,
         label: finalLabel
       });
+    }
 
-      // Cap at 3000 ticks per stock to prevent database bloat.
-      // Prune the oldest non-event ticks first to preserve milestone history.
-      const MAX_TICKS = 3000;
-      if (stock.priceTicks.length > MAX_TICKS) {
-        const eventTicks = stock.priceTicks.filter(t => t.eventId !== null);
-        const marketTicks = stock.priceTicks.filter(t => t.eventId === null);
-        // Keep the most recent market ticks up to the cap
-        const keepMarket = marketTicks.slice(-(MAX_TICKS - eventTicks.length));
-        stock.priceTicks = [...keepMarket, ...eventTicks].sort(
-          (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
-        );
-      }
+    // ── Circuit Breaker Reset ──────────────────────────────────────────────────
+    // When a circuit limit is hit, inject a synthetic anchor tick stamped 1ms
+    // later that re-centers the circuit bands around the new clamped price.
+    // This prevents the stock getting permanently stuck at a circuit floor/ceiling
+    // and mirrors real-market behavior (trading resumes from the new level).
+    if (hitUpper || hitLower) {
+      const resetLabel = hitUpper
+        ? `📈 Circuit Reset — Trading Resumes from ₹${clampedPrice.toFixed(2)}`
+        : `📉 Circuit Reset — Trading Resumes from ₹${clampedPrice.toFixed(2)}`;
+      stock.priceTicks.push({
+        timestamp: new Date(nowMs + 1).toISOString(),
+        price: clampedPrice,
+        eventId: `circuit-reset-${nowMs}`, // non-null so it becomes the new circuit anchor
+        label: resetLabel
+      });
+    }
+
+    // Cap at 3000 ticks per stock to prevent database bloat.
+    // Prune the oldest non-event ticks first to preserve milestone history.
+    const MAX_TICKS = 3000;
+    if (stock.priceTicks.length > MAX_TICKS) {
+      const eventTicks = stock.priceTicks.filter(t => t.eventId !== null);
+      const marketTicks = stock.priceTicks.filter(t => t.eventId === null);
+      const keepMarket = marketTicks.slice(-(MAX_TICKS - eventTicks.length));
+      stock.priceTicks = [...keepMarket, ...eventTicks].sort(
+        (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+      );
     }
 
     await writeStore(store);
