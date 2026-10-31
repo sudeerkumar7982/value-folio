@@ -12,19 +12,21 @@ export function getCircuitLimitsBySentiment(basePrice, sentimentData) {
     score >= 20 ? 'BEARISH' : 'VERY_BEARISH'
   );
 
-  let upperCircuitPct = 10;
-  let lowerCircuitPct = 10;
+  // Wide bands — circuits are a safety net for extreme life events only.
+  // Normal simulation waves (±0.085% per tick) will never reach these.
+  let upperCircuitPct = 40;
+  let lowerCircuitPct = 40;
 
   if (sentiment === 'VERY_BULLISH' || score >= 80) {
-    upperCircuitPct = 20; lowerCircuitPct = 5;
+    upperCircuitPct = 60; lowerCircuitPct = 25;
   } else if (sentiment === 'BULLISH' || score >= 60) {
-    upperCircuitPct = 15; lowerCircuitPct = 8;
+    upperCircuitPct = 50; lowerCircuitPct = 30;
   } else if (sentiment === 'BEARISH' || (score >= 20 && score < 40)) {
-    upperCircuitPct = 8; lowerCircuitPct = 15;
+    upperCircuitPct = 30; lowerCircuitPct = 50;
   } else if (sentiment === 'VERY_BEARISH' || score < 20) {
-    upperCircuitPct = 5; lowerCircuitPct = 20;
+    upperCircuitPct = 20; lowerCircuitPct = 60;
   } else {
-    upperCircuitPct = 10; lowerCircuitPct = 10;
+    upperCircuitPct = 40; lowerCircuitPct = 40;
   }
 
   const upperCircuit = Number((base * (1 + upperCircuitPct / 100)).toFixed(2));

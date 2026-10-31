@@ -65,13 +65,15 @@ function getStockMarketParams(stock) {
     sentimentScore = Math.min(Math.max(Math.round(65 + priceChange * 1.5), 10), 95);
   }
 
-  let upperCircuitPct = 20;
-  let lowerCircuitPct = 15;
-  if (sentimentScore >= 80) { upperCircuitPct = 30; lowerCircuitPct = 8; }
-  else if (sentimentScore >= 60) { upperCircuitPct = 20; lowerCircuitPct = 10; }
-  else if (sentimentScore >= 40) { upperCircuitPct = 15; lowerCircuitPct = 15; }
-  else if (sentimentScore >= 20) { upperCircuitPct = 10; lowerCircuitPct = 20; }
-  else { upperCircuitPct = 8; lowerCircuitPct = 25; }
+  // Wide bands — circuits are a safety net for extreme life events only.
+  // Normal simulation waves (±0.085% per tick) will never reach these.
+  let upperCircuitPct = 40;
+  let lowerCircuitPct = 40;
+  if (sentimentScore >= 80) { upperCircuitPct = 60; lowerCircuitPct = 25; }
+  else if (sentimentScore >= 60) { upperCircuitPct = 50; lowerCircuitPct = 30; }
+  else if (sentimentScore >= 40) { upperCircuitPct = 40; lowerCircuitPct = 40; }
+  else if (sentimentScore >= 20) { upperCircuitPct = 30; lowerCircuitPct = 50; }
+  else { upperCircuitPct = 20; lowerCircuitPct = 60; }
 
   const lastEventTick = Array.isArray(stock.priceTicks) ? [...stock.priceTicks].reverse().find(t => t.eventId !== null) : null;
   const circuitAnchorPrice = lastEventTick ? lastEventTick.price : startingPrice;
