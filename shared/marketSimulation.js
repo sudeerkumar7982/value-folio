@@ -18,26 +18,27 @@ export function calculateMarketMovePercent(currentPrice, referencePrice, sentime
   const tSec = nowMs / 1000;
 
   // 1. Macro Wave (~15 to 25 minute cycle): broad market trend
+  //    Amplitude scaled for 30s ticks — keeps daily drift within ±3-5%
   const macroRad = ((tSec + symbolSeed * 7) / 1200) * Math.PI * 2;
-  const macroWave = Math.sin(macroRad) * 0.18 + Math.cos(macroRad * 0.7) * 0.08;
+  const macroWave = Math.sin(macroRad) * 0.030 + Math.cos(macroRad * 0.7) * 0.013;
 
   // 2. Medium Wave (~3 to 5 minute cycle): sector momentum & pullbacks
   const medRad = ((tSec + symbolSeed * 13) / 260) * Math.PI * 2;
-  const medWave = Math.sin(medRad) * 0.12 + Math.cos(medRad * 1.3) * 0.06;
+  const medWave = Math.sin(medRad) * 0.020 + Math.cos(medRad * 1.3) * 0.010;
 
   // 3. Micro Swing (~30 to 60 second cycle): order-flow swings
   const microRad = ((tSec + symbolSeed * 31) / 45) * Math.PI * 2;
-  const microWave = Math.sin(microRad) * 0.06;
+  const microWave = Math.sin(microRad) * 0.010;
 
   // 4. Tick Jitter (fast micro-fluctuations)
-  const jitter = (normalizedRandom - 0.49) * 0.07;
+  const jitter = (normalizedRandom - 0.49) * 0.012;
 
-  // 5. Sentiment Drift (bullish or bearish bias)
-  const sentimentBias = (score - 50) * 0.0012;
+  // 5. Sentiment Drift (bullish or bearish bias) — gentle nudge per tick
+  const sentimentBias = (score - 50) * 0.00020;
 
-  // 6. Mean Reversion towards reference price to prevent runaway while allowing realistic 10-25% rallies/dips
+  // 6. Soft Mean Reversion — nudges gently back toward reference without slamming circuits
   const deviationPercent = ((reference - current) / reference) * 100;
-  const meanReversion = Math.max(-0.04, Math.min(0.04, deviationPercent * 0.012));
+  const meanReversion = Math.max(-0.008, Math.min(0.008, deviationPercent * 0.002));
 
   return Number((macroWave + medWave + microWave + jitter + sentimentBias + meanReversion).toFixed(4));
 }
@@ -131,7 +132,7 @@ export function simulateCatchUpTicks(stock, targetNowMs = Date.now(), maxTicksTo
 
   while (currentTimeMs <= targetNowMs && ticksGenerated < maxTicksToGenerate) {
     const pseudoRand = Math.abs(Math.sin(currentTimeMs * 0.0019 + symbolSeed * 37.1));
-    const noise = calculateMarketMovePercent(simPrice, circuitAnchorPrice, sentimentScore, symbol, currentTimeMs, pseudoRand);
+    const noise = calculateMarketMovePercent(simPrice, simPrice, sentimentScore, symbol, currentTimeMs, pseudoRand);
     const rawPrice = simPrice * (1 + noise / 100);
     simPrice = Number(Math.min(Math.max(rawPrice, lowerCircuit), upperCircuit).toFixed(2));
     if (simPrice < 1.0) simPrice = 1.0;
@@ -203,7 +204,7 @@ export function ensureRichIntradayHistory(stock, targetNowMs = Date.now()) {
     if (tMs > targetNowMs) break;
 
     const pseudoRand = Math.abs(Math.sin(tMs * 0.0019 + symbolSeed * 37.1));
-    const noise = calculateMarketMovePercent(currentP, circuitAnchorPrice, sentimentScore, symbol, tMs, pseudoRand);
+    const noise = calculateMarketMovePercent(currentP, currentP, sentimentScore, symbol, tMs, pseudoRand);
     const rawPrice = currentP * (1 + noise / 100);
     currentP = Number(Math.min(Math.max(rawPrice, lowerCircuit), upperCircuit).toFixed(2));
     if (currentP < 1.0) currentP = 1.0;
