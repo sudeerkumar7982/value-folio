@@ -24,14 +24,10 @@ function boxMuller(u1, u2) {
 /**
  * Calculates the % price move for a single tick using GBM.
  *
- * Calibration (30-second tick interval, ~6.5 hr trading day):
- *   Annual vol σ_annual = 35%  →  daily σ = 35%/√252 ≈ 2.2%
- *   Per-30s σ = 2.2% × √(30/23400) ≈ 0.057% per tick
- *
- * This produces Groww-like intraday charts:
- *   • Visible up/down bounces every tick
- *   • Daily range roughly ±1.5–3% around opening
- *   • Organic-looking momentum runs & pullbacks
+ * Calibration (30-second tick interval):
+ *   σ per tick = 0.18%  →  ±₹0.22 on a ₹120 stock per tick
+ *   Daily range ≈ ±3-5% from opening (Groww-style intraday)
+ *   Mean reversion activates at 1% drift — creates visible up/down oscillations
  */
 export function calculateMarketMovePercent(
   currentPrice,
@@ -52,30 +48,28 @@ export function calculateMarketMovePercent(
   const u1 = Math.max(0.001, Math.min(0.999, randomValue));
   const u2 = Math.max(0.001, Math.min(0.999, pseudoHash(nowMs * 0.001 + score)));
   const Z  = boxMuller(u1, u2);                 // N(0,1)
-  const sigmaTick = 0.057;                       // % per tick (30s interval)
+  const sigmaTick = 0.18;                       // % per tick — ±₹0.22 on ₹120, clearly visible
   const gbmNoise  = sigmaTick * Z;               // core random walk
 
   // ── Momentum texture (4-min cycle) ────────────────────────────────────────
-  // Adds organic short-term trends — price tends to continue briefly before
-  // reversing. Amplitude kept small so it doesn't dominate.
+  // Adds organic short-term trends visible at chart scale.
   const symbolSeed = Array.from(String(symbol || '')).reduce(
     (acc, c, i) => (acc + c.charCodeAt(0) * (i + 1) * 17) % 1000, 13
   );
   const tSec   = nowMs / 1000;
   const medRad = ((tSec + symbolSeed * 13) / 240) * Math.PI * 2;
-  const momentum = Math.sin(medRad) * 0.012 + Math.cos(medRad * 1.5) * 0.006;
+  const momentum = Math.sin(medRad) * 0.025 + Math.cos(medRad * 1.5) * 0.012;
 
   // ── Sentiment drift (μ per tick) ──────────────────────────────────────────
-  // BULLISH (score=75): +0.002% per tick → +0.24% per hour gentle drift.
-  // BEARISH (score=25): -0.002% per tick → -0.24% per hour.
-  const mu = (score - 50) * 0.00004;
+  // BULLISH (score=75): +0.003% per tick → gentle long-term upward nudge.
+  const mu = (score - 50) * 0.00006;
 
   // ── Mean reversion toward today's opening ────────────────────────────────
-  // Activates only when price has drifted >2% from opening — gently pulls back.
-  // This keeps the intraday range realistic (±3-5% max from open).
+  // Activates when price drifts >1% from opening — creates visible oscillations.
+  // This is what makes the chart go up AND come back down organically.
   const driftPct = ((current - reference) / reference) * 100;
-  const reversion = driftPct > 2 || driftPct < -2
-    ? Math.max(-0.03, Math.min(0.03, -driftPct * 0.008))
+  const reversion = driftPct > 1 || driftPct < -1
+    ? Math.max(-0.12, Math.min(0.12, -driftPct * 0.025))
     : 0;
 
   const total = gbmNoise + momentum + mu + reversion;

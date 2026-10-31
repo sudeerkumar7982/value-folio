@@ -422,6 +422,43 @@ app.post('/api/reset', async (req, res) => {
   }
 });
 
+// Refresh today's price tick history — clears flat/corrupted market ticks and
+// regenerates them with the GBM engine. Life events are preserved.
+app.post('/api/ticks/refresh', async (req, res) => {
+  try {
+    const symbol = req.body.symbol || await DB.getActiveSymbol();
+    const store  = await DB.getPriceTicks(symbol); // triggers catchUpStoreStocks via readStore
+    const profile = await DB.getProfile(symbol);
+
+    // Read raw store to prune directly
+    const { simulateCatchUpTicks, ensureRichIntradayHistory } = await import('../shared/marketSimulation.js');
+    const rawStore = await DB.catchUpAllStocks(); // ensures store is loaded
+    // Use the existing DB structure — clear today's non-event ticks via internal logic
+    // by forcing ensureRichIntradayHistory to regenerate (needs todayTicks < 120 threshold)
+
+    // We expose this via a special reset path: set priceTicks to only events + yesterday
+    const allTicks = store;
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).getTime();
+    const keepTicks = allTicks.filter(t => {
+      const ts = new Date(t.timestamp).getTime();
+      // Keep: (a) ticks from before today, (b) real life event ticks from today (not circuit-reset)
+      const isToday = ts >= todayStart;
+      const isRealEvent = t.eventId && !String(t.eventId).startsWith('circuit-reset');
+      return !isToday || isRealEvent;
+    });
+
+    // Write the pruned ticks back
+    await DB.updateProfile({ currentPrice: profile?.currentPrice }, symbol);
+    // Use internal DB access to overwrite priceTicks
+    const result = await DB.pruneTodayTicks(symbol, keepTicks);
+    res.json({ success: true, keptTicks: keepTicks.length, message: 'Today\'s market ticks cleared — GBM will regenerate fresh history' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // SPA Fallback Route
 app.get('*', async (req, res) => {
   res.sendFile(path.join(__dirname, '../dist/index.html'));
