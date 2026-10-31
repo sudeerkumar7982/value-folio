@@ -1,56 +1,95 @@
 /**
- * High-Fidelity Continuous Market Simulation Engine
- * Generates realistic multi-frequency stock price movements (macro waves, pullbacks,
- * momentum runs, plateaus, and micro-ticks) modeled after real equity trading charts (Zerodha / Dixon).
+ * Realistic Market Simulation Engine — Geometric Brownian Motion (GBM)
+ * Models price movement exactly as real stock exchanges do:
+ *   dS = S × (μ·dt + σ·√dt·Z)
+ * Calibrated for Groww/Zerodha-style intraday charts with 30-second ticks.
  */
 
-export function calculateMarketMovePercent(currentPrice, referencePrice, sentimentScore, symbol, nowMs = Date.now(), randomValue = Math.random()) {
-  const current = Number(currentPrice) || 100;
-  const reference = Number(referencePrice) || current;
-  const score = Math.max(0, Math.min(100, Number(sentimentScore) || 50));
-  const normalizedRandom = Math.max(0, Math.min(1, randomValue));
+// ─────────────────────────────────────────────────────────────────────────────
+// Unbiased pseudo-random hash [0, 1) — uses fractional part of large product.
+// Mean ≈ 0.5 (unlike Math.abs(Math.sin()) which averages 0.637 → biased up).
+// ─────────────────────────────────────────────────────────────────────────────
+function pseudoHash(seed) {
+  const x = Math.sin(seed * 9301.0 + 49297.0) * 233280.0;
+  return x - Math.floor(x); // uniform [0, 1)
+}
 
-  const symbolSeed = Array.from(String(symbol || '')).reduce(
-    (acc, char, idx) => (acc + char.charCodeAt(0) * (idx + 1) * 17) % 1000,
-    13
-  );
-
-  const tSec = nowMs / 1000;
-
-  // ── PRIMARY DRIVER: Random Brownian jitter ────────────────────────────────
-  // This is the main force — creates real up/down movement every tick.
-  // Range: ±0.08% per tick → visible price bounces on the chart.
-  const jitter = (normalizedRandom - 0.5) * 0.16;
-
-  // ── SECONDARY: Sine wave texture (~4–5 min cycle) ─────────────────────────
-  // Light oscillation adds chart texture without dominating direction.
-  const medRad = ((tSec + symbolSeed * 13) / 260) * Math.PI * 2;
-  const waveTexture = Math.sin(medRad) * 0.018 + Math.cos(medRad * 1.3) * 0.008;
-
-  // ── MICRO SWING (~30–60 sec cycle) ───────────────────────────────────────
-  const microRad = ((tSec + symbolSeed * 31) / 45) * Math.PI * 2;
-  const microSwing = Math.sin(microRad) * 0.008;
-
-  // ── SENTIMENT DRIFT ───────────────────────────────────────────────────────
-  // Gentle long-term bias: BULLISH score 75 → +0.005% per tick drift
-  const sentimentBias = (score - 50) * 0.00010;
-
-  // ── MEAN REVERSION toward referencePrice (today's opening) ───────────────
-  // Pulls price back when it drifts far from the opening. Prevents sustained
-  // one-directional runs. Max force: ±0.04% per tick.
-  const deviationPercent = ((reference - current) / reference) * 100;
-  const meanReversion = Math.max(-0.04, Math.min(0.04, deviationPercent * 0.015));
-
-  return Number((jitter + waveTexture + microSwing + sentimentBias + meanReversion).toFixed(4));
+// Box-Muller transform: converts two uniform [0,1] values → standard normal Z
+function boxMuller(u1, u2) {
+  const r = Math.sqrt(-2.0 * Math.log(Math.max(u1, 1e-10)));
+  const theta = 2.0 * Math.PI * u2;
+  return r * Math.cos(theta); // N(0,1)
 }
 
 /**
- * Computes dynamic circuit limits and sentiment parameters for a stock
+ * Calculates the % price move for a single tick using GBM.
+ *
+ * Calibration (30-second tick interval, ~6.5 hr trading day):
+ *   Annual vol σ_annual = 35%  →  daily σ = 35%/√252 ≈ 2.2%
+ *   Per-30s σ = 2.2% × √(30/23400) ≈ 0.057% per tick
+ *
+ * This produces Groww-like intraday charts:
+ *   • Visible up/down bounces every tick
+ *   • Daily range roughly ±1.5–3% around opening
+ *   • Organic-looking momentum runs & pullbacks
+ */
+export function calculateMarketMovePercent(
+  currentPrice,
+  referencePrice,     // today's opening price — mean-reversion anchor
+  sentimentScore,
+  symbol,
+  nowMs = Date.now(),
+  randomValue = Math.random()
+) {
+  const current   = Number(currentPrice)  || 100;
+  const reference = Number(referencePrice) || current;
+  const score     = Math.max(0, Math.min(100, Number(sentimentScore) || 50));
+
+  // ── GBM core ──────────────────────────────────────────────────────────────
+  // σ per tick calibrated to ~2.2% daily volatility (realistic mid-cap stock).
+  // We approximate N(0,1) from the single uniform randomValue using a simple
+  // approximation (close enough for simulation purposes).
+  const u1 = Math.max(0.001, Math.min(0.999, randomValue));
+  const u2 = Math.max(0.001, Math.min(0.999, pseudoHash(nowMs * 0.001 + score)));
+  const Z  = boxMuller(u1, u2);                 // N(0,1)
+  const sigmaTick = 0.057;                       // % per tick (30s interval)
+  const gbmNoise  = sigmaTick * Z;               // core random walk
+
+  // ── Momentum texture (4-min cycle) ────────────────────────────────────────
+  // Adds organic short-term trends — price tends to continue briefly before
+  // reversing. Amplitude kept small so it doesn't dominate.
+  const symbolSeed = Array.from(String(symbol || '')).reduce(
+    (acc, c, i) => (acc + c.charCodeAt(0) * (i + 1) * 17) % 1000, 13
+  );
+  const tSec   = nowMs / 1000;
+  const medRad = ((tSec + symbolSeed * 13) / 240) * Math.PI * 2;
+  const momentum = Math.sin(medRad) * 0.012 + Math.cos(medRad * 1.5) * 0.006;
+
+  // ── Sentiment drift (μ per tick) ──────────────────────────────────────────
+  // BULLISH (score=75): +0.002% per tick → +0.24% per hour gentle drift.
+  // BEARISH (score=25): -0.002% per tick → -0.24% per hour.
+  const mu = (score - 50) * 0.00004;
+
+  // ── Mean reversion toward today's opening ────────────────────────────────
+  // Activates only when price has drifted >2% from opening — gently pulls back.
+  // This keeps the intraday range realistic (±3-5% max from open).
+  const driftPct = ((current - reference) / reference) * 100;
+  const reversion = driftPct > 2 || driftPct < -2
+    ? Math.max(-0.03, Math.min(0.03, -driftPct * 0.008))
+    : 0;
+
+  const total = gbmNoise + momentum + mu + reversion;
+  return Number(total.toFixed(4));
+}
+
+/**
+ * Computes dynamic circuit limits and sentiment parameters for a stock.
+ * Circuits are wide safety-nets for extreme life events — not daily constraints.
  */
 function getStockMarketParams(stock) {
-  const currentPrice = Number(stock.profile?.currentPrice || 100);
+  const currentPrice  = Number(stock.profile?.currentPrice  || 100);
   const startingPrice = Number(stock.profile?.startingPrice || stock.profile?.listingPrice || 100);
-  const symbol = stock.profile?.symbol || 'STOCK';
+  const symbol        = stock.profile?.symbol || 'STOCK';
 
   let sentimentScore = 50;
   if (stock.events && stock.events.length > 0) {
@@ -58,25 +97,29 @@ function getStockMarketParams(stock) {
     stock.events.forEach(e => {
       if (e.sentiment === 'POSITIVE' || (e.impactPercent && e.impactPercent > 0)) posCount++;
     });
-    const positiveRatio = (posCount / stock.events.length) * 100;
+    const positiveRatio      = (posCount / stock.events.length) * 100;
     const priceChangePercent = ((currentPrice - startingPrice) / startingPrice) * 100;
-    sentimentScore = Math.min(Math.max(Math.round(50 + (positiveRatio - 50) * 0.4 + Math.min(Math.max(priceChangePercent * 1.2, -25), 25)), 5), 98);
+    sentimentScore = Math.min(Math.max(
+      Math.round(50 + (positiveRatio - 50) * 0.4 + Math.min(Math.max(priceChangePercent * 1.2, -25), 25)),
+      5), 98);
   } else {
     const priceChange = ((currentPrice - startingPrice) / startingPrice) * 100;
     sentimentScore = Math.min(Math.max(Math.round(65 + priceChange * 1.5), 10), 95);
   }
 
-  // Wide bands — circuits are a safety net for extreme life events only.
-  // Normal simulation waves (±0.085% per tick) will never reach these.
+  // Wide circuit bands — safety net for extreme life events only.
+  // Normal GBM movement (σ=0.057% per tick) will never reach these.
   let upperCircuitPct = 40;
   let lowerCircuitPct = 40;
-  if (sentimentScore >= 80) { upperCircuitPct = 60; lowerCircuitPct = 25; }
+  if      (sentimentScore >= 80) { upperCircuitPct = 60; lowerCircuitPct = 25; }
   else if (sentimentScore >= 60) { upperCircuitPct = 50; lowerCircuitPct = 30; }
   else if (sentimentScore >= 40) { upperCircuitPct = 40; lowerCircuitPct = 40; }
   else if (sentimentScore >= 20) { upperCircuitPct = 30; lowerCircuitPct = 50; }
-  else { upperCircuitPct = 20; lowerCircuitPct = 60; }
+  else                           { upperCircuitPct = 20; lowerCircuitPct = 60; }
 
-  const lastEventTick = Array.isArray(stock.priceTicks) ? [...stock.priceTicks].reverse().find(t => t.eventId !== null) : null;
+  const lastEventTick    = Array.isArray(stock.priceTicks)
+    ? [...stock.priceTicks].reverse().find(t => t.eventId !== null && !String(t.eventId).startsWith('circuit-reset'))
+    : null;
   const circuitAnchorPrice = lastEventTick ? lastEventTick.price : startingPrice;
   const upperCircuit = Number((circuitAnchorPrice * (1 + upperCircuitPct / 100)).toFixed(2));
   const lowerCircuit = Math.max(1.0, Number((circuitAnchorPrice * (1 - lowerCircuitPct / 100)).toFixed(2)));
@@ -85,8 +128,8 @@ function getStockMarketParams(stock) {
 }
 
 /**
- * Simulates elapsed continuous market ticks when the user closes the site or the server sleeps.
- * Fills in the time gap seamlessly from last recorded tick to targetNowMs with high-resolution detail.
+ * Simulates elapsed continuous market ticks when the server was offline.
+ * Uses unbiased pseudo-random (not Math.abs(Math.sin) which averages 0.637→biased up).
  */
 export function simulateCatchUpTicks(stock, targetNowMs = Date.now(), maxTicksToGenerate = 1200) {
   if (!stock || !stock.profile) return stock;
@@ -96,68 +139,49 @@ export function simulateCatchUpTicks(stock, targetNowMs = Date.now(), maxTicksTo
     return stock;
   }
 
-  const lastTick = stock.priceTicks[stock.priceTicks.length - 1];
+  const lastTick   = stock.priceTicks[stock.priceTicks.length - 1];
   const lastTimeMs = new Date(lastTick.timestamp).getTime();
-  if (isNaN(lastTimeMs) || targetNowMs <= lastTimeMs) {
-    return stock;
-  }
+  if (isNaN(lastTimeMs) || targetNowMs <= lastTimeMs) return stock;
 
   const elapsedMs = targetNowMs - lastTimeMs;
-  // If less than 2.5 seconds, no catch-up needed yet
-  if (elapsedMs < 2500) {
-    return stock;
-  }
+  if (elapsedMs < 2500) return stock;
 
-  // Calculate dynamic step based on elapsed time to preserve realistic tick density
-  let stepMs = 5000; // 5 seconds
-  if (elapsedMs > 7 * 24 * 3600 * 1000) {
-    stepMs = Math.max(3600 * 1000, Math.floor(elapsedMs / maxTicksToGenerate));
-  } else if (elapsedMs > 24 * 3600 * 1000) {
-    stepMs = Math.max(10 * 60 * 1000, Math.floor(elapsedMs / maxTicksToGenerate)); // ~10-15 min
-  } else if (elapsedMs > 6 * 3600 * 1000) {
-    stepMs = Math.max(30 * 1000, Math.floor(elapsedMs / maxTicksToGenerate)); // ~30 sec
-  } else if (elapsedMs > 60 * 60 * 1000) {
-    stepMs = 20 * 1000; // 20 sec
-  } else if (elapsedMs > 10 * 60 * 1000) {
-    stepMs = 8 * 1000; // 8 sec
-  } else if (elapsedMs > 2 * 60 * 1000) {
-    stepMs = 4 * 1000; // 4 sec
-  } else {
-    stepMs = 2 * 1000; // 2 sec
-  }
+  // Dynamic step — denser for shorter gaps, coarser for long outages
+  let stepMs;
+  if      (elapsedMs > 7 * 24 * 3600 * 1000) stepMs = Math.max(3600 * 1000, Math.floor(elapsedMs / maxTicksToGenerate));
+  else if (elapsedMs > 24 * 3600 * 1000)     stepMs = Math.max(10 * 60 * 1000, Math.floor(elapsedMs / maxTicksToGenerate));
+  else if (elapsedMs > 6 * 3600 * 1000)      stepMs = Math.max(30 * 1000, Math.floor(elapsedMs / maxTicksToGenerate));
+  else if (elapsedMs > 60 * 60 * 1000)       stepMs = 20 * 1000;
+  else if (elapsedMs > 10 * 60 * 1000)       stepMs = 8 * 1000;
+  else if (elapsedMs > 2 * 60 * 1000)        stepMs = 4 * 1000;
+  else                                        stepMs = 2 * 1000;
 
-  const { symbol, sentimentScore, upperCircuitPct, lowerCircuitPct, circuitAnchorPrice, upperCircuit, lowerCircuit } = getStockMarketParams(stock);
-  let simPrice = Number(stock.profile.currentPrice || lastTick.price || 100);
+  const { symbol, sentimentScore, upperCircuitPct, lowerCircuitPct, startingPrice, upperCircuit, lowerCircuit } = getStockMarketParams(stock);
+  let simPrice      = Number(stock.profile.currentPrice || lastTick.price || 100);
   let currentTimeMs = lastTimeMs + stepMs;
-  let ticksGenerated = 0;
+  let tickIndex     = 0;
 
-  const symbolSeed = Array.from(String(symbol || '')).reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  while (currentTimeMs <= targetNowMs && tickIndex < maxTicksToGenerate) {
+    // Unbiased pseudo-random pair: mean ≈ 0.5 each
+    const u1 = pseudoHash(currentTimeMs * 0.001731 + tickIndex * 127.1);
+    const u2 = pseudoHash(currentTimeMs * 0.003713 + tickIndex * 311.7);
+    const noise = calculateMarketMovePercent(simPrice, startingPrice, sentimentScore, symbol, currentTimeMs, u1);
 
-  while (currentTimeMs <= targetNowMs && ticksGenerated < maxTicksToGenerate) {
-    const pseudoRand = Math.abs(Math.sin(currentTimeMs * 0.0019 + symbolSeed * 37.1));
-    const noise = calculateMarketMovePercent(simPrice, simPrice, sentimentScore, symbol, currentTimeMs, pseudoRand);
     const rawPrice = simPrice * (1 + noise / 100);
     simPrice = Number(Math.min(Math.max(rawPrice, lowerCircuit), upperCircuit).toFixed(2));
     if (simPrice < 1.0) simPrice = 1.0;
 
-    let tickLabel = noise > 0.02 ? '🔥 Bullish Buying' : noise < -0.02 ? '🔻 Bearish Selling' : '⚖️ Market Fluctuation';
-    if (simPrice >= upperCircuit) {
-      tickLabel = `🔒 Upper Circuit (+${upperCircuitPct}%)`;
-    } else if (simPrice <= lowerCircuit) {
-      tickLabel = `🔒 Lower Circuit (-${lowerCircuitPct}%)`;
-    }
-
-    const isoStr = new Date(currentTimeMs).toISOString();
+    const tickLabel = noise > 0.03 ? '🔥 Bullish Buying' : noise < -0.03 ? '🔻 Bearish Selling' : '⚖️ Market Fluctuation';
 
     stock.priceTicks.push({
-      timestamp: isoStr,
-      price: simPrice,
-      eventId: null,
-      label: tickLabel
+      timestamp: new Date(currentTimeMs).toISOString(),
+      price:     simPrice,
+      eventId:   null,
+      label:     tickLabel
     });
 
     currentTimeMs += stepMs;
-    ticksGenerated++;
+    tickIndex++;
   }
 
   stock.profile.currentPrice = simPrice;
@@ -165,73 +189,61 @@ export function simulateCatchUpTicks(stock, targetNowMs = Date.now(), maxTicksTo
 }
 
 /**
- * Ensures a stock has rich intraday tick history for today (starting from market opening 9:15 AM).
- * If the stock has fewer than 40 ticks for today, this backfills the trading day so the 1D chart
- * immediately renders with beautiful, continuous, detailed market waves.
+ * Backfills today's intraday history with GBM ticks from 9:15 AM to now.
+ * Uses unbiased pseudo-random so there's no systematic upward/downward drift.
  */
 export function ensureRichIntradayHistory(stock, targetNowMs = Date.now()) {
   if (!stock || !stock.profile) return stock;
+  if (!Array.isArray(stock.priceTicks)) stock.priceTicks = [];
 
-  if (!Array.isArray(stock.priceTicks)) {
-    stock.priceTicks = [];
-  }
-
-  const now = new Date(targetNowMs);
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 15, 0, 0); // 9:15 AM Market Open
-  const marketOpenMs = startOfDay.getTime() > targetNowMs ? targetNowMs - (4 * 3600 * 1000) : startOfDay.getTime();
+  const now        = new Date(targetNowMs);
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 15, 0, 0);
+  const marketOpenMs = startOfDay.getTime() > targetNowMs
+    ? targetNowMs - (4 * 3600 * 1000)
+    : startOfDay.getTime();
 
   const todayTicks = stock.priceTicks.filter(t => new Date(t.timestamp).getTime() >= marketOpenMs);
+  if (todayTicks.length >= 120) return stock;  // already rich enough
 
-  // If already has plenty of detailed ticks today, no need to backfill
-  if (todayTicks.length >= 120) {
-    return stock;
-  }
-
-  const { symbol, sentimentScore, circuitAnchorPrice, upperCircuit, lowerCircuit } = getStockMarketParams(stock);
+  const { symbol, sentimentScore, upperCircuit, lowerCircuit } = getStockMarketParams(stock);
   const startingPrice = Number(stock.profile.startingPrice || stock.profile.listingPrice || 100);
 
-  // Preserve existing ticks from prior days
-  const priorTicks = stock.priceTicks.filter(t => new Date(t.timestamp).getTime() < marketOpenMs);
+  const priorTicks         = stock.priceTicks.filter(t => new Date(t.timestamp).getTime() <  marketOpenMs);
   const existingEventsToday = stock.priceTicks.filter(t => new Date(t.timestamp).getTime() >= marketOpenMs && t.eventId);
 
   const durationMs = Math.max(targetNowMs - marketOpenMs, 60000);
-  const numSteps = Math.min(360, Math.max(80, Math.floor(durationMs / 30000))); // step every ~30 seconds
-  const stepMs = Math.floor(durationMs / numSteps);
+  const numSteps   = Math.min(360, Math.max(80, Math.floor(durationMs / 30000))); // ~30s per step
+  const stepMs     = Math.floor(durationMs / numSteps);
 
-  let currentP = startingPrice;
-  const generatedTicks = [];
-  const symbolSeed = Array.from(String(symbol || '')).reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  let currentP     = startingPrice;
+  const generated  = [];
 
   for (let i = 0; i <= numSteps; i++) {
     const tMs = marketOpenMs + i * stepMs;
     if (tMs > targetNowMs) break;
 
-    const pseudoRand = Math.abs(Math.sin(tMs * 0.0019 + symbolSeed * 37.1));
-    const noise = calculateMarketMovePercent(currentP, currentP, sentimentScore, symbol, tMs, pseudoRand);
+    if (i === 0) {
+      generated.push({ timestamp: new Date(tMs).toISOString(), price: currentP, eventId: null, label: '🔔 Market Open (9:15 AM)' });
+      continue;
+    }
+
+    // Unbiased pseudo-random pair
+    const u1    = pseudoHash(tMs * 0.001731 + i * 127.1);
+    const noise = calculateMarketMovePercent(currentP, startingPrice, sentimentScore, symbol, tMs, u1);
+
     const rawPrice = currentP * (1 + noise / 100);
     currentP = Number(Math.min(Math.max(rawPrice, lowerCircuit), upperCircuit).toFixed(2));
     if (currentP < 1.0) currentP = 1.0;
 
-    const isoStr = new Date(tMs).toISOString();
-    const label = i === 0
-      ? `🔔 Market Open (9:15 AM)`
-      : noise > 0.02 ? '🔥 Bullish Buying' : noise < -0.02 ? '🔻 Bearish Selling' : '⚖️ Market Fluctuation';
-
-    generatedTicks.push({
-      timestamp: isoStr,
-      price: currentP,
-      eventId: null,
-      label
-    });
+    const label = noise > 0.03 ? '🔥 Bullish Buying' : noise < -0.03 ? '🔻 Bearish Selling' : '⚖️ Market Fluctuation';
+    generated.push({ timestamp: new Date(tMs).toISOString(), price: currentP, eventId: null, label });
   }
 
-  // Merge any events that happened today
-  existingEventsToday.forEach(evt => {
-    generatedTicks.push(evt);
-  });
-  generatedTicks.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  // Merge existing event ticks (life events should be preserved)
+  existingEventsToday.forEach(evt => generated.push(evt));
+  generated.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-  stock.priceTicks = [...priorTicks, ...generatedTicks];
+  stock.priceTicks = [...priorTicks, ...generated];
   if (stock.priceTicks.length > 0) {
     stock.profile.currentPrice = stock.priceTicks[stock.priceTicks.length - 1].price;
   }
