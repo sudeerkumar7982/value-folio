@@ -84,7 +84,7 @@ function getStockMarketParams(stock) {
  * Simulates elapsed continuous market ticks when the user closes the site or the server sleeps.
  * Fills in the time gap seamlessly from last recorded tick to targetNowMs with high-resolution detail.
  */
-export function simulateCatchUpTicks(stock, targetNowMs = Date.now(), maxTicksToGenerate = 600) {
+export function simulateCatchUpTicks(stock, targetNowMs = Date.now(), maxTicksToGenerate = 1200) {
   if (!stock || !stock.profile) return stock;
 
   if (!Array.isArray(stock.priceTicks) || stock.priceTicks.length === 0) {
@@ -111,15 +111,15 @@ export function simulateCatchUpTicks(stock, targetNowMs = Date.now(), maxTicksTo
   } else if (elapsedMs > 24 * 3600 * 1000) {
     stepMs = Math.max(10 * 60 * 1000, Math.floor(elapsedMs / maxTicksToGenerate)); // ~10-15 min
   } else if (elapsedMs > 6 * 3600 * 1000) {
-    stepMs = Math.max(60 * 1000, Math.floor(elapsedMs / maxTicksToGenerate)); // ~1-2 min
+    stepMs = Math.max(30 * 1000, Math.floor(elapsedMs / maxTicksToGenerate)); // ~30 sec
   } else if (elapsedMs > 60 * 60 * 1000) {
-    stepMs = 30 * 1000; // 30 sec
+    stepMs = 20 * 1000; // 20 sec
   } else if (elapsedMs > 10 * 60 * 1000) {
-    stepMs = 15 * 1000; // 15 sec
-  } else if (elapsedMs > 2 * 60 * 1000) {
     stepMs = 8 * 1000; // 8 sec
-  } else {
+  } else if (elapsedMs > 2 * 60 * 1000) {
     stepMs = 4 * 1000; // 4 sec
+  } else {
+    stepMs = 2 * 1000; // 2 sec
   }
 
   const { symbol, sentimentScore, upperCircuitPct, lowerCircuitPct, circuitAnchorPrice, upperCircuit, lowerCircuit } = getStockMarketParams(stock);
@@ -179,7 +179,7 @@ export function ensureRichIntradayHistory(stock, targetNowMs = Date.now()) {
   const todayTicks = stock.priceTicks.filter(t => new Date(t.timestamp).getTime() >= marketOpenMs);
 
   // If already has plenty of detailed ticks today, no need to backfill
-  if (todayTicks.length >= 45) {
+  if (todayTicks.length >= 120) {
     return stock;
   }
 
@@ -191,7 +191,7 @@ export function ensureRichIntradayHistory(stock, targetNowMs = Date.now()) {
   const existingEventsToday = stock.priceTicks.filter(t => new Date(t.timestamp).getTime() >= marketOpenMs && t.eventId);
 
   const durationMs = Math.max(targetNowMs - marketOpenMs, 60000);
-  const numSteps = Math.min(160, Math.max(50, Math.floor(durationMs / 45000))); // step every 45-90 seconds
+  const numSteps = Math.min(360, Math.max(80, Math.floor(durationMs / 30000))); // step every ~30 seconds
   const stepMs = Math.floor(durationMs / numSteps);
 
   let currentP = startingPrice;

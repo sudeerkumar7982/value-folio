@@ -369,7 +369,9 @@ const dbMethods = {
     const lastTick = stock.priceTicks.length > 0 ? stock.priceTicks[stock.priceTicks.length - 1] : null;
     const lastTickMs = lastTick ? new Date(lastTick.timestamp).getTime() : 0;
 
-    if (lastTick && !lastTick.eventId && (nowMs - lastTickMs < 3500)) {
+    // Save a new distinct tick every 30 seconds (up from 3.5s) so the chart
+    // accumulates ~120 unique price points per hour for realistic wave patterns.
+    if (lastTick && !lastTick.eventId && (nowMs - lastTickMs < 30000)) {
       lastTick.price = clampedPrice;
       lastTick.timestamp = nowIso;
       lastTick.label = finalLabel;
@@ -380,6 +382,19 @@ const dbMethods = {
         eventId: null,
         label: finalLabel
       });
+
+      // Cap at 3000 ticks per stock to prevent database bloat.
+      // Prune the oldest non-event ticks first to preserve milestone history.
+      const MAX_TICKS = 3000;
+      if (stock.priceTicks.length > MAX_TICKS) {
+        const eventTicks = stock.priceTicks.filter(t => t.eventId !== null);
+        const marketTicks = stock.priceTicks.filter(t => t.eventId === null);
+        // Keep the most recent market ticks up to the cap
+        const keepMarket = marketTicks.slice(-(MAX_TICKS - eventTicks.length));
+        stock.priceTicks = [...keepMarket, ...eventTicks].sort(
+          (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+        );
+      }
     }
 
     await writeStore(store);
