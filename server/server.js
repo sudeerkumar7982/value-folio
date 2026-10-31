@@ -375,7 +375,7 @@ async function advanceMarket(symbol) {
   const metrics = computeStockMetrics(priceTicks, { profile, events, sectors, sentiment: sentimentData });
   const noise = calculateMarketMovePercent(
     profile ? profile.currentPrice : 100,
-    metrics.currentPrice,  // use current price as anchor — avoids violent mean-reversion to old IPO price
+    metrics.startingPrice,  // anchor to today's opening — price oscillates around this
     sentimentData.sentimentScore,
     symbol
   );

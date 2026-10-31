@@ -17,30 +17,31 @@ export function calculateMarketMovePercent(currentPrice, referencePrice, sentime
 
   const tSec = nowMs / 1000;
 
-  // 1. Macro Wave (~15 to 25 minute cycle): broad market trend
-  //    Amplitude scaled for 30s ticks — keeps daily drift within ±3-5%
-  const macroRad = ((tSec + symbolSeed * 7) / 1200) * Math.PI * 2;
-  const macroWave = Math.sin(macroRad) * 0.030 + Math.cos(macroRad * 0.7) * 0.013;
+  // ── PRIMARY DRIVER: Random Brownian jitter ────────────────────────────────
+  // This is the main force — creates real up/down movement every tick.
+  // Range: ±0.08% per tick → visible price bounces on the chart.
+  const jitter = (normalizedRandom - 0.5) * 0.16;
 
-  // 2. Medium Wave (~3 to 5 minute cycle): sector momentum & pullbacks
+  // ── SECONDARY: Sine wave texture (~4–5 min cycle) ─────────────────────────
+  // Light oscillation adds chart texture without dominating direction.
   const medRad = ((tSec + symbolSeed * 13) / 260) * Math.PI * 2;
-  const medWave = Math.sin(medRad) * 0.020 + Math.cos(medRad * 1.3) * 0.010;
+  const waveTexture = Math.sin(medRad) * 0.018 + Math.cos(medRad * 1.3) * 0.008;
 
-  // 3. Micro Swing (~30 to 60 second cycle): order-flow swings
+  // ── MICRO SWING (~30–60 sec cycle) ───────────────────────────────────────
   const microRad = ((tSec + symbolSeed * 31) / 45) * Math.PI * 2;
-  const microWave = Math.sin(microRad) * 0.010;
+  const microSwing = Math.sin(microRad) * 0.008;
 
-  // 4. Tick Jitter (fast micro-fluctuations)
-  const jitter = (normalizedRandom - 0.49) * 0.012;
+  // ── SENTIMENT DRIFT ───────────────────────────────────────────────────────
+  // Gentle long-term bias: BULLISH score 75 → +0.005% per tick drift
+  const sentimentBias = (score - 50) * 0.00010;
 
-  // 5. Sentiment Drift (bullish or bearish bias) — gentle nudge per tick
-  const sentimentBias = (score - 50) * 0.00020;
-
-  // 6. Soft Mean Reversion — nudges gently back toward reference without slamming circuits
+  // ── MEAN REVERSION toward referencePrice (today's opening) ───────────────
+  // Pulls price back when it drifts far from the opening. Prevents sustained
+  // one-directional runs. Max force: ±0.04% per tick.
   const deviationPercent = ((reference - current) / reference) * 100;
-  const meanReversion = Math.max(-0.008, Math.min(0.008, deviationPercent * 0.002));
+  const meanReversion = Math.max(-0.04, Math.min(0.04, deviationPercent * 0.015));
 
-  return Number((macroWave + medWave + microWave + jitter + sentimentBias + meanReversion).toFixed(4));
+  return Number((jitter + waveTexture + microSwing + sentimentBias + meanReversion).toFixed(4));
 }
 
 /**
