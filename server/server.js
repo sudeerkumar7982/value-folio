@@ -18,6 +18,10 @@ let marketLiveEnabled = true;
 app.use(cors());
 app.use(express.json());
 
+// Lightweight health check & ping endpoints for 24/7 keep-alive monitors
+app.get('/healthz', (req, res) => res.status(200).send('OK'));
+app.get('/ping', (req, res) => res.status(200).json({ status: 'alive', time: new Date().toISOString() }));
+
 // Serve static frontend assets from Vite build dist folder
 app.use(express.static(path.join(__dirname, '../dist')));
 
@@ -450,17 +454,17 @@ DB.initialize().then(() => {
   }, 1000);
 
   // Self-ping to prevent Render free-tier idle spin-down when deployed
-  const keepAliveUrl = process.env.RENDER_EXTERNAL_URL || process.env.KEEP_ALIVE_URL;
-  if (keepAliveUrl) {
-    console.log(`📡 Render keep-alive enabled for: ${keepAliveUrl}`);
+  const keepAliveUrl = process.env.RENDER_EXTERNAL_URL || process.env.KEEP_ALIVE_URL || 'https://value-folio.onrender.com';
+  if (keepAliveUrl && !keepAliveUrl.includes('localhost')) {
+    console.log(`📡 Render 24/7 keep-alive active for: ${keepAliveUrl}`);
     setInterval(async () => {
       try {
-        const pingTarget = `${keepAliveUrl.replace(/\/$/, '')}/api/market/live`;
+        const pingTarget = `${keepAliveUrl.replace(/\/$/, '')}/healthz`;
         await fetch(pingTarget);
       } catch (err) {
         // Silently ignore ping errors
       }
-    }, 10 * 60 * 1000);
+    }, 4 * 60 * 1000); // Ping every 4 minutes (well below Render's 15 min threshold)
   }
 
   app.listen(PORT, () => {
