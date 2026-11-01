@@ -8,7 +8,8 @@
  *
  * Resilience: ALL Neon writes are wrapped in try/catch. If Neon is full or in
  * read-only mode the server keeps running using an in-memory tick cache.
- * The chart will show real zigzag data from memory even when DB writes fail.
+ * On first tick-cache seed, simulateCatchUpTicks + ensureRichIntradayHistory
+ * fill any historical gap so the chart always shows a continuous zigzag.
  *
  * Storage architecture (file / local mode):
  *   - store.json: full JSON including priceTicks (unchanged from original behaviour)
@@ -580,33 +581,45 @@ const dbMethods = {
     const sym = symbol || store.activeSymbol;
 
     if (pool) {
-      // Seed the in-memory cache from DB ticks on first call (one-time per symbol per server run)
+      // ── First call: seed cache from DB + fill any historical gap ─────────────
       if (!cacheSeedDone[sym]) {
         cacheSeedDone[sym] = true;
         try {
           const dbTicks = await dbGetTicks(sym);
-          if (dbTicks.length > 0 && getCacheTicks(sym).length === 0) {
-            tickCache[sym] = dbTicks;
+          // Build a mock stock object so we can run the catch-up simulation
+          const stockData = store.stocks[sym] || {};
+          const mockStock = {
+            priceTicks: [...dbTicks],
+            profile: stockData.profile || { currentPrice: dbTicks[dbTicks.length - 1]?.price || 100, startingPrice: 100, symbol: sym },
+            events: stockData.events || [],
+            sectors: stockData.sectors || {}
+          };
+
+          const nowMs = Date.now();
+          // Fill any time gap (e.g. after DB outage) with realistic GBM ticks
+          ensureRichIntradayHistory(mockStock, nowMs);
+          simulateCatchUpTicks(mockStock, nowMs);
+
+          // Use the fully-enriched tick array as the live cache
+          tickCache[sym] = mockStock.priceTicks;
+
+          // Best-effort: persist the newly generated gap-fill ticks to DB
+          const dbTsSet = new Set(dbTicks.map(t => t.timestamp));
+          const gapTicks = mockStock.priceTicks.filter(t => !dbTsSet.has(t.timestamp) && !t.eventId);
+          if (gapTicks.length > 0) {
+            dbInsertManyTicks(sym, gapTicks).catch(() => {/* storage full — ok, cache is primary */});
           }
+
+          console.log(`[getPriceTicks] ${sym}: seeded ${dbTicks.length} DB ticks + ${gapTicks.length} gap-fill ticks into cache`);
         } catch (err) {
-          console.warn('[getPriceTicks] DB read failed, using cache only:', err.message);
+          console.warn('[getPriceTicks] cache seed failed:', err.message);
         }
       }
 
-      // Merge DB ticks with any newer in-memory cache ticks
-      let dbTicks = [];
-      try { dbTicks = await dbGetTicks(sym); } catch (err) { /* use cache */ }
-
+      // ── All subsequent calls: return cache (primary) ──────────────────────────
+      // Cache is authoritative after seeding — no need to re-query DB every call.
       const cacheTicks = getCacheTicks(sym);
-      if (dbTicks.length === 0) return cacheTicks;
-      if (cacheTicks.length === 0) return dbTicks;
-
-      // Append cache ticks that are newer than the last DB tick
-      const lastDbTs = new Date(dbTicks[dbTicks.length - 1].timestamp).getTime();
-      const newerCacheTicks = cacheTicks.filter(t => new Date(t.timestamp).getTime() > lastDbTs);
-
-      if (newerCacheTicks.length === 0) return dbTicks;
-      return [...dbTicks, ...newerCacheTicks];
+      return cacheTicks.length > 0 ? cacheTicks : [];
     }
 
     return store.stocks[sym]?.priceTicks || [];
@@ -656,8 +669,13 @@ const dbMethods = {
 
     if (pool) {
       // ── Pool mode: in-memory cache is primary; DB is best-effort ─────────────
-      // Load ticks from cache+DB to compute circuit limits
-      const priceTicks = getCacheTicks(sym).length > 0 ? getCacheTicks(sym) : [];
+      // Trigger cache seed (loads DB ticks + gap-fill simulation) on first tick
+      // if getPriceTicks hasn't been called yet. Ensures circuit limits and
+      // chart history are computed from the full realistic tick history.
+      if (!cacheSeedDone[sym]) {
+        try { await dbMethods.getPriceTicks(sym); } catch (_) { /* best-effort */ }
+      }
+      const priceTicks = getCacheTicks(sym);
       const metrics = computeStockMetrics(priceTicks, { ...stock, sentiment: sentimentData });
       const clampedPrice = Math.min(Math.max(Number(newPrice), metrics.lowerCircuit), metrics.upperCircuit);
 
