@@ -496,12 +496,13 @@ DB.initialize().then(() => {
     console.log(`📡 Render 24/7 keep-alive active for: ${keepAliveUrl}`);
     setInterval(async () => {
       try {
-        const pingTarget = `${keepAliveUrl.replace(/\/$/, '')}/healthz`;
+        // Ping /api/stock/profile which always returns data — keeps server warm
+        const pingTarget = `${keepAliveUrl.replace(/\/$/, '')}/api/stock/profile`;
         await fetch(pingTarget);
       } catch (err) {
         // Silently ignore ping errors
       }
-    }, 4 * 60 * 1000); // Ping every 4 minutes (well below Render's 15 min threshold)
+    }, 5 * 60 * 1000); // Ping every 5 minutes (well below Render's 15 min threshold)
   }
 
   app.listen(PORT, () => {

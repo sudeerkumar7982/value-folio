@@ -62,6 +62,33 @@ function addCacheTick(symbol, tick) {
   }
 }
 
+// ── DB tick enqueue for batch writes ───────────────────────────────────────
+const pendingDbTicks = {};
+function enqueueDbTick(symbol, tick) {
+  if (!pendingDbTicks[symbol]) pendingDbTicks[symbol] = [];
+  pendingDbTicks[symbol].push(tick);
+}
+async function flushPendingDbTicks() {
+  const symbols = Object.keys(pendingDbTicks);
+  for (const sym of symbols) {
+    const ticks = pendingDbTicks[sym];
+    if (!ticks || ticks.length === 0) continue;
+    try {
+      await dbInsertManyTicks(sym, ticks);
+    } catch (err) {
+      console.warn(`[flushPendingDbTicks] DB write failed for ${sym}: ${err.message}`);
+    }
+    pendingDbTicks[sym] = [];
+  }
+}
+if (pool) {
+  setInterval(flushPendingDbTicks, 15000);
+}
+process.on('SIGINT', async () => {
+  await flushPendingDbTicks();
+  process.exit();
+});
+
 // Seed cache from DB ticks on first getPriceTicks call per symbol
 const cacheSeedDone = {};
 
@@ -282,31 +309,36 @@ async function readStore() {
  * they live in the price_ticks table (or in-memory cache as fallback).
  * Write failures are logged as warnings and do NOT crash the server.
  */
+let writeStoreTimeout = null;
 async function writeStore(data) {
-  if (pool) {
-    // Strip priceTicks from every stock before saving the blob
-    const cleanStocks = {};
-    for (const [sym, stock] of Object.entries(data.stocks || {})) {
-      const { priceTicks, ...stockWithoutTicks } = stock; // eslint-disable-line no-unused-vars
-      cleanStocks[sym] = stockWithoutTicks;
+  // Debounce writes to Neon or file to avoid frequent DB hits
+  if (writeStoreTimeout) clearTimeout(writeStoreTimeout);
+  writeStoreTimeout = setTimeout(async () => {
+    if (pool) {
+      // Strip priceTicks before persisting blob
+      const cleanStocks = {};
+      for (const [sym, stock] of Object.entries(data.stocks || {})) {
+        const { priceTicks, ...stockWithoutTicks } = stock; // eslint-disable-line no-unused-vars
+        cleanStocks[sym] = stockWithoutTicks;
+      }
+      const cleanData = { ...data, stocks: cleanStocks };
+      try {
+        await pool.query(
+          `INSERT INTO value_folio_state (id, data)
+                VALUES (1, $1::jsonb)
+                ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data`,
+          [JSON.stringify(cleanData)]
+        );
+      } catch (err) {
+        console.warn('[writeStore] DB write failed (storage full?):', err.message);
+      }
+    } else {
+      fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
     }
-    const cleanData = { ...data, stocks: cleanStocks };
-
-    try {
-      await pool.query(
-        `INSERT INTO value_folio_state (id, data)
-              VALUES (1, $1::jsonb)
-              ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data`,
-        [JSON.stringify(cleanData)]
-      );
-    } catch (err) {
-      // Neon may be in read-only mode (storage full). Log and continue.
-      console.warn('[writeStore] DB write failed (storage full?):', err.message);
-    }
-    return;
-  }
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+    writeStoreTimeout = null;
+  }, 5000);
 }
+
 
 // ── Sentiment helper (exported) ───────────────────────────────────────────────
 
@@ -467,7 +499,7 @@ const dbMethods = {
     const store = await readStore();
     if (store.stocks[symbol]) {
       store.activeSymbol = symbol;
-      await writeStore(store);
+      persistStore(store);
     }
     return store.activeSymbol;
   },
@@ -483,7 +515,7 @@ const dbMethods = {
     const sym = symbol || store.activeSymbol;
     if (store.stocks[sym]) {
       store.stocks[sym].profile = { ...store.stocks[sym].profile, ...updates };
-      await writeStore(store);
+      persistStore(store);
       return store.stocks[sym].profile;
     }
     return null;
@@ -500,7 +532,7 @@ const dbMethods = {
     const sym = symbol || store.activeSymbol;
     if (store.stocks[sym]) {
       store.stocks[sym].sectors = newSectors;
-      await writeStore(store);
+      persistStore(store);
       return store.stocks[sym].sectors;
     }
     return null;
@@ -532,7 +564,7 @@ const dbMethods = {
       stock.priceTicks.push(tick);
     }
 
-    await writeStore(store);
+    persistStore(store);
     return event;
   },
 
@@ -572,7 +604,7 @@ const dbMethods = {
       }
     }
 
-    await writeStore(store);
+    persistStore(store);
     return store;
   },
 
@@ -581,24 +613,41 @@ const dbMethods = {
     const sym = symbol || store.activeSymbol;
 
     if (pool) {
-      // ── First call: seed cache from DB + fill any historical gap ─────────────
-      if (!cacheSeedDone[sym]) {
+      const nowMs = Date.now();
+
+      // ── Seed cache from DB on first call per symbol (or if cache is empty) ──
+      const cacheEmpty = !tickCache[sym] || tickCache[sym].length === 0;
+      if (!cacheSeedDone[sym] || cacheEmpty) {
         cacheSeedDone[sym] = true;
         try {
           const dbTicks = await dbGetTicks(sym);
-          // Build a mock stock object so we can run the catch-up simulation
           const stockData = store.stocks[sym] || {};
+          const lastKnownPrice =
+            dbTicks[dbTicks.length - 1]?.price ||
+            stockData.profile?.currentPrice ||
+            100;
+
           const mockStock = {
             priceTicks: [...dbTicks],
-            profile: stockData.profile || { currentPrice: dbTicks[dbTicks.length - 1]?.price || 100, startingPrice: 100, symbol: sym },
+            profile: {
+              currentPrice: lastKnownPrice,
+              startingPrice: stockData.profile?.startingPrice || lastKnownPrice,
+              listingPrice:  stockData.profile?.listingPrice  || lastKnownPrice,
+              symbol: sym
+            },
             events: stockData.events || [],
             sectors: stockData.sectors || {}
           };
 
-          const nowMs = Date.now();
-          // Fill any time gap (e.g. after DB outage) with realistic GBM ticks
+          // Always fill rich intraday history first (handles 0-tick case)
           ensureRichIntradayHistory(mockStock, nowMs);
+          // Then catch up any gap since the last tick
           simulateCatchUpTicks(mockStock, nowMs);
+
+          // Update the profile price to match simulation result
+          if (stockData.profile) {
+            stockData.profile.currentPrice = mockStock.profile.currentPrice;
+          }
 
           // Use the fully-enriched tick array as the live cache
           tickCache[sym] = mockStock.priceTicks;
@@ -616,8 +665,7 @@ const dbMethods = {
         }
       }
 
-      // ── All subsequent calls: return cache (primary) ──────────────────────────
-      // Cache is authoritative after seeding — no need to re-query DB every call.
+      // ── All subsequent calls: return cache ────────────────────────────────────
       const cacheTicks = getCacheTicks(sym);
       return cacheTicks.length > 0 ? cacheTicks : [];
     }
@@ -655,7 +703,7 @@ const dbMethods = {
 
     const trade = { id: `trd-${Date.now()}`, type, shares, price: currentPrice, totalAmount: cost, timestamp: new Date().toISOString() };
     stock.trades.unshift(trade);
-    await writeStore(store);
+    persistStore(store);
     return { profile: stock.profile, trade };
   },
 
@@ -670,9 +718,9 @@ const dbMethods = {
     if (pool) {
       // ── Pool mode: in-memory cache is primary; DB is best-effort ─────────────
       // Trigger cache seed (loads DB ticks + gap-fill simulation) on first tick
-      // if getPriceTicks hasn't been called yet. Ensures circuit limits and
-      // chart history are computed from the full realistic tick history.
-      if (!cacheSeedDone[sym]) {
+      // if getPriceTicks hasn't been called yet, OR if cache is empty (server restarted).
+      const cacheIsEmpty = !tickCache[sym] || tickCache[sym].length === 0;
+      if (!cacheSeedDone[sym] || cacheIsEmpty) {
         try { await dbMethods.getPriceTicks(sym); } catch (_) { /* best-effort */ }
       }
       const priceTicks = getCacheTicks(sym);
@@ -711,39 +759,19 @@ const dbMethods = {
         addCacheTick(sym, { timestamp: new Date(nowMs + 1).toISOString(), price: clampedPrice, eventId: `circuit-reset-${nowMs}`, label: resetLabel });
       }
 
-      // ── 2. Best-effort persist to DB ─────────────────────────────────────────
-      try {
-        const lastDbTick = await dbGetLastTick(sym);
-        const lastDbMs = lastDbTick ? new Date(lastDbTick.timestamp).getTime() : 0;
-        const dbPrevWasCircuit = lastDbTick?.label?.includes('Circuit Limit Hit');
-
-        if (lastDbTick && !lastDbTick.eventId && (nowMs - lastDbMs < 30000) && !dbPrevWasCircuit) {
-          await dbUpdateLastTickById(lastDbTick.id, { price: clampedPrice, timestamp: nowIso, label: finalLabel });
-        } else {
-          await dbInsertTick(sym, { timestamp: nowIso, price: clampedPrice, eventId: null, label: finalLabel });
-        }
-
-        if (hitUpper || hitLower) {
-          const resetLabel = hitUpper
-            ? `📈 Circuit Reset — Trading Resumes from ₹${clampedPrice.toFixed(2)}`
-            : `📉 Circuit Reset — Trading Resumes from ₹${clampedPrice.toFixed(2)}`;
-          await dbInsertTick(sym, { timestamp: new Date(nowMs + 1).toISOString(), price: clampedPrice, eventId: `circuit-reset-${nowMs}`, label: resetLabel });
-        }
-
-        // Prune old market ticks (runs occasionally, not critical)
-        await dbPruneMarketTicks(sym);
-      } catch (err) {
-        // Neon write failed (storage full?) — in-memory cache keeps chart working
-        // Log only once per minute to avoid log spam
-        const now = Date.now();
-        if (!dbMethods._lastTickWarnMs || now - dbMethods._lastTickWarnMs > 60000) {
-          console.warn(`[addMarketTick] DB write failed for ${sym} (in-memory fallback active): ${err.message}`);
-          dbMethods._lastTickWarnMs = now;
-        }
+      // ── 2. Enqueue DB writes (batch every 15s) ───────────────────────────────────────
+      // Queue tick for DB write; flushed periodically
+      enqueueDbTick(sym, { timestamp: nowIso, price: clampedPrice, eventId: null, label: finalLabel });
+      if (hitUpper || hitLower) {
+        const resetLabel = hitUpper
+          ? `📈 Circuit Reset — Trading Resumes from ₹${clampedPrice.toFixed(2)}`
+          : `📉 Circuit Reset — Trading Resumes from ₹${clampedPrice.toFixed(2)}`;
+        enqueueDbTick(sym, { timestamp: new Date(nowMs + 1).toISOString(), price: clampedPrice, eventId: `circuit-reset-${nowMs}`, label: resetLabel });
       }
+      // Note: DB writes are batched; cache ensures chart continuity even if Neon is full.
 
       // Best-effort persist currentPrice in blob
-      await writeStore(store);
+      persistStore(store);
       return stock.profile;
 
     } else {
@@ -787,7 +815,7 @@ const dbMethods = {
         stock.priceTicks = [...keepMarket, ...eventTicks].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
       }
 
-      await writeStore(store);
+      persistStore(store);
       return stock.profile;
     }
   },
@@ -882,7 +910,7 @@ const dbMethods = {
         try { await dbInsertManyTicks(sym, initialTicks); } catch (err) { console.warn('[createIPO] tick seed failed:', err.message); }
       }
     }
-    await writeStore(store);
+    persistStore(store);
     return newIPO;
   },
 
@@ -910,7 +938,7 @@ const dbMethods = {
       }
     }
     store.activeSymbol = sym;
-    await writeStore(store);
+    persistStore(store);
     return { ipo, stock: store.stocks[sym] };
   },
 
@@ -921,7 +949,7 @@ const dbMethods = {
     ipo.bidsCount = (ipo.bidsCount || 0) + Number(bidsCount);
     const subMultiplier = Math.min((ipo.bidsCount / 100).toFixed(1), 99.9);
     ipo.subscriptionRatio = `${subMultiplier}x`;
-    await writeStore(store);
+    persistStore(store);
     return ipo;
   },
 
@@ -938,7 +966,7 @@ const dbMethods = {
     };
     store.stocks[sym] = freshStock;
     store.activeSymbol = sym;
-    await writeStore(store);
+    persistStore(store);
     if (pool) {
       tickCache[sym] = [initialTick];
       try { await dbInsertTick(sym, initialTick); } catch (err) { console.warn('[createNewStock] tick insert failed:', err.message); }
@@ -966,7 +994,7 @@ const dbMethods = {
         stock.priceTicks.push({ timestamp: new Date().toISOString(), price: stock.profile.startingPrice, eventId: null, label: `${stock.profile.symbol} Initial Public Offering (IPO)` });
       }
     }
-    await writeStore(store);
+    persistStore(store);
     return store;
   },
 
@@ -984,14 +1012,14 @@ const dbMethods = {
     if (pool) {
       try { await dbDeleteAllTicks(sym); } catch (err) { console.warn('[deleteStock] tick delete failed:', err.message); }
     }
-    await writeStore(store);
+    persistStore(store);
     return store;
   },
 
   deleteIPO: async (ipoId) => {
     const store = await readStore();
     store.ipos = (store.ipos || []).filter(i => i.id !== ipoId);
-    await writeStore(store);
+    persistStore(store);
     return store.ipos;
   },
 
@@ -1023,7 +1051,7 @@ const dbMethods = {
       const lastTick = await dbMethods.getPriceTicks(sym);
       if (lastTick.length > 0) {
         stock.profile.currentPrice = lastTick[lastTick.length - 1].price;
-        await writeStore(store);
+        persistStore(store);
       }
       return keepTicks || [];
     } else {
@@ -1031,7 +1059,7 @@ const dbMethods = {
       if (stock.priceTicks.length > 0) {
         stock.profile.currentPrice = stock.priceTicks[stock.priceTicks.length - 1].price;
       }
-      await writeStore(store);
+      persistStore(store);
       return stock.priceTicks;
     }
   },
