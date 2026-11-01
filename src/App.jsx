@@ -92,11 +92,11 @@ export default function App() {
   };
 
   const handleSelectStock = async (symbol) => {
-    setLoading(true);
-    await API.setActiveSymbol(symbol);
-    setActiveSymbol(symbol);
-    await loadData(symbol);
     setActiveTab('DASHBOARD');
+    setLoading(true);
+    setActiveSymbol(symbol);
+    await API.setActiveSymbol(symbol);
+    await loadData(symbol);
   };
 
   const handleDeleteStock = async (symbol) => {

@@ -30,8 +30,6 @@ export function IPOHub({ ipos = [], onRefresh, onSelectStock, onOpenCreateIPO })
     if (window.confirm(`Allot shares and list ${ipo.symbol} on the live Human Stock Exchange?`)) {
       try {
         await API.listIPOOnExchange(ipo.id);
-        await API.setActiveSymbol(ipo.symbol);
-        onRefresh();
         onSelectStock(ipo.symbol);
       } catch (err) {
         alert(`Unable to list ${ipo.symbol}: ${err.message}`);
@@ -303,10 +301,7 @@ export function IPOHub({ ipos = [], onRefresh, onSelectStock, onOpenCreateIPO })
 
               {ipo.status === 'LISTED' && (
                 <button
-                  onClick={() => {
-                    API.setActiveSymbol(ipo.symbol);
-                    onSelectStock(ipo.symbol);
-                  }}
+                  onClick={() => onSelectStock(ipo.symbol)}
                   className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1.5 border border-blue-200"
                 >
                   <BarChart2 className="w-3.5 h-3.5" />
