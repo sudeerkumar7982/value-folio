@@ -4,6 +4,7 @@ import { DB, computeStockSentiment } from './db/database.js';
 import { analyzeLifeEvent } from './ai/sentimentEngine.js';
 import { calculateNewPrice, calculateSectorUpdates, computeStockMetrics } from './engine/priceEngine.js';
 import { calculateMarketMovePercent } from '../shared/marketSimulation.js';
+import { getMarketStatus, isMarketOpenAt, setTradingHolidays } from '../shared/marketCalendar.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -80,6 +81,10 @@ app.use(express.static(path.join(__dirname, '../dist')));
 
 app.get('/api/market/live', (req, res) => {
   res.json({ enabled: marketLiveEnabled });
+});
+
+app.get('/api/market/schedule', (req, res) => {
+  res.json(getMarketStatus());
 });
 
 app.post('/api/market/live', (req, res) => {
@@ -430,6 +435,15 @@ async function advanceMarket(symbol) {
   const sentimentData = computeStockSentiment({ profile, events });
   const priceTicks = await DB.getPriceTicks(symbol);
   const metrics = computeStockMetrics(priceTicks, { profile, events, sectors, sentiment: sentimentData });
+  if (!isMarketOpenAt()) {
+    return {
+      currentPrice: profile?.currentPrice ?? metrics.currentPrice,
+      priceTicks,
+      metrics,
+      sentiment: sentimentData,
+      marketOpen: false
+    };
+  }
   const noise = calculateMarketMovePercent(
     profile ? profile.currentPrice : 100,
     metrics.startingPrice,  // anchor to today's opening — price oscillates around this
@@ -525,10 +539,50 @@ app.get('*', async (req, res) => {
 });
 
 DB.initialize().then(() => {
+  let holidayRefreshInFlight = false;
+  const refreshTradingHolidays = async () => {
+    if (holidayRefreshInFlight) return;
+    holidayRefreshInFlight = true;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    try {
+      const response = await fetch('https://www.nseindia.com/api/holiday-master?type=trading', {
+        headers: {
+          Accept: 'application/json',
+          'User-Agent': 'Mozilla/5.0 ValueFolio/1.0'
+        },
+        signal: controller.signal
+      });
+      if (!response.ok) throw new Error(`NSE holiday calendar returned HTTP ${response.status}`);
+      const calendar = await response.json();
+      if (!Array.isArray(calendar.CM)) throw new Error('NSE holiday calendar has no capital-market dates');
+      const records = calendar.CM.map(({ tradingDate, description }) => {
+        const match = /^(\d{2})-([A-Za-z]{3})-(\d{4})$/.exec(tradingDate || '');
+        if (!match) return null;
+        const [, day, monthName, year] = match;
+        const month = new Date(`${monthName} 1, 2000`).getMonth();
+        if (Number.isNaN(month)) return null;
+        return {
+          date: `${year}-${String(month + 1).padStart(2, '0')}-${day}`,
+          description
+        };
+      }).filter(Boolean);
+      setTradingHolidays(records);
+      console.log(`[calendar] Loaded ${records.length} NSE trading holidays`);
+    } catch (err) {
+      console.warn(`[calendar] Could not refresh NSE holiday calendar; using bundled dates: ${err.message}`);
+    } finally {
+      clearTimeout(timeout);
+      holidayRefreshInFlight = false;
+    }
+  };
+  refreshTradingHolidays();
+  setInterval(refreshTradingHolidays, 24 * 60 * 60 * 1000);
+
   let marketTickInFlight = false;
   let historyCompactionInFlight = false;
   setInterval(async () => {
-    if (!marketLiveEnabled || marketTickInFlight) return;
+    if (!marketLiveEnabled || !isMarketOpenAt() || marketTickInFlight) return;
     marketTickInFlight = true;
     try {
       const allStocks = await DB.getAllStocks();

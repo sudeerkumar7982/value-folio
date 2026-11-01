@@ -1,3 +1,5 @@
+import { getMarketSessionFor, isMarketOpenAt } from './marketCalendar.js';
+
 /**
  * Realistic Market Simulation Engine — Geometric Brownian Motion (GBM)
  * Models price movement exactly as real stock exchanges do:
@@ -158,6 +160,11 @@ export function simulateCatchUpTicks(stock, targetNowMs = Date.now(), maxTicksTo
   let tickIndex     = 0;
 
   while (currentTimeMs <= targetNowMs && tickIndex < maxTicksToGenerate) {
+    if (!isMarketOpenAt(currentTimeMs)) {
+      currentTimeMs += stepMs;
+      continue;
+    }
+
     // Unbiased pseudo-random pair: mean ≈ 0.5 each
     const u1 = pseudoHash(currentTimeMs * 0.001731 + tickIndex * 127.1);
     const u2 = pseudoHash(currentTimeMs * 0.003713 + tickIndex * 311.7);
@@ -192,11 +199,11 @@ export function ensureRichIntradayHistory(stock, targetNowMs = Date.now()) {
   if (!stock || !stock.profile) return stock;
   if (!Array.isArray(stock.priceTicks)) stock.priceTicks = [];
 
-  const now        = new Date(targetNowMs);
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 15, 0, 0);
-  const marketOpenMs = startOfDay.getTime() > targetNowMs
-    ? targetNowMs - (4 * 3600 * 1000)
-    : startOfDay.getTime();
+  const session = getMarketSessionFor(targetNowMs);
+  if (!session) return stock;
+  const { marketOpen: marketOpenMs, marketClose: marketCloseMs } = session;
+  if (targetNowMs < marketOpenMs) return stock;
+  const historyEndMs = Math.min(targetNowMs, marketCloseMs - 1000);
 
   const todayTicks = stock.priceTicks.filter(t => new Date(t.timestamp).getTime() >= marketOpenMs);
   if (todayTicks.length >= 120) return stock;  // already rich enough
@@ -216,7 +223,8 @@ export function ensureRichIntradayHistory(stock, targetNowMs = Date.now()) {
   const priorTicks         = stock.priceTicks.filter(t => new Date(t.timestamp).getTime() <  marketOpenMs);
   const existingEventsToday = stock.priceTicks.filter(t => new Date(t.timestamp).getTime() >= marketOpenMs && t.eventId);
 
-  const durationMs = Math.max(targetNowMs - marketOpenMs, 60000);
+  const durationMs = historyEndMs - marketOpenMs;
+  if (durationMs <= 0) return stock;
   const numSteps   = Math.min(360, Math.max(80, Math.floor(durationMs / 30000))); // ~30s per step
   const stepMs     = Math.floor(durationMs / numSteps);
 
@@ -225,7 +233,7 @@ export function ensureRichIntradayHistory(stock, targetNowMs = Date.now()) {
 
   for (let i = 0; i <= numSteps; i++) {
     const tMs = marketOpenMs + i * stepMs;
-    if (tMs > targetNowMs) break;
+    if (tMs > historyEndMs) break;
 
     if (i === 0) {
       generated.push({ timestamp: new Date(tMs).toISOString(), price: currentP, eventId: null, label: '🔔 Market Open (9:15 AM)' });

@@ -1,4 +1,5 @@
 import { calculateMarketMovePercent, simulateCatchUpTicks, ensureRichIntradayHistory } from '../../shared/marketSimulation.js';
+import { getMarketStatus } from '../../shared/marketCalendar.js';
 
 export function getApiBaseUrl() {
   try {
@@ -348,6 +349,16 @@ export const API = {
       if (res.ok) return (await res.json()).enabled;
     } catch (e) {}
     return true;
+  },
+
+  getMarketSchedule: async () => {
+    try {
+      const res = await apiFetch('/api/market/schedule');
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('Market schedule unavailable; using local NSE calendar:', e.message);
+    }
+    return getMarketStatus();
   },
 
   setMarketLive: async (enabled) => {
@@ -892,6 +903,10 @@ export const API = {
   },
 
   tick: async (symbolParam = null) => {
+    if (!getMarketStatus().marketOpen) {
+      const profile = await API.getProfile(symbolParam);
+      return { currentPrice: profile?.profile?.currentPrice, marketOpen: false };
+    }
     const store = getLocalStore();
     const sym = symbolParam || store.activeSymbol || '';
 

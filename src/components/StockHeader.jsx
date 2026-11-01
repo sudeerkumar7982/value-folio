@@ -16,6 +16,7 @@ export default function StockHeader({
   onOpenSettingsModal, 
   onReset,
   isLiveActive,
+  marketSession,
   onToggleLive
 }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -23,6 +24,7 @@ export default function StockHeader({
   const displayedChangeAmount = metrics?.totalChangeAmount ?? metrics?.changeAmount ?? 0;
   const displayedChangePercent = metrics?.totalChangePercent ?? metrics?.changePercent ?? 0;
   const isPositive = displayedChangePercent >= 0;
+  const isMarketTicking = isLiveActive && marketSession?.marketOpen;
 
   // Nav tabs
   const navTabs = (
@@ -168,14 +170,16 @@ export default function StockHeader({
                 <button
                   onClick={onToggleLive}
                   className={`text-xs px-2.5 py-0.5 rounded-md font-mono font-bold flex items-center space-x-1.5 transition-all ${
-                    isLiveActive
+                    isMarketTicking
                       ? 'bg-rose-100 text-rose-600 border border-rose-300 animate-pulse'
                       : 'bg-slate-100 text-slate-500 border border-slate-200 hover:text-slate-800'
                   }`}
-                  title="Toggle live price fluctuations"
+                  title="Toggle simulated price updates during NSE trading hours"
                 >
-                  <Radio className={`w-3 h-3 ${isLiveActive ? 'text-rose-500 animate-ping' : ''}`} />
-                  <span>{isLiveActive ? 'LIVE TICK' : 'PAUSED'}</span>
+                  <Radio className={`w-3 h-3 ${isMarketTicking ? 'text-rose-500 animate-ping' : ''}`} />
+                  <span>
+                    {!isLiveActive ? 'PAUSED' : marketSession?.marketOpen ? 'LIVE TICK' : 'MARKET CLOSED'}
+                  </span>
                 </button>
 
                 <span className="text-xs px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 border border-emerald-200 font-medium hidden sm:inline">

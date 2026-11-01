@@ -12,6 +12,7 @@ A full-stack Human Life Stock Market platform where personal life events are ana
 - **Zerodha/Dixon Technologies Trading UI**: Complete stock overview, large price deltas, dashed opening baseline `ReferenceLine`, and centered time range pills (`1D`, `1W`, `1M`, `3M`, `6M`, `1Y`, `3Y`, `5Y`, `All`).
 - **AI Sentiment Classifier**: Evaluates personal life events, determines stock price impact %, and updates 7 human life sector scores (Career, Education, Skills, Projects, Finance, Social, Wellbeing).
 - **Virtual Share Trading Exchange**: Full BUY / SELL order execution, wallet balance tracking, and order history ledger.
+- **NSE trading hours**: Simulated prices run only from 9:15 AM to 3:30 PM India Standard Time, Monday to Friday, excluding NSE capital-market holidays. The server refreshes its holiday calendar daily from NSE; bundled 2026 dates keep the schedule available if NSE is unreachable.
 - **Durable Market History**: One-second prices for the latest 24 hours, minute samples through 30 days, 15-minute samples through one year, and hourly samples after that. Life-event ticks are preserved at their original timestamps.
 
 ## 💻 Local Setup

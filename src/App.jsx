@@ -14,6 +14,7 @@ import { MarketDepth } from './components/MarketDepth.jsx';
 import { PortfolioModal } from './components/PortfolioModal.jsx';
 import { Activity, ShieldCheck, Flame, TrendingUp, TrendingDown, Plus, BarChart2, DollarSign, Rocket, Trash2 } from 'lucide-react';
 import { API } from './utils/api.js';
+import { getMarketStatus } from '../shared/marketCalendar.js';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('DASHBOARD'); // DASHBOARD, IPO_HUB, WATCHLIST
@@ -24,6 +25,7 @@ export default function App() {
   const [iposList, setIposList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isLiveActive, setIsLiveActive] = useState(true);
+  const [marketSession, setMarketSession] = useState(getMarketStatus());
   const lastTickTimestampRef = useRef(null);
 
   // Modals state
@@ -83,6 +85,13 @@ export default function App() {
     API.getMarketLive().then(setIsLiveActive);
   }, []);
 
+  useEffect(() => {
+    const refreshSchedule = async () => setMarketSession(await API.getMarketSchedule());
+    refreshSchedule();
+    const interval = setInterval(refreshSchedule, 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleToggleLive = async () => {
     const nextLiveState = !isLiveActive;
     setIsLiveActive(nextLiveState);
@@ -120,7 +129,7 @@ export default function App() {
 
   // Refresh the server-owned market price while live updates are enabled.
   useEffect(() => {
-    if (!isLiveActive || loading || !activeSymbol) return;
+    if (!isLiveActive || !marketSession.marketOpen || loading || !activeSymbol) return;
 
     let refreshInFlight = false;
     const interval = setInterval(async () => {
@@ -170,7 +179,7 @@ export default function App() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isLiveActive, loading, activeSymbol]);
+  }, [isLiveActive, marketSession.marketOpen, loading, activeSymbol]);
 
   const handleDeleteSingleEvent = async (id) => {
     if (window.confirm('Delete this single news event?')) {
@@ -228,6 +237,7 @@ export default function App() {
         onOpenSettingsModal={() => setIsSettingsOpen(true)}
         onReset={handleResetData}
         isLiveActive={isLiveActive}
+        marketSession={marketSession}
         onToggleLive={handleToggleLive}
       />
 
