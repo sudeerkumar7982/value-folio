@@ -108,7 +108,7 @@ export function SettingsModal({ isOpen, onClose, profile, onSaveSettings }) {
               <span>Backend Server Cloud URL (Render)</span>
             </div>
             <p className="text-xs text-slate-500 leading-relaxed">
-              If accessing via GitHub Pages, enter your deployed Render backend URL (e.g. <code className="bg-slate-200 px-1 py-0.5 rounded text-[11px]">https://value-folio.onrender.com</code>). Leave empty for same-origin or local offline storage.
+              GitHub Pages connects to the ValueFolio Render backend automatically. For other deployments, enter your backend URL here; leave empty for same-origin or local offline storage.
             </p>
             <input
               type="text"

@@ -35,8 +35,8 @@ const INITIAL_DATA = {
   ipos: []
 };
 
-// Maximum market (non-event) ticks stored per stock in Neon.
-const MAX_MARKET_TICKS = 500;
+// Keep a full 12-hour session of one-second market ticks in the live cache.
+const MAX_MARKET_TICKS = 43200;
 
 // ── In-memory tick cache ───────────────────────────────────────────────────────
 // Acts as primary live-chart data source. Populated every tick regardless of
@@ -745,8 +745,8 @@ const dbMethods = {
       const lastCacheMs = lastCache ? new Date(lastCache.timestamp).getTime() : 0;
       const prevWasCircuit = lastCache?.label?.includes('Circuit Limit Hit');
 
-      if (lastCache && !lastCache.eventId && (nowMs - lastCacheMs < 5000) && !prevWasCircuit) {
-        // Update in-place within cache (dedup within 5s window to avoid DB flood)
+      if (lastCache && !lastCache.eventId && (nowMs - lastCacheMs < 900) && !prevWasCircuit) {
+        // Replace duplicate scheduler runs, but retain one chart point per second.
         lastCache.price = clampedPrice;
         lastCache.timestamp = nowIso;
         lastCache.label = finalLabel;
@@ -794,7 +794,7 @@ const dbMethods = {
       const lastTickMs = lastTick ? new Date(lastTick.timestamp).getTime() : 0;
       const prevWasCircuit = lastTick?.label?.includes('Circuit Limit Hit');
 
-      if (lastTick && !lastTick.eventId && (nowMs - lastTickMs < 30000) && !prevWasCircuit) {
+      if (lastTick && !lastTick.eventId && (nowMs - lastTickMs < 900) && !prevWasCircuit) {
         lastTick.price = clampedPrice;
         lastTick.timestamp = nowIso;
         lastTick.label = finalLabel;
@@ -809,7 +809,7 @@ const dbMethods = {
         stock.priceTicks.push({ timestamp: new Date(nowMs + 1).toISOString(), price: clampedPrice, eventId: `circuit-reset-${nowMs}`, label: resetLabel });
       }
 
-      const MAX_TICKS = 3000;
+      const MAX_TICKS = 43200;
       if (stock.priceTicks.length > MAX_TICKS) {
         const eventTicks = stock.priceTicks.filter(t => t.eventId !== null);
         const marketTicks = stock.priceTicks.filter(t => t.eventId === null);

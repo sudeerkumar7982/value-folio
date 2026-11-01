@@ -35,7 +35,8 @@ export function calculateMarketMovePercent(
   sentimentScore,
   symbol,
   nowMs = Date.now(),
-  randomValue = Math.random()
+  randomValue = Math.random(),
+  intervalMs = 1000
 ) {
   const current   = Number(currentPrice)  || 100;
   const reference = Number(referencePrice) || current;
@@ -48,7 +49,8 @@ export function calculateMarketMovePercent(
   const u1 = Math.max(0.001, Math.min(0.999, randomValue));
   const u2 = Math.max(0.001, Math.min(0.999, pseudoHash(nowMs * 0.001 + score)));
   const Z  = boxMuller(u1, u2);                 // N(0,1)
-  const sigmaTick = 0.18;                       // % per tick — ±₹0.22 on ₹120, clearly visible
+  const intervalScale = Math.max(0, intervalMs) / 30000;
+  const sigmaTick = 0.18 * Math.sqrt(intervalScale);
   const gbmNoise  = sigmaTick * Z;               // core random walk
 
   // ── Momentum texture (4-min cycle) ────────────────────────────────────────
@@ -58,18 +60,18 @@ export function calculateMarketMovePercent(
   );
   const tSec   = nowMs / 1000;
   const medRad = ((tSec + symbolSeed * 13) / 240) * Math.PI * 2;
-  const momentum = Math.sin(medRad) * 0.025 + Math.cos(medRad * 1.5) * 0.012;
+  const momentum = (Math.sin(medRad) * 0.025 + Math.cos(medRad * 1.5) * 0.012) * intervalScale;
 
   // ── Sentiment drift (μ per tick) ──────────────────────────────────────────
   // BULLISH (score=75): +0.003% per tick → gentle long-term upward nudge.
-  const mu = (score - 50) * 0.00006;
+  const mu = (score - 50) * 0.00006 * intervalScale;
 
   // ── Mean reversion toward today's opening ────────────────────────────────
   // Activates when price drifts >1% from opening — creates visible oscillations.
   // This is what makes the chart go up AND come back down organically.
   const driftPct = ((current - reference) / reference) * 100;
   const reversion = driftPct > 1 || driftPct < -1
-    ? Math.max(-0.12, Math.min(0.12, -driftPct * 0.025))
+    ? Math.max(-0.12 * intervalScale, Math.min(0.12 * intervalScale, -driftPct * 0.025 * intervalScale))
     : 0;
 
   const total = gbmNoise + momentum + mu + reversion;
@@ -159,7 +161,7 @@ export function simulateCatchUpTicks(stock, targetNowMs = Date.now(), maxTicksTo
     // Unbiased pseudo-random pair: mean ≈ 0.5 each
     const u1 = pseudoHash(currentTimeMs * 0.001731 + tickIndex * 127.1);
     const u2 = pseudoHash(currentTimeMs * 0.003713 + tickIndex * 311.7);
-    const noise = calculateMarketMovePercent(simPrice, startingPrice, sentimentScore, symbol, currentTimeMs, u1);
+    const noise = calculateMarketMovePercent(simPrice, startingPrice, sentimentScore, symbol, currentTimeMs, u1, stepMs);
 
     const rawPrice = simPrice * (1 + noise / 100);
     simPrice = Number(Math.min(Math.max(rawPrice, lowerCircuit), upperCircuit).toFixed(2));
@@ -232,7 +234,7 @@ export function ensureRichIntradayHistory(stock, targetNowMs = Date.now()) {
 
     // Unbiased pseudo-random pair
     const u1    = pseudoHash(tMs * 0.001731 + i * 127.1);
-    const noise = calculateMarketMovePercent(currentP, openAnchor, sentimentScore, symbol, tMs, u1);
+    const noise = calculateMarketMovePercent(currentP, openAnchor, sentimentScore, symbol, tMs, u1, stepMs);
 
     const rawPrice = currentP * (1 + noise / 100);
     currentP = Number(Math.min(Math.max(rawPrice, lowerCircuit), upperCircuit).toFixed(2));

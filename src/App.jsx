@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import StockHeader from './components/StockHeader.jsx';
 import { StockChart } from './components/StockChart.jsx';
 import { TodayHighlights } from './components/TodayHighlights.jsx';
@@ -24,6 +24,7 @@ export default function App() {
   const [iposList, setIposList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isLiveActive, setIsLiveActive] = useState(true);
+  const lastTickTimestampRef = useRef(null);
 
   // Modals state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -60,6 +61,8 @@ export default function App() {
         setData(profileData);
         setEvents(eventsData || []);
         setActiveSymbol(targetSym);
+        const latestTick = profileData?.priceTicks?.[profileData.priceTicks.length - 1];
+        lastTickTimestampRef.current = latestTick?.timestamp || null;
       } else {
         setData(null);
         setEvents([]);
@@ -125,17 +128,25 @@ export default function App() {
       refreshInFlight = true;
 
       try {
-        const profileData = await API.getProfile(activeSymbol);
+        const profileData = await API.getProfile(activeSymbol, lastTickTimestampRef.current);
         if (profileData?.profile) {
           const tickMetrics = profileData.metrics || {};
 
           setData(prev => {
             if (!prev) return prev;
+            const previousTicks = prev.priceTicks || [];
+            const newTicks = profileData.priceTicks || [];
+            const priceTicks = newTicks.length > 0
+              ? [...previousTicks, ...newTicks].slice(-43200)
+              : previousTicks;
+            const latestTick = priceTicks[priceTicks.length - 1];
+            if (latestTick) lastTickTimestampRef.current = latestTick.timestamp;
+
             return {
               ...prev,
               ...profileData,
               profile: { ...prev.profile, ...profileData.profile },
-              priceTicks: profileData.priceTicks || prev.priceTicks,
+              priceTicks,
               metrics: profileData.metrics || prev.metrics
             };
           });

@@ -89,6 +89,10 @@ app.get('/api/stock/profile', async (req, res) => {
     const events = await DB.getEvents(symbol);
     const sentiment = computeStockSentiment({ profile, events });
     const metrics = computeStockMetrics(priceTicks, { profile, events, sentiment });
+    const sinceMs = req.query.since ? Date.parse(req.query.since) : null;
+    const responseTicks = Number.isFinite(sinceMs)
+      ? priceTicks.filter(tick => new Date(tick.timestamp).getTime() > sinceMs)
+      : priceTicks;
 
     if (profile) {
       profile.currentPrice = metrics.currentPrice;
@@ -98,7 +102,7 @@ app.get('/api/stock/profile', async (req, res) => {
       profile,
       sectors,
       metrics,
-      priceTicks,
+      priceTicks: responseTicks,
       eventsCount: events.length
     });
   } catch (err) {
@@ -377,7 +381,10 @@ async function advanceMarket(symbol) {
     profile ? profile.currentPrice : 100,
     metrics.startingPrice,  // anchor to today's opening — price oscillates around this
     sentimentData.sentimentScore,
-    symbol
+    symbol,
+    Date.now(),
+    Math.random(),
+    1000
   );
 
   const newPrice = calculateNewPrice(profile ? profile.currentPrice : 100, noise, metrics.lowerCircuit, metrics.upperCircuit);

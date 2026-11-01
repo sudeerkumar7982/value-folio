@@ -8,6 +8,9 @@ export function getApiBaseUrl() {
   if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL.replace(/\/$/, '');
   }
+  if (typeof window !== 'undefined' && window.location.hostname === 'sudeerkumar7982.github.io') {
+    return 'https://value-folio.onrender.com';
+  }
   return '';
 }
 
@@ -398,11 +401,14 @@ export const API = {
     return store;
   },
 
-  getProfile: async (symbol = null) => {
+  getProfile: async (symbol = null, since = null) => {
     let data = null;
     try {
-      const symQuery = symbol ? `?symbol=${symbol}` : '';
-      const res = await apiFetch(`/api/stock/profile${symQuery}`);
+      const params = new URLSearchParams();
+      if (symbol) params.set('symbol', symbol);
+      if (since) params.set('since', since);
+      const query = params.toString();
+      const res = await apiFetch(`/api/stock/profile${query ? `?${query}` : ''}`);
       if (res.ok) {
         data = await res.json();
       }
@@ -418,18 +424,21 @@ export const API = {
 
       const stock = store.stocks[sym];
       if (!stock) return null;
+      const localTicks = stock.priceTicks || [];
 
       data = {
         profile: stock.profile,
         sectors: stock.sectors,
         metrics: computeMetrics(stock.priceTicks, stock),
-        priceTicks: stock.priceTicks || [],
+        priceTicks: since
+          ? localTicks.filter(tick => new Date(tick.timestamp).getTime() > Date.parse(since))
+          : localTicks,
         eventsCount: stock.events ? stock.events.length : 0,
         sentiment: computeStockSentiment(stock)
       };
     }
 
-    if (data && data.profile) {
+    if (data && data.profile && !since) {
       const metrics = computeMetrics(data.priceTicks || [], { profile: data.profile, events: data.events });
       data.profile.currentPrice = metrics.currentPrice;
       data.metrics = {
@@ -462,7 +471,21 @@ export const API = {
   getIPOs: async () => {
     try {
       const res = await apiFetch('/api/ipos');
-      if (res.ok) return await res.json();
+      if (res.ok) {
+        const serverIPOs = await res.json();
+        if (Array.isArray(serverIPOs)) {
+          const store = getLocalStore();
+          const serverIds = new Set(serverIPOs.map(ipo => ipo.id));
+          const serverSymbols = new Set(serverIPOs.map(ipo => ipo.symbol));
+          const localOnlyIPOs = (store.ipos || []).filter(
+            ipo => !serverIds.has(ipo.id) && !serverSymbols.has(ipo.symbol)
+          );
+          const ipos = [...serverIPOs, ...localOnlyIPOs];
+          store.ipos = ipos;
+          saveLocalStore(store);
+          return ipos;
+        }
+      }
     } catch (e) {}
 
     const store = getLocalStore();
@@ -917,7 +940,10 @@ export const API = {
       stock.profile.currentPrice,
       circuitAnchorPrice,
       score,
-      stockKey
+      stockKey,
+      Date.now(),
+      Math.random(),
+      1000
     );
 
     const rawPrice = stock.profile.currentPrice * (1 + noise / 100);
@@ -944,7 +970,7 @@ export const API = {
     const nowMs = Date.now();
     const lastTickMs = lastTick ? new Date(lastTick.timestamp).getTime() : 0;
 
-    if (lastTick && !lastTick.eventId && (nowMs - lastTickMs < 3500)) {
+    if (lastTick && !lastTick.eventId && (nowMs - lastTickMs < 900)) {
       lastTick.price = newPrice;
       lastTick.timestamp = nowIso;
       lastTick.label = tickLabel;
