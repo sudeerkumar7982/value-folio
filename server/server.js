@@ -493,12 +493,10 @@ DB.initialize().then(() => {
   // Self-ping to prevent Render free-tier idle spin-down when deployed
   const keepAliveUrl = process.env.RENDER_EXTERNAL_URL || process.env.KEEP_ALIVE_URL || 'https://value-folio.onrender.com';
   if (keepAliveUrl && !keepAliveUrl.includes('localhost')) {
-    console.log(`📡 Render 24/7 keep-alive active for: ${keepAliveUrl}`);
+    console.log(`📡 Self keep-alive active: ${keepAliveUrl}/ping`);
     setInterval(async () => {
       try {
-        // Ping /api/stock/profile which always returns data — keeps server warm
-        const pingTarget = `${keepAliveUrl.replace(/\/$/, '')}/api/stock/profile`;
-        await fetch(pingTarget);
+        await fetch(`${keepAliveUrl.replace(/\/$/, '')}/ping`);
       } catch (err) {
         // Silently ignore ping errors
       }
