@@ -5,7 +5,10 @@
  * Storage architecture (Neon/pool mode):
  *   - value_folio_state: JSONB blob for profile, sectors, events, trades (NO priceTicks)
  *   - price_ticks: one row per tick; auto-pruned to 500 market ticks per stock
- *     All event/circuit ticks are preserved indefinitely.
+ *
+ * Resilience: ALL Neon writes are wrapped in try/catch. If Neon is full or in
+ * read-only mode the server keeps running using an in-memory tick cache.
+ * The chart will show real zigzag data from memory even when DB writes fail.
  *
  * Storage architecture (file / local mode):
  *   - store.json: full JSON including priceTicks (unchanged from original behaviour)
@@ -32,8 +35,34 @@ const INITIAL_DATA = {
 };
 
 // Maximum market (non-event) ticks stored per stock in Neon.
-// Event ticks are always kept. 500 ≈ 4 hours of 30-second granularity.
 const MAX_MARKET_TICKS = 500;
+
+// ── In-memory tick cache ───────────────────────────────────────────────────────
+// Acts as primary live-chart data source. Populated every tick regardless of
+// whether the Neon write succeeds. On server restart it resets, but Neon ticks
+// (from before the outage) are merged back in via getPriceTicks.
+const tickCache = {}; // { [symbol]: Tick[] }
+
+function getCacheTicks(symbol) {
+  return tickCache[symbol] || [];
+}
+
+function addCacheTick(symbol, tick) {
+  if (!tickCache[symbol]) tickCache[symbol] = [];
+  const arr = tickCache[symbol];
+  arr.push(tick);
+  // Prune to last MAX_MARKET_TICKS entries (event ticks always kept)
+  if (arr.filter(t => !t.eventId).length > MAX_MARKET_TICKS) {
+    const events = arr.filter(t => t.eventId);
+    const market = arr.filter(t => !t.eventId).slice(-MAX_MARKET_TICKS);
+    tickCache[symbol] = [...market, ...events].sort(
+      (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+    );
+  }
+}
+
+// Seed cache from DB ticks on first getPriceTicks call per symbol
+const cacheSeedDone = {};
 
 // ── Neon price_ticks table helpers ────────────────────────────────────────────
 
@@ -177,11 +206,7 @@ function readBundledStore() {
   try {
     const store = JSON.parse(fs.readFileSync(BUNDLED_DATA_FILE, 'utf-8'));
     if (store && typeof store === 'object' && store.stocks) return store;
-    return {
-      activeSymbol: store.activeSymbol || '',
-      stocks: {},
-      ipos: store.ipos || []
-    };
+    return { activeSymbol: store.activeSymbol || '', stocks: {}, ipos: store.ipos || [] };
   } catch (err) {
     console.error('Error reading bundled store.json:', err);
     return INITIAL_DATA;
@@ -193,8 +218,12 @@ function readBundledStore() {
 async function readStore() {
   let store = INITIAL_DATA;
   if (pool) {
-    const { rows } = await pool.query('SELECT data FROM value_folio_state WHERE id = 1');
-    store = rows[0]?.data || INITIAL_DATA;
+    try {
+      const { rows } = await pool.query('SELECT data FROM value_folio_state WHERE id = 1');
+      store = rows[0]?.data || INITIAL_DATA;
+    } catch (err) {
+      console.warn('[readStore] DB read failed, using in-memory state:', err.message);
+    }
     // Ensure no stale priceTicks arrays live in the blob (pool mode: table only)
     if (store.stocks) {
       for (const sym of Object.keys(store.stocks)) {
@@ -247,9 +276,14 @@ async function readStore() {
   return store;
 }
 
+/**
+ * Persist state to Neon. priceTicks are NEVER written to the blob —
+ * they live in the price_ticks table (or in-memory cache as fallback).
+ * Write failures are logged as warnings and do NOT crash the server.
+ */
 async function writeStore(data) {
   if (pool) {
-    // Strip priceTicks from every stock — they live in the price_ticks table.
+    // Strip priceTicks from every stock before saving the blob
     const cleanStocks = {};
     for (const [sym, stock] of Object.entries(data.stocks || {})) {
       const { priceTicks, ...stockWithoutTicks } = stock; // eslint-disable-line no-unused-vars
@@ -257,12 +291,17 @@ async function writeStore(data) {
     }
     const cleanData = { ...data, stocks: cleanStocks };
 
-    await pool.query(
-      `INSERT INTO value_folio_state (id, data)
-            VALUES (1, $1::jsonb)
-            ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data`,
-      [JSON.stringify(cleanData)]
-    );
+    try {
+      await pool.query(
+        `INSERT INTO value_folio_state (id, data)
+              VALUES (1, $1::jsonb)
+              ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data`,
+        [JSON.stringify(cleanData)]
+      );
+    } catch (err) {
+      // Neon may be in read-only mode (storage full). Log and continue.
+      console.warn('[writeStore] DB write failed (storage full?):', err.message);
+    }
     return;
   }
   fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
@@ -290,11 +329,8 @@ export function computeStockSentiment(stock) {
   }
 
   let posCount = 0;
-  let totalImpact = 0;
-
   events.forEach(e => {
     if (e.sentiment === 'POSITIVE' || e.impactPercent > 0) posCount++;
-    totalImpact += (e.impactPercent || 0);
   });
 
   const positiveRatio = Math.round((posCount / events.length) * 100);
@@ -305,30 +341,13 @@ export function computeStockSentiment(stock) {
 
   let sentiment = 'NEUTRAL';
   let sentimentLabel = 'Neutral ⚖️';
-  if (sentimentScore >= 80) {
-    sentiment = 'VERY_BULLISH';
-    sentimentLabel = 'Very Bullish 🔥';
-  } else if (sentimentScore >= 60) {
-    sentiment = 'BULLISH';
-    sentimentLabel = 'Bullish 📈';
-  } else if (sentimentScore >= 40) {
-    sentiment = 'NEUTRAL';
-    sentimentLabel = 'Neutral ⚖️';
-  } else if (sentimentScore >= 20) {
-    sentiment = 'BEARISH';
-    sentimentLabel = 'Bearish 📉';
-  } else {
-    sentiment = 'VERY_BEARISH';
-    sentimentLabel = 'Very Bearish 🔻';
-  }
+  if (sentimentScore >= 80) { sentiment = 'VERY_BULLISH'; sentimentLabel = 'Very Bullish 🔥'; }
+  else if (sentimentScore >= 60) { sentiment = 'BULLISH'; sentimentLabel = 'Bullish 📈'; }
+  else if (sentimentScore >= 40) { sentiment = 'NEUTRAL'; sentimentLabel = 'Neutral ⚖️'; }
+  else if (sentimentScore >= 20) { sentiment = 'BEARISH'; sentimentLabel = 'Bearish 📉'; }
+  else { sentiment = 'VERY_BEARISH'; sentimentLabel = 'Very Bearish 🔻'; }
 
-  return {
-    sentiment,
-    sentimentScore,
-    sentimentLabel,
-    positiveRatio,
-    totalEvents: events.length
-  };
+  return { sentiment, sentimentScore, sentimentLabel, positiveRatio, totalEvents: events.length };
 }
 
 // ── DB method implementations ─────────────────────────────────────────────────
@@ -340,97 +359,102 @@ const dbMethods = {
     }
     if (!pool) return;
 
-    // Create the main state table (unchanged schema)
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS value_folio_state (
-        id SMALLINT PRIMARY KEY CHECK (id = 1),
-        data JSONB NOT NULL
-      )
-    `);
-
-    // ── NEW: dedicated price_ticks table ──────────────────────────────────────
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS price_ticks (
-        id        BIGSERIAL PRIMARY KEY,
-        symbol    TEXT        NOT NULL,
-        timestamp TIMESTAMPTZ NOT NULL,
-        price     NUMERIC(16,4) NOT NULL,
-        event_id  TEXT,
-        label     TEXT
-      )
-    `);
-    // Index for fast per-symbol chronological queries
-    await pool.query(`
-      CREATE INDEX IF NOT EXISTS idx_price_ticks_symbol_ts
-        ON price_ticks (symbol, timestamp DESC)
-    `);
-    // ─────────────────────────────────────────────────────────────────────────
-
-    // Seed the state blob from the bundled store.json if it doesn't exist yet
-    const bundledStore = readBundledStore();
-
-    // Strip priceTicks from bundled data before inserting into blob
-    const cleanStocks = {};
-    for (const [sym, stock] of Object.entries(bundledStore.stocks || {})) {
-      const { priceTicks, ...stockWithoutTicks } = stock; // eslint-disable-line no-unused-vars
-      cleanStocks[sym] = stockWithoutTicks;
-    }
-    const cleanBundled = { ...bundledStore, stocks: cleanStocks };
-
-    await pool.query(
-      'INSERT INTO value_folio_state (id, data) VALUES (1, $1::jsonb) ON CONFLICT (id) DO NOTHING',
-      [JSON.stringify(cleanBundled)]
-    );
-
-    // ── Migrate any existing priceTicks from the blob into the new table ─────
-    // (Handles the one-time migration for existing deployments)
-    const { rows } = await pool.query('SELECT data FROM value_folio_state WHERE id = 1');
-    const existingData = rows[0]?.data || {};
-    let migrationNeeded = false;
-
-    for (const [sym, stock] of Object.entries(existingData.stocks || {})) {
-      if (Array.isArray(stock.priceTicks) && stock.priceTicks.length > 0) {
-        // Check if price_ticks table already has rows for this symbol
-        const { rows: existing } = await pool.query(
-          'SELECT COUNT(*)::int AS cnt FROM price_ticks WHERE symbol = $1',
-          [sym]
-        );
-        if (existing[0].cnt === 0) {
-          console.log(`📦 Migrating ${stock.priceTicks.length} ticks for ${sym} → price_ticks table`);
-          await dbInsertManyTicks(sym, stock.priceTicks);
-        }
-        migrationNeeded = true;
-      }
+    // Create state table (unchanged schema)
+    try {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS value_folio_state (
+          id SMALLINT PRIMARY KEY CHECK (id = 1),
+          data JSONB NOT NULL
+        )
+      `);
+    } catch (err) {
+      console.warn('[initialize] Could not create value_folio_state table:', err.message);
     }
 
-    if (migrationNeeded) {
-      // Strip priceTicks from the blob now that they're in the table
-      const cleanedData = { ...existingData, stocks: {} };
-      for (const [sym, stock] of Object.entries(existingData.stocks || {})) {
+    // Seed state from bundled store if not already present
+    try {
+      const bundledStore = readBundledStore();
+      const cleanStocks = {};
+      for (const [sym, stock] of Object.entries(bundledStore.stocks || {})) {
         const { priceTicks, ...rest } = stock; // eslint-disable-line no-unused-vars
-        cleanedData.stocks[sym] = rest;
+        cleanStocks[sym] = rest;
       }
+      const cleanBundled = { ...bundledStore, stocks: cleanStocks };
       await pool.query(
-        `INSERT INTO value_folio_state (id, data)
-              VALUES (1, $1::jsonb)
-              ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data`,
-        [JSON.stringify(cleanedData)]
+        'INSERT INTO value_folio_state (id, data) VALUES (1, $1::jsonb) ON CONFLICT (id) DO NOTHING',
+        [JSON.stringify(cleanBundled)]
       );
-      console.log('✅ Migration complete: priceTicks removed from JSONB blob, now in price_ticks table');
+    } catch (err) {
+      console.warn('[initialize] Could not seed value_folio_state (storage full?):', err.message);
     }
 
-    // Seed initial ticks from bundled data for any symbol with no ticks yet
-    for (const [sym, stock] of Object.entries(bundledStore.stocks || {})) {
-      if (Array.isArray(stock.priceTicks) && stock.priceTicks.length > 0) {
-        const { rows: existing } = await pool.query(
-          'SELECT COUNT(*)::int AS cnt FROM price_ticks WHERE symbol = $1',
-          [sym]
+    // ── Strip existing priceTicks from blob (one-time migration) ─────────────
+    // Even if price_ticks table creation fails, we strip the blob to free space.
+    try {
+      const { rows } = await pool.query('SELECT data FROM value_folio_state WHERE id = 1');
+      const existingData = rows[0]?.data;
+      if (existingData && existingData.stocks) {
+        const hasTicksInBlob = Object.values(existingData.stocks).some(
+          s => Array.isArray(s.priceTicks) && s.priceTicks.length > 0
         );
-        if (existing[0].cnt === 0) {
-          console.log(`🌱 Seeding ${stock.priceTicks.length} initial ticks for ${sym}`);
-          await dbInsertManyTicks(sym, stock.priceTicks);
+        if (hasTicksInBlob) {
+          console.log('🧹 Stripping priceTicks from JSONB blob to free Neon storage...');
+          const cleanedData = { ...existingData, stocks: {} };
+          for (const [sym, stock] of Object.entries(existingData.stocks)) {
+            const { priceTicks, ...rest } = stock; // eslint-disable-line no-unused-vars
+            cleanedData.stocks[sym] = rest;
+          }
+          await pool.query(
+            `INSERT INTO value_folio_state (id, data)
+                  VALUES (1, $1::jsonb)
+                  ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data`,
+            [JSON.stringify(cleanedData)]
+          );
+          console.log('✅ Blob cleaned — priceTicks removed from JSONB. Neon storage freed.');
         }
       }
+    } catch (err) {
+      console.warn('[initialize] Could not strip blob ticks (storage full? — in-memory fallback active):', err.message);
+    }
+
+    // ── Create price_ticks table (best-effort) ────────────────────────────────
+    try {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS price_ticks (
+          id        BIGSERIAL PRIMARY KEY,
+          symbol    TEXT          NOT NULL,
+          timestamp TIMESTAMPTZ   NOT NULL,
+          price     NUMERIC(16,4) NOT NULL,
+          event_id  TEXT,
+          label     TEXT
+        )
+      `);
+      await pool.query(`
+        CREATE INDEX IF NOT EXISTS idx_price_ticks_symbol_ts
+          ON price_ticks (symbol, timestamp DESC)
+      `);
+      console.log('✅ price_ticks table ready');
+    } catch (err) {
+      console.warn('[initialize] Could not create price_ticks table (storage full? — in-memory fallback active):', err.message);
+    }
+
+    // ── Migrate any ticks from bundled store into price_ticks (best-effort) ──
+    try {
+      const bundledStore = readBundledStore();
+      for (const [sym, stock] of Object.entries(bundledStore.stocks || {})) {
+        if (Array.isArray(stock.priceTicks) && stock.priceTicks.length > 0) {
+          const { rows: existing } = await pool.query(
+            'SELECT COUNT(*)::int AS cnt FROM price_ticks WHERE symbol = $1',
+            [sym]
+          );
+          if (existing[0].cnt === 0) {
+            console.log(`📦 Seeding ${stock.priceTicks.length} ticks for ${sym} → price_ticks table`);
+            await dbInsertManyTicks(sym, stock.priceTicks);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[initialize] Tick seeding skipped (storage full?):', err.message);
     }
   },
 
@@ -496,22 +520,15 @@ const dbMethods = {
     stock.events.unshift(event);
     stock.profile.currentPrice = event.newPrice;
 
+    const tick = { timestamp: event.timestamp, price: event.newPrice, eventId: event.id, label: event.title };
+
     if (pool) {
-      // Write event tick to the dedicated table
-      await dbInsertTick(sym, {
-        timestamp: event.timestamp,
-        price: event.newPrice,
-        eventId: event.id,
-        label: event.title
-      });
+      // Add to in-memory cache immediately
+      addCacheTick(sym, tick);
+      // Try to persist to table (best-effort)
+      try { await dbInsertTick(sym, tick); } catch (err) { console.warn('[addEvent] tick insert failed:', err.message); }
     } else {
-      // File mode: keep priceTicks in the blob
-      stock.priceTicks.push({
-        timestamp: event.timestamp,
-        price: event.newPrice,
-        eventId: event.id,
-        label: event.title
-      });
+      stock.priceTicks.push(tick);
     }
 
     await writeStore(store);
@@ -527,37 +544,30 @@ const dbMethods = {
     stock.events = stock.events.filter(e => e.id !== eventId);
 
     if (pool) {
-      // Remove the event tick from the table
-      await dbDeleteTickByEventId(eventId);
+      // Remove from cache
+      if (tickCache[sym]) {
+        tickCache[sym] = tickCache[sym].filter(t => t.eventId !== eventId);
+      }
+      // Remove from DB (best-effort)
+      try { await dbDeleteTickByEventId(eventId); } catch (err) { console.warn('[deleteEvent] tick delete failed:', err.message); }
 
-      // Determine new current price from the latest remaining tick
-      const lastTick = await dbGetLastTick(sym);
-      if (lastTick) {
-        stock.profile.currentPrice = lastTick.price;
+      // Determine new current price
+      const allTicks = await dbMethods.getPriceTicks(sym);
+      if (allTicks.length > 0) {
+        stock.profile.currentPrice = allTicks[allTicks.length - 1].price;
       } else {
         stock.profile.currentPrice = stock.profile.startingPrice;
-        // Re-seed a single IPO tick so the chart has an anchor
-        await dbInsertTick(sym, {
-          timestamp: new Date().toISOString(),
-          price: stock.profile.startingPrice,
-          eventId: null,
-          label: `${stock.profile.symbol} Initial Public Offering (IPO)`
-        });
+        const ipoTick = { timestamp: new Date().toISOString(), price: stock.profile.startingPrice, eventId: null, label: `${stock.profile.symbol} Initial Public Offering (IPO)` };
+        addCacheTick(sym, ipoTick);
+        try { await dbInsertTick(sym, ipoTick); } catch (err) { /* best-effort */ }
       }
     } else {
-      // File mode
       stock.priceTicks = stock.priceTicks.filter(t => t.eventId !== eventId);
-
       if (stock.priceTicks.length > 0) {
         stock.profile.currentPrice = stock.priceTicks[stock.priceTicks.length - 1].price;
       } else {
         stock.profile.currentPrice = stock.profile.startingPrice;
-        stock.priceTicks.push({
-          timestamp: new Date().toISOString(),
-          price: stock.profile.startingPrice,
-          eventId: null,
-          label: `${stock.profile.symbol} Initial Public Offering (IPO)`
-        });
+        stock.priceTicks.push({ timestamp: new Date().toISOString(), price: stock.profile.startingPrice, eventId: null, label: `${stock.profile.symbol} Initial Public Offering (IPO)` });
       }
     }
 
@@ -568,9 +578,37 @@ const dbMethods = {
   getPriceTicks: async (symbol) => {
     const store = await readStore();
     const sym = symbol || store.activeSymbol;
+
     if (pool) {
-      return await dbGetTicks(sym);
+      // Seed the in-memory cache from DB ticks on first call (one-time per symbol per server run)
+      if (!cacheSeedDone[sym]) {
+        cacheSeedDone[sym] = true;
+        try {
+          const dbTicks = await dbGetTicks(sym);
+          if (dbTicks.length > 0 && getCacheTicks(sym).length === 0) {
+            tickCache[sym] = dbTicks;
+          }
+        } catch (err) {
+          console.warn('[getPriceTicks] DB read failed, using cache only:', err.message);
+        }
+      }
+
+      // Merge DB ticks with any newer in-memory cache ticks
+      let dbTicks = [];
+      try { dbTicks = await dbGetTicks(sym); } catch (err) { /* use cache */ }
+
+      const cacheTicks = getCacheTicks(sym);
+      if (dbTicks.length === 0) return cacheTicks;
+      if (cacheTicks.length === 0) return dbTicks;
+
+      // Append cache ticks that are newer than the last DB tick
+      const lastDbTs = new Date(dbTicks[dbTicks.length - 1].timestamp).getTime();
+      const newerCacheTicks = cacheTicks.filter(t => new Date(t.timestamp).getTime() > lastDbTs);
+
+      if (newerCacheTicks.length === 0) return dbTicks;
+      return [...dbTicks, ...newerCacheTicks];
     }
+
     return store.stocks[sym]?.priceTicks || [];
   },
 
@@ -589,32 +627,20 @@ const dbMethods = {
     const cost = Number((shares * currentPrice).toFixed(2));
 
     if (type === 'BUY') {
-      if (stock.profile.walletBalance < cost) {
-        throw new Error('Insufficient virtual cash balance');
-      }
+      if (stock.profile.walletBalance < cost) throw new Error('Insufficient virtual cash balance');
       const totalCostBefore = stock.profile.sharesOwned * stock.profile.avgBuyPrice;
       const newTotalShares = stock.profile.sharesOwned + shares;
       stock.profile.walletBalance = Number((stock.profile.walletBalance - cost).toFixed(2));
       stock.profile.avgBuyPrice = Number(((totalCostBefore + cost) / newTotalShares).toFixed(2));
       stock.profile.sharesOwned = newTotalShares;
     } else if (type === 'SELL') {
-      if (stock.profile.sharesOwned < shares) {
-        throw new Error('Not enough shares to sell');
-      }
+      if (stock.profile.sharesOwned < shares) throw new Error('Not enough shares to sell');
       stock.profile.walletBalance = Number((stock.profile.walletBalance + cost).toFixed(2));
       stock.profile.sharesOwned -= shares;
       if (stock.profile.sharesOwned === 0) stock.profile.avgBuyPrice = 0;
     }
 
-    const trade = {
-      id: `trd-${Date.now()}`,
-      type,
-      shares,
-      price: currentPrice,
-      totalAmount: cost,
-      timestamp: new Date().toISOString()
-    };
-
+    const trade = { id: `trd-${Date.now()}`, type, shares, price: currentPrice, totalAmount: cost, timestamp: new Date().toISOString() };
     stock.trades.unshift(trade);
     await writeStore(store);
     return { profile: stock.profile, trade };
@@ -629,71 +655,89 @@ const dbMethods = {
     const sentimentData = computeStockSentiment(stock);
 
     if (pool) {
-      // ── Neon path: work entirely with the price_ticks table ─────────────────
-      // Load ticks from table to compute metrics & circuit limits
-      const priceTicks = await dbGetTicks(sym);
+      // ── Pool mode: in-memory cache is primary; DB is best-effort ─────────────
+      // Load ticks from cache+DB to compute circuit limits
+      const priceTicks = getCacheTicks(sym).length > 0 ? getCacheTicks(sym) : [];
       const metrics = computeStockMetrics(priceTicks, { ...stock, sentiment: sentimentData });
       const clampedPrice = Math.min(Math.max(Number(newPrice), metrics.lowerCircuit), metrics.upperCircuit);
 
       const hitUpper = clampedPrice >= metrics.upperCircuit;
       const hitLower = clampedPrice <= metrics.lowerCircuit;
-
       let finalLabel = label;
-      if (hitUpper) {
-        finalLabel = `🔒 Upper Circuit Limit Hit (+${metrics.upperCircuitPct}%)`;
-      } else if (hitLower) {
-        finalLabel = `🔒 Lower Circuit Limit Hit (-${metrics.lowerCircuitPct}%)`;
-      }
+      if (hitUpper) finalLabel = `🔒 Upper Circuit Limit Hit (+${metrics.upperCircuitPct}%)`;
+      else if (hitLower) finalLabel = `🔒 Lower Circuit Limit Hit (-${metrics.lowerCircuitPct}%)`;
 
       stock.profile.currentPrice = clampedPrice;
       const nowMs = Date.now();
       const nowIso = new Date(nowMs).toISOString();
 
-      // 30-second dedup: update the last market tick in-place instead of inserting
-      const lastTick = await dbGetLastTick(sym);
-      const lastTickMs = lastTick ? new Date(lastTick.timestamp).getTime() : 0;
-      const prevWasCircuit = lastTick?.label?.includes('Circuit Limit Hit');
+      // ── 1. Always update the in-memory cache (guaranteed to work) ────────────
+      const cacheTicks = getCacheTicks(sym);
+      const lastCache = cacheTicks.length > 0 ? cacheTicks[cacheTicks.length - 1] : null;
+      const lastCacheMs = lastCache ? new Date(lastCache.timestamp).getTime() : 0;
+      const prevWasCircuit = lastCache?.label?.includes('Circuit Limit Hit');
 
-      if (lastTick && !lastTick.eventId && (nowMs - lastTickMs < 30000) && !prevWasCircuit) {
-        await dbUpdateLastTickById(lastTick.id, { price: clampedPrice, timestamp: nowIso, label: finalLabel });
+      if (lastCache && !lastCache.eventId && (nowMs - lastCacheMs < 30000) && !prevWasCircuit) {
+        // Update in-place within cache
+        lastCache.price = clampedPrice;
+        lastCache.timestamp = nowIso;
+        lastCache.label = finalLabel;
       } else {
-        await dbInsertTick(sym, { timestamp: nowIso, price: clampedPrice, eventId: null, label: finalLabel });
+        addCacheTick(sym, { timestamp: nowIso, price: clampedPrice, eventId: null, label: finalLabel });
       }
 
-      // Circuit Breaker Reset — inject a synthetic anchor tick so bands re-center
       if (hitUpper || hitLower) {
         const resetLabel = hitUpper
           ? `📈 Circuit Reset — Trading Resumes from ₹${clampedPrice.toFixed(2)}`
           : `📉 Circuit Reset — Trading Resumes from ₹${clampedPrice.toFixed(2)}`;
-        await dbInsertTick(sym, {
-          timestamp: new Date(nowMs + 1).toISOString(),
-          price: clampedPrice,
-          eventId: `circuit-reset-${nowMs}`,
-          label: resetLabel
-        });
+        addCacheTick(sym, { timestamp: new Date(nowMs + 1).toISOString(), price: clampedPrice, eventId: `circuit-reset-${nowMs}`, label: resetLabel });
       }
 
-      // Prune oldest market ticks, keeping the last MAX_MARKET_TICKS
-      await dbPruneMarketTicks(sym);
+      // ── 2. Best-effort persist to DB ─────────────────────────────────────────
+      try {
+        const lastDbTick = await dbGetLastTick(sym);
+        const lastDbMs = lastDbTick ? new Date(lastDbTick.timestamp).getTime() : 0;
+        const dbPrevWasCircuit = lastDbTick?.label?.includes('Circuit Limit Hit');
 
-      // Persist updated currentPrice in the blob
+        if (lastDbTick && !lastDbTick.eventId && (nowMs - lastDbMs < 30000) && !dbPrevWasCircuit) {
+          await dbUpdateLastTickById(lastDbTick.id, { price: clampedPrice, timestamp: nowIso, label: finalLabel });
+        } else {
+          await dbInsertTick(sym, { timestamp: nowIso, price: clampedPrice, eventId: null, label: finalLabel });
+        }
+
+        if (hitUpper || hitLower) {
+          const resetLabel = hitUpper
+            ? `📈 Circuit Reset — Trading Resumes from ₹${clampedPrice.toFixed(2)}`
+            : `📉 Circuit Reset — Trading Resumes from ₹${clampedPrice.toFixed(2)}`;
+          await dbInsertTick(sym, { timestamp: new Date(nowMs + 1).toISOString(), price: clampedPrice, eventId: `circuit-reset-${nowMs}`, label: resetLabel });
+        }
+
+        // Prune old market ticks (runs occasionally, not critical)
+        await dbPruneMarketTicks(sym);
+      } catch (err) {
+        // Neon write failed (storage full?) — in-memory cache keeps chart working
+        // Log only once per minute to avoid log spam
+        const now = Date.now();
+        if (!dbMethods._lastTickWarnMs || now - dbMethods._lastTickWarnMs > 60000) {
+          console.warn(`[addMarketTick] DB write failed for ${sym} (in-memory fallback active): ${err.message}`);
+          dbMethods._lastTickWarnMs = now;
+        }
+      }
+
+      // Best-effort persist currentPrice in blob
       await writeStore(store);
       return stock.profile;
 
     } else {
-      // ── File mode: original in-memory array logic ─────────────────────────
+      // ── File mode: original in-memory array logic ──────────────────────────
       const metrics = computeStockMetrics(stock.priceTicks, { ...stock, sentiment: sentimentData });
       const clampedPrice = Math.min(Math.max(Number(newPrice), metrics.lowerCircuit), metrics.upperCircuit);
 
       const hitUpper = clampedPrice >= metrics.upperCircuit;
       const hitLower = clampedPrice <= metrics.lowerCircuit;
-
       let finalLabel = label;
-      if (hitUpper) {
-        finalLabel = `🔒 Upper Circuit Limit Hit (+${metrics.upperCircuitPct}%)`;
-      } else if (hitLower) {
-        finalLabel = `🔒 Lower Circuit Limit Hit (-${metrics.lowerCircuitPct}%)`;
-      }
+      if (hitUpper) finalLabel = `🔒 Upper Circuit Limit Hit (+${metrics.upperCircuitPct}%)`;
+      else if (hitLower) finalLabel = `🔒 Lower Circuit Limit Hit (-${metrics.lowerCircuitPct}%)`;
 
       stock.profile.currentPrice = clampedPrice;
       const nowMs = Date.now();
@@ -714,23 +758,15 @@ const dbMethods = {
         const resetLabel = hitUpper
           ? `📈 Circuit Reset — Trading Resumes from ₹${clampedPrice.toFixed(2)}`
           : `📉 Circuit Reset — Trading Resumes from ₹${clampedPrice.toFixed(2)}`;
-        stock.priceTicks.push({
-          timestamp: new Date(nowMs + 1).toISOString(),
-          price: clampedPrice,
-          eventId: `circuit-reset-${nowMs}`,
-          label: resetLabel
-        });
+        stock.priceTicks.push({ timestamp: new Date(nowMs + 1).toISOString(), price: clampedPrice, eventId: `circuit-reset-${nowMs}`, label: resetLabel });
       }
 
-      // Cap at 3000 ticks for file mode
       const MAX_TICKS = 3000;
       if (stock.priceTicks.length > MAX_TICKS) {
         const eventTicks = stock.priceTicks.filter(t => t.eventId !== null);
         const marketTicks = stock.priceTicks.filter(t => t.eventId === null);
         const keepMarket = marketTicks.slice(-(MAX_TICKS - eventTicks.length));
-        stock.priceTicks = [...keepMarket, ...eventTicks].sort(
-          (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
-        );
+        stock.priceTicks = [...keepMarket, ...eventTicks].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
       }
 
       await writeStore(store);
@@ -743,12 +779,12 @@ const dbMethods = {
     return Object.keys(store.stocks).map(sym => {
       const stock = store.stocks[sym];
       const sentimentData = computeStockSentiment(stock);
-      // In pool mode priceTicks are [] here; metrics will use startingPrice as base — fine for listing
-      const metrics = computeStockMetrics(stock.priceTicks || [], { ...stock, sentiment: sentimentData });
-      const startingPrice = metrics.startingPrice;
-      const currentPrice = stock.profile?.currentPrice ?? metrics.currentPrice;
+      // Use profile.currentPrice (kept live by addMarketTick) for listing
+      const currentPrice = stock.profile?.currentPrice ?? 100;
+      const startingPrice = stock.profile?.startingPrice ?? 100;
       const changeAmount = Number((currentPrice - startingPrice).toFixed(2));
       const changePercent = startingPrice > 0 ? Number(((changeAmount / startingPrice) * 100).toFixed(2)) : 0;
+      const metrics = computeStockMetrics(stock.priceTicks || [], { ...stock, sentiment: sentimentData });
 
       return {
         symbol: sym,
@@ -783,13 +819,10 @@ const dbMethods = {
       throw new Error(`Ticker ${sym} is already in use`);
     }
     const sectors = ipoData.initialSectors || ipoData.sectors || { Career: 50, Education: 50, Skills: 50, Projects: 50, Finance: 50, Social: 50, Wellbeing: 50 };
-
     const sectorVals = Object.values(sectors);
     const avgSector = sectorVals.length > 0 ? sectorVals.reduce((a, b) => a + Number(b), 0) / sectorVals.length : 50;
-
     const dynamicGmp = Number(Math.min(Math.max(((avgSector - 50) * 0.5 + 10.0), -20), 100).toFixed(1));
     const gmpPercent = ipoData.gmpPercent !== undefined && ipoData.gmpPercent !== null ? Number(ipoData.gmpPercent) : dynamicGmp;
-
     const sentimentScore = Math.min(Math.max(Math.round(avgSector), 5), 98);
     let sentiment = 'NEUTRAL';
     if (sentimentScore >= 80) sentiment = 'VERY_BULLISH';
@@ -800,29 +833,18 @@ const dbMethods = {
 
     const issuePrice = Number(ipoData.startingPrice || 100);
     const gmpValue = Number((issuePrice * (gmpPercent / 100)).toFixed(2));
-
     const newIPO = {
-      id: `ipo-${Date.now()}`,
-      symbol: sym,
-      name: ipoData.name || 'New Human Stock IPO',
-      bio: ipoData.bio || 'Human Life Ticker',
-      status: ipoData.status || 'OPEN',
+      id: `ipo-${Date.now()}`, symbol: sym, name: ipoData.name || 'New Human Stock IPO',
+      bio: ipoData.bio || 'Human Life Ticker', status: ipoData.status || 'OPEN',
       priceRange: ipoData.priceRange || `₹${issuePrice} - ₹${(issuePrice * 1.1).toFixed(0)}`,
-      issuePrice,
-      lotSize: Number(ipoData.lotSize || 50),
-      issueSize: ipoData.issueSize || '₹50 Cr',
-      gmpPercent,
-      gmpValue,
-      subscriptionRatio: ipoData.subscriptionRatio || '3.5x',
-      bidsCount: 150,
-      sentiment,
-      sentimentScore,
+      issuePrice, lotSize: Number(ipoData.lotSize || 50), issueSize: ipoData.issueSize || '₹50 Cr',
+      gmpPercent, gmpValue, subscriptionRatio: ipoData.subscriptionRatio || '3.5x', bidsCount: 150,
+      sentiment, sentimentScore,
       openingDate: ipoData.openingDate || new Date().toISOString().split('T')[0],
       closingDate: ipoData.closingDate || new Date(Date.now() + 86400000 * 5).toISOString().split('T')[0],
       listingDate: ipoData.listingDate || new Date(Date.now() + 86400000 * 8).toISOString().split('T')[0],
       sectors
     };
-
     store.ipos.unshift(newIPO);
 
     if (newIPO.status === 'LISTED') {
@@ -831,39 +853,18 @@ const dbMethods = {
         { timestamp: new Date().toISOString(), price: issuePrice, eventId: null, label: `${sym} Initial Public Offering (IPO)` },
         { timestamp: new Date().toISOString(), price: listingPrice, eventId: null, label: `${sym} IPO Listing Price` }
       ];
-
       const freshStock = {
-        profile: {
-          symbol: sym,
-          name: newIPO.name,
-          bio: newIPO.bio,
-          startingPrice: issuePrice,
-          listingPrice,
-          currentPrice: listingPrice,
-          walletBalance: 10000.00,
-          sharesOwned: 0,
-          avgBuyPrice: 0.00,
-          apiKey: '',
-          createdAt: new Date().toISOString()
-        },
-        sectors: newIPO.sectors,
-        events: [],
-        priceTicks: pool ? [] : initialTicks,
-        trades: []
+        profile: { symbol: sym, name: newIPO.name, bio: newIPO.bio, startingPrice: issuePrice, listingPrice, currentPrice: listingPrice, walletBalance: 10000.00, sharesOwned: 0, avgBuyPrice: 0.00, apiKey: '', createdAt: new Date().toISOString() },
+        sectors: newIPO.sectors, events: [], priceTicks: pool ? [] : initialTicks, trades: []
       };
       store.stocks[sym] = freshStock;
       store.activeSymbol = sym;
-
       if (pool) {
-        await writeStore(store);
-        await dbInsertManyTicks(sym, initialTicks);
-      } else {
-        await writeStore(store);
+        tickCache[sym] = initialTicks;
+        try { await dbInsertManyTicks(sym, initialTicks); } catch (err) { console.warn('[createIPO] tick seed failed:', err.message); }
       }
-    } else {
-      await writeStore(store);
     }
-
+    await writeStore(store);
     return newIPO;
   },
 
@@ -871,7 +872,6 @@ const dbMethods = {
     const store = await readStore();
     const ipo = store.ipos.find(i => i.id === ipoId);
     if (!ipo) throw new Error('IPO not found');
-
     ipo.status = 'LISTED';
     const sym = ipo.symbol;
     const listedPrice = Number((ipo.issuePrice * (1 + ipo.gmpPercent / 100)).toFixed(2));
@@ -881,32 +881,16 @@ const dbMethods = {
         { timestamp: new Date().toISOString(), price: ipo.issuePrice, eventId: null, label: `${sym} IPO Issue Price` },
         { timestamp: new Date().toISOString(), price: listedPrice, eventId: null, label: `${sym} IPO Listing Day Surge (+${ipo.gmpPercent}%)` }
       ];
-
       store.stocks[sym] = {
-        profile: {
-          symbol: sym,
-          name: ipo.name,
-          bio: ipo.bio,
-          startingPrice: ipo.issuePrice,
-          listingPrice: listedPrice,
-          currentPrice: listedPrice,
-          walletBalance: 10000.00,
-          sharesOwned: 0,
-          avgBuyPrice: 0.00,
-          apiKey: '',
-          createdAt: new Date().toISOString()
-        },
+        profile: { symbol: sym, name: ipo.name, bio: ipo.bio, startingPrice: ipo.issuePrice, listingPrice: listedPrice, currentPrice: listedPrice, walletBalance: 10000.00, sharesOwned: 0, avgBuyPrice: 0.00, apiKey: '', createdAt: new Date().toISOString() },
         sectors: ipo.sectors || { Career: 75, Education: 75, Skills: 75, Projects: 75, Finance: 75, Social: 75, Wellbeing: 75 },
-        events: [],
-        priceTicks: pool ? [] : initialTicks,
-        trades: []
+        events: [], priceTicks: pool ? [] : initialTicks, trades: []
       };
-
       if (pool) {
-        await dbInsertManyTicks(sym, initialTicks);
+        tickCache[sym] = initialTicks;
+        try { await dbInsertManyTicks(sym, initialTicks); } catch (err) { console.warn('[listIPO] tick seed failed:', err.message); }
       }
     }
-
     store.activeSymbol = sym;
     await writeStore(store);
     return { ipo, stock: store.stocks[sym] };
@@ -916,11 +900,9 @@ const dbMethods = {
     const store = await readStore();
     const ipo = store.ipos.find(i => i.id === ipoId);
     if (!ipo) throw new Error('IPO not found');
-
     ipo.bidsCount = (ipo.bidsCount || 0) + Number(bidsCount);
     const subMultiplier = Math.min((ipo.bidsCount / 100).toFixed(1), 99.9);
     ipo.subscriptionRatio = `${subMultiplier}x`;
-
     await writeStore(store);
     return ipo;
   },
@@ -930,43 +912,19 @@ const dbMethods = {
     const sym = symbol ? symbol.toUpperCase() : 'NEW';
     if (store.stocks[sym]) throw new Error(`Ticker ${sym} is already listed`);
 
-    const initialTick = {
-      timestamp: new Date().toISOString(),
-      price: Number(startingPrice),
-      eventId: null,
-      label: `${sym} Initial Public Offering (IPO)`
-    };
-
+    const initialTick = { timestamp: new Date().toISOString(), price: Number(startingPrice), eventId: null, label: `${sym} Initial Public Offering (IPO)` };
     const freshStock = {
-      profile: {
-        symbol: sym,
-        name: name || 'Human Stock Ticker',
-        bio: bio || 'Personal Human Life Ticker.',
-        startingPrice: Number(startingPrice),
-        listingPrice: Number(startingPrice),
-        currentPrice: Number(startingPrice),
-        walletBalance: Number(walletBalance),
-        sharesOwned: 0,
-        avgBuyPrice: 0.00,
-        apiKey: '',
-        createdAt: new Date().toISOString()
-      },
-      sectors: initialSectors || {
-        Career: 50, Education: 50, Skills: 50, Projects: 50, Finance: 50, Social: 50, Wellbeing: 50
-      },
-      events: [],
-      priceTicks: pool ? [] : [initialTick],
-      trades: []
+      profile: { symbol: sym, name: name || 'Human Stock Ticker', bio: bio || 'Personal Human Life Ticker.', startingPrice: Number(startingPrice), listingPrice: Number(startingPrice), currentPrice: Number(startingPrice), walletBalance: Number(walletBalance), sharesOwned: 0, avgBuyPrice: 0.00, apiKey: '', createdAt: new Date().toISOString() },
+      sectors: initialSectors || { Career: 50, Education: 50, Skills: 50, Projects: 50, Finance: 50, Social: 50, Wellbeing: 50 },
+      events: [], priceTicks: pool ? [] : [initialTick], trades: []
     };
-
     store.stocks[sym] = freshStock;
     store.activeSymbol = sym;
     await writeStore(store);
-
     if (pool) {
-      await dbInsertTick(sym, initialTick);
+      tickCache[sym] = [initialTick];
+      try { await dbInsertTick(sym, initialTick); } catch (err) { console.warn('[createNewStock] tick insert failed:', err.message); }
     }
-
     return freshStock;
   },
 
@@ -980,20 +938,16 @@ const dbMethods = {
     stock.profile.currentPrice = stock.profile.startingPrice;
 
     if (pool) {
-      // Remove all real life-event ticks; keep market & circuit-reset ticks
-      await dbDeleteEventTicks(sym);
+      if (tickCache[sym]) {
+        tickCache[sym] = tickCache[sym].filter(t => !t.eventId || String(t.eventId).startsWith('circuit-reset'));
+      }
+      try { await dbDeleteEventTicks(sym); } catch (err) { console.warn('[clearEvents] tick delete failed:', err.message); }
     } else {
       stock.priceTicks = stock.priceTicks.filter(t => t.eventId === null);
       if (stock.priceTicks.length === 0) {
-        stock.priceTicks.push({
-          timestamp: new Date().toISOString(),
-          price: stock.profile.startingPrice,
-          eventId: null,
-          label: `${stock.profile.symbol} Initial Public Offering (IPO)`
-        });
+        stock.priceTicks.push({ timestamp: new Date().toISOString(), price: stock.profile.startingPrice, eventId: null, label: `${stock.profile.symbol} Initial Public Offering (IPO)` });
       }
     }
-
     await writeStore(store);
     return store;
   },
@@ -1004,13 +958,14 @@ const dbMethods = {
     if (!store.stocks?.[sym]) throw new Error(`Stock ${sym} not found`);
 
     delete store.stocks[sym];
+    delete tickCache[sym];
+    delete cacheSeedDone[sym];
     const remaining = Object.keys(store.stocks);
     store.activeSymbol = remaining.length > 0 ? remaining[0] : '';
 
     if (pool) {
-      await dbDeleteAllTicks(sym);
+      try { await dbDeleteAllTicks(sym); } catch (err) { console.warn('[deleteStock] tick delete failed:', err.message); }
     }
-
     await writeStore(store);
     return store;
   },
@@ -1029,30 +984,31 @@ const dbMethods = {
     if (!stock) throw new Error('Stock not found');
 
     if (pool) {
-      // Delete all of today's ticks for this symbol and re-insert only keepTicks
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
 
-      await pool.query(
-        `DELETE FROM price_ticks
-          WHERE symbol = $1
-            AND timestamp >= $2`,
-        [sym, todayStart.toISOString()]
-      );
-
-      if (Array.isArray(keepTicks) && keepTicks.length > 0) {
-        await dbInsertManyTicks(sym, keepTicks);
+      // Update in-memory cache
+      if (tickCache[sym]) {
+        tickCache[sym] = tickCache[sym].filter(t => new Date(t.timestamp).getTime() < todayStart.getTime());
+      }
+      if (Array.isArray(keepTicks)) {
+        keepTicks.forEach(t => addCacheTick(sym, t));
       }
 
-      const lastTick = await dbGetLastTick(sym);
-      if (lastTick) {
-        stock.profile.currentPrice = lastTick.price;
+      try {
+        await pool.query('DELETE FROM price_ticks WHERE symbol = $1 AND timestamp >= $2', [sym, todayStart.toISOString()]);
+        if (Array.isArray(keepTicks) && keepTicks.length > 0) {
+          await dbInsertManyTicks(sym, keepTicks);
+        }
+      } catch (err) { console.warn('[pruneTodayTicks] DB operation failed:', err.message); }
+
+      const lastTick = await dbMethods.getPriceTicks(sym);
+      if (lastTick.length > 0) {
+        stock.profile.currentPrice = lastTick[lastTick.length - 1].price;
         await writeStore(store);
       }
-
       return keepTicks || [];
     } else {
-      // File mode
       stock.priceTicks = Array.isArray(keepTicks) ? keepTicks : [];
       if (stock.priceTicks.length > 0) {
         stock.profile.currentPrice = stock.priceTicks[stock.priceTicks.length - 1].price;
@@ -1064,6 +1020,9 @@ const dbMethods = {
 
   resetData: async () => {
     const emptyState = { activeSymbol: '', stocks: {}, ipos: [] };
+    // Clear in-memory cache
+    Object.keys(tickCache).forEach(k => delete tickCache[k]);
+    Object.keys(cacheSeedDone).forEach(k => delete cacheSeedDone[k]);
     await writeStore(emptyState);
     return emptyState;
   }
