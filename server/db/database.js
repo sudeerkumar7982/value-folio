@@ -743,8 +743,8 @@ const dbMethods = {
       const lastCacheMs = lastCache ? new Date(lastCache.timestamp).getTime() : 0;
       const prevWasCircuit = lastCache?.label?.includes('Circuit Limit Hit');
 
-      if (lastCache && !lastCache.eventId && (nowMs - lastCacheMs < 30000) && !prevWasCircuit) {
-        // Update in-place within cache
+      if (lastCache && !lastCache.eventId && (nowMs - lastCacheMs < 5000) && !prevWasCircuit) {
+        // Update in-place within cache (dedup within 5s window to avoid DB flood)
         lastCache.price = clampedPrice;
         lastCache.timestamp = nowIso;
         lastCache.label = finalLabel;
