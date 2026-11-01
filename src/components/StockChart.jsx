@@ -23,6 +23,35 @@ const CrosshairCursor = ({ points, height, top }) => {
   );
 };
 
+function reduceChartPoints(data, maxPoints = 6000) {
+  if (data.length <= maxPoints) return data;
+
+  const eventIndexes = [];
+  data.forEach((point, index) => {
+    if (point.eventId) eventIndexes.push(index);
+  });
+  const targetRegularPoints = Math.max(maxPoints - eventIndexes.length, 4);
+  const bucketCount = Math.max(1, Math.floor(targetRegularPoints / 4));
+  const bucketSize = Math.ceil(data.length / bucketCount);
+  const indexes = new Set(eventIndexes);
+
+  for (let start = 0; start < data.length; start += bucketSize) {
+    const end = Math.min(start + bucketSize, data.length);
+    let minIndex = start;
+    let maxIndex = start;
+    for (let index = start + 1; index < end; index++) {
+      if (data[index].price < data[minIndex].price) minIndex = index;
+      if (data[index].price > data[maxIndex].price) maxIndex = index;
+    }
+    indexes.add(start);
+    indexes.add(end - 1);
+    indexes.add(minIndex);
+    indexes.add(maxIndex);
+  }
+
+  return [...indexes].sort((a, b) => a - b).map(index => data[index]);
+}
+
 export function StockChart({ priceTicks = [], profile, symbol = '' }) {
   const [timeRange, setTimeRange] = useState('1D');
   const [chartType, setChartType] = useState('line'); // 'line', 'area', 'bar'
@@ -232,8 +261,15 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
     };
   }, [ticks, timeRange, profile]);
 
-  const validPrices = formattedData.filter(d => d.price !== null && !isNaN(d.price)).map(d => d.price);
-  const latestPrice = Number(profile?.currentPrice ?? (validPrices.length > 0 ? validPrices[validPrices.length - 1] : openingPrice));
+  const chartData = useMemo(() => reduceChartPoints(formattedData), [formattedData]);
+  const priceBounds = formattedData.reduce((bounds, point) => {
+    if (point.price === null || Number.isNaN(point.price)) return bounds;
+    bounds.min = Math.min(bounds.min, point.price);
+    bounds.max = Math.max(bounds.max, point.price);
+    bounds.latest = point.price;
+    return bounds;
+  }, { min: openingPrice, max: openingPrice, latest: openingPrice });
+  const latestPrice = Number(profile?.currentPrice ?? priceBounds.latest);
   const periodChangeAmt = Number((latestPrice - openingPrice).toFixed(2));
   const periodChangePct = openingPrice > 0 ? Number(((periodChangeAmt / openingPrice) * 100).toFixed(2)) : 0;
   const isUpTrend = periodChangeAmt >= 0;
@@ -241,8 +277,8 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
   // Exact Zerodha / Dixon emerald green for positive trend, vivid red for negative
   const strokeColor = isUpTrend ? '#00B386' : '#EF4444';
 
-  const minVal = validPrices.length > 0 ? Math.min(...validPrices, openingPrice) : openingPrice;
-  const maxVal = validPrices.length > 0 ? Math.max(...validPrices, openingPrice) : openingPrice;
+  const minVal = priceBounds.min;
+  const maxVal = priceBounds.max;
   const rangePadding = Math.max((maxVal - minVal) * 0.12, 1.2);
   const minPrice = Math.max(Number((minVal - rangePadding).toFixed(2)), 0);
   const maxPrice = Number((maxVal + rangePadding).toFixed(2));
@@ -364,7 +400,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
         <ResponsiveContainer width="100%" height={300}>
           {chartType === 'area' ? (
             <AreaChart
-              data={formattedData}
+              data={chartData}
               margin={{ top: 15, right: 10, left: 0, bottom: 0 }}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
@@ -415,7 +451,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
             </AreaChart>
           ) : chartType === 'bar' ? (
             <BarChart
-              data={formattedData.filter((_, idx) => idx % 2 === 0)}
+              data={chartData.filter((_, idx) => idx % 2 === 0)}
               margin={{ top: 15, right: 10, left: 0, bottom: 0 }}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
@@ -456,7 +492,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
           ) : (
             // Pure Crisp Line Chart (Exact Dixon / Zerodha Style)
             <LineChart
-              data={formattedData}
+              data={chartData}
               margin={{ top: 15, right: 10, left: 0, bottom: 0 }}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
@@ -502,7 +538,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
               />
 
               {/* Milestone Event Dots */}
-              {formattedData.map((d, i) => d.eventId && d.price !== null && (
+              {chartData.map((d, i) => d.eventId && d.price !== null && (
                 <ReferenceDot
                   key={i}
                   x={d.timeMs}

@@ -15,12 +15,65 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 let marketLiveEnabled = true;
 
+function limitChartHistory(ticks, maxHistoricalPoints = 20000) {
+  const recentCutoff = Date.now() - 24 * 60 * 60 * 1000;
+  const recentTicks = [];
+  const olderTicks = [];
+  const eventTicks = [];
+
+  ticks.forEach(tick => {
+    if (tick.eventId && !String(tick.eventId).startsWith('circuit-reset')) {
+      eventTicks.push(tick);
+    } else if (new Date(tick.timestamp).getTime() >= recentCutoff) {
+      recentTicks.push(tick);
+    } else {
+      olderTicks.push(tick);
+    }
+  });
+
+  const regularBudget = Math.max(maxHistoricalPoints - eventTicks.length, 4);
+  if (olderTicks.length <= regularBudget) {
+    return [...olderTicks, ...eventTicks, ...recentTicks].sort(
+      (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+    );
+  }
+
+  const bucketCount = Math.max(1, Math.floor(regularBudget / 4));
+  const bucketSize = Math.ceil(olderTicks.length / bucketCount);
+  const selected = new Set(eventTicks);
+  for (let start = 0; start < olderTicks.length; start += bucketSize) {
+    const end = Math.min(start + bucketSize, olderTicks.length);
+    let low = start;
+    let high = start;
+    for (let i = start + 1; i < end; i++) {
+      if (olderTicks[i].price < olderTicks[low].price) low = i;
+      if (olderTicks[i].price > olderTicks[high].price) high = i;
+    }
+    selected.add(olderTicks[start]);
+    selected.add(olderTicks[end - 1]);
+    selected.add(olderTicks[low]);
+    selected.add(olderTicks[high]);
+  }
+
+  return [...selected, ...recentTicks].sort(
+    (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+  );
+}
+
 app.use(cors());
 app.use(express.json());
 
 // Lightweight health check & ping endpoints for 24/7 keep-alive monitors
 app.get('/healthz', (req, res) => res.status(200).send('OK'));
 app.get('/ping', (req, res) => res.status(200).json({ status: 'alive', time: new Date().toISOString() }));
+app.get('/readyz', async (req, res) => {
+  try {
+    await DB.healthCheck();
+    res.status(200).json({ status: 'ready' });
+  } catch (err) {
+    res.status(503).json({ status: 'unavailable', error: err.message });
+  }
+});
 
 // Serve static frontend assets from Vite build dist folder
 app.use(express.static(path.join(__dirname, '../dist')));
@@ -92,7 +145,7 @@ app.get('/api/stock/profile', async (req, res) => {
     const sinceMs = req.query.since ? Date.parse(req.query.since) : null;
     const responseTicks = Number.isFinite(sinceMs)
       ? priceTicks.filter(tick => new Date(tick.timestamp).getTime() > sinceMs)
-      : priceTicks;
+      : limitChartHistory(priceTicks);
 
     if (profile) {
       profile.currentPrice = metrics.currentPrice;
@@ -473,6 +526,7 @@ app.get('*', async (req, res) => {
 
 DB.initialize().then(() => {
   let marketTickInFlight = false;
+  let historyCompactionInFlight = false;
   setInterval(async () => {
     if (!marketLiveEnabled || marketTickInFlight) return;
     marketTickInFlight = true;
@@ -496,6 +550,23 @@ DB.initialize().then(() => {
       marketTickInFlight = false;
     }
   }, 1000);
+
+  const compactHistory = async () => {
+    if (historyCompactionInFlight) return;
+    historyCompactionInFlight = true;
+    try {
+      const removedTicks = await DB.compactPriceHistory();
+      if (removedTicks > 0) {
+        console.log(`[history] Compacted ${removedTicks} aged market ticks`);
+      }
+    } catch (err) {
+      console.error('[history] Price-history compaction failed:', err.message);
+    } finally {
+      historyCompactionInFlight = false;
+    }
+  };
+  setTimeout(compactHistory, 60 * 1000);
+  setInterval(compactHistory, 24 * 60 * 60 * 1000);
 
   // Self-ping to prevent Render free-tier idle spin-down when deployed
   const keepAliveUrl = process.env.RENDER_EXTERNAL_URL || process.env.KEEP_ALIVE_URL || 'https://value-folio.onrender.com';

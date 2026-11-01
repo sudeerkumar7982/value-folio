@@ -137,7 +137,7 @@ export default function App() {
             const previousTicks = prev.priceTicks || [];
             const newTicks = profileData.priceTicks || [];
             const priceTicks = newTicks.length > 0
-              ? [...previousTicks, ...newTicks].slice(-43200)
+              ? [...previousTicks, ...newTicks].slice(-86400)
               : previousTicks;
             const latestTick = priceTicks[priceTicks.length - 1];
             if (latestTick) lastTickTimestampRef.current = latestTick.timestamp;

@@ -12,7 +12,7 @@ A full-stack Human Life Stock Market platform where personal life events are ana
 - **Zerodha/Dixon Technologies Trading UI**: Complete stock overview, large price deltas, dashed opening baseline `ReferenceLine`, and centered time range pills (`1D`, `1W`, `1M`, `3M`, `6M`, `1Y`, `3Y`, `5Y`, `All`).
 - **AI Sentiment Classifier**: Evaluates personal life events, determines stock price impact %, and updates 7 human life sector scores (Career, Education, Skills, Projects, Finance, Social, Wellbeing).
 - **Virtual Share Trading Exchange**: Full BUY / SELL order execution, wallet balance tracking, and order history ledger.
-- **Permanent Data Retention**: 100% price tick and event logging retention without limit caps.
+- **Durable Market History**: One-second prices for the latest 24 hours, minute samples through 30 days, 15-minute samples through one year, and hourly samples after that. Life-event ticks are preserved at their original timestamps.
 
 ## 💻 Local Setup
 ```bash
@@ -38,3 +38,5 @@ Neon currently describes Free as a permanent plan, not a trial, with limits incl
 If you already deployed the Render Postgres Blueprint, changing this file does not delete that database or automatically replace an existing `DATABASE_URL` reference. Set `DATABASE_URL` to Neon manually in the Render Dashboard. Export and import any existing data you need before deleting the old database.
 
 Without `DATABASE_URL`, local development uses the JSON file; production startup requires the variable to avoid silently using Render's ephemeral filesystem.
+
+The backend exposes `/readyz` for database-aware health checks. Render should route traffic only while the persistent database is reachable. Brief database outages use the live process cache for reads and retry queued price/state writes; a process restart during an outage can still lose uncommitted in-memory data. Keep regular database backups enabled for disaster recovery.

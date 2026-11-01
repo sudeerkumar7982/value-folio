@@ -438,7 +438,7 @@ export const API = {
       };
     }
 
-    if (data && data.profile && !since) {
+    if (data && data.profile && !data.metrics) {
       const metrics = computeMetrics(data.priceTicks || [], { profile: data.profile, events: data.events });
       data.profile.currentPrice = metrics.currentPrice;
       data.metrics = {
