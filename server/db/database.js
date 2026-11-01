@@ -311,32 +311,34 @@ async function readStore() {
  */
 let writeStoreTimeout = null;
 async function writeStore(data) {
-  // Debounce writes to Neon or file to avoid frequent DB hits
+  // Debounce writes to Neon or file to avoid frequent DB hits (used by high-freq market ticks)
   if (writeStoreTimeout) clearTimeout(writeStoreTimeout);
-  writeStoreTimeout = setTimeout(async () => {
-    if (pool) {
-      // Strip priceTicks before persisting blob
-      const cleanStocks = {};
-      for (const [sym, stock] of Object.entries(data.stocks || {})) {
-        const { priceTicks, ...stockWithoutTicks } = stock; // eslint-disable-line no-unused-vars
-        cleanStocks[sym] = stockWithoutTicks;
-      }
-      const cleanData = { ...data, stocks: cleanStocks };
-      try {
-        await pool.query(
-          `INSERT INTO value_folio_state (id, data)
-                VALUES (1, $1::jsonb)
-                ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data`,
-          [JSON.stringify(cleanData)]
-        );
-      } catch (err) {
-        console.warn('[writeStore] DB write failed (storage full?):', err.message);
-      }
-    } else {
-      fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+  writeStoreTimeout = setTimeout(() => writeStoreNow(data), 5000);
+}
+
+/** Immediate (non-debounced) write — use for IPO/stock creation/deletion where data must persist NOW. */
+async function writeStoreNow(data) {
+  if (writeStoreTimeout) { clearTimeout(writeStoreTimeout); writeStoreTimeout = null; }
+  if (pool) {
+    const cleanStocks = {};
+    for (const [sym, stock] of Object.entries(data.stocks || {})) {
+      const { priceTicks, ...stockWithoutTicks } = stock; // eslint-disable-line no-unused-vars
+      cleanStocks[sym] = stockWithoutTicks;
     }
-    writeStoreTimeout = null;
-  }, 5000);
+    const cleanData = { ...data, stocks: cleanStocks };
+    try {
+      await pool.query(
+        `INSERT INTO value_folio_state (id, data)
+              VALUES (1, $1::jsonb)
+              ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data`,
+        [JSON.stringify(cleanData)]
+      );
+    } catch (err) {
+      console.warn('[writeStoreNow] DB write failed (storage full?):', err.message);
+    }
+  } else {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+  }
 }
 
 
@@ -910,7 +912,7 @@ const dbMethods = {
         try { await dbInsertManyTicks(sym, initialTicks); } catch (err) { console.warn('[createIPO] tick seed failed:', err.message); }
       }
     }
-    persistStore(store);
+    await writeStoreNow(store); // Immediate write — IPO must appear instantly in DB
     return newIPO;
   },
 
@@ -938,7 +940,7 @@ const dbMethods = {
       }
     }
     store.activeSymbol = sym;
-    persistStore(store);
+    await writeStoreNow(store); // Immediate write — stock listing must persist now
     return { ipo, stock: store.stocks[sym] };
   },
 
@@ -949,7 +951,7 @@ const dbMethods = {
     ipo.bidsCount = (ipo.bidsCount || 0) + Number(bidsCount);
     const subMultiplier = Math.min((ipo.bidsCount / 100).toFixed(1), 99.9);
     ipo.subscriptionRatio = `${subMultiplier}x`;
-    persistStore(store);
+    await writeStoreNow(store);
     return ipo;
   },
 
@@ -966,7 +968,7 @@ const dbMethods = {
     };
     store.stocks[sym] = freshStock;
     store.activeSymbol = sym;
-    persistStore(store);
+    await writeStoreNow(store); // Immediate — new stock must be visible right away
     if (pool) {
       tickCache[sym] = [initialTick];
       try { await dbInsertTick(sym, initialTick); } catch (err) { console.warn('[createNewStock] tick insert failed:', err.message); }
@@ -1012,14 +1014,14 @@ const dbMethods = {
     if (pool) {
       try { await dbDeleteAllTicks(sym); } catch (err) { console.warn('[deleteStock] tick delete failed:', err.message); }
     }
-    persistStore(store);
+    await writeStoreNow(store); // Immediate — deletion must be visible right away
     return store;
   },
 
   deleteIPO: async (ipoId) => {
     const store = await readStore();
     store.ipos = (store.ipos || []).filter(i => i.id !== ipoId);
-    persistStore(store);
+    await writeStoreNow(store); // Immediate — deletion must be visible right away
     return store.ipos;
   },
 
