@@ -571,8 +571,17 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
                 fill="url(#stockAreaGradient)"
                 dot={false}
                 isAnimationActive={false}
-                activeDot={{ r: 5, fill: strokeColor, stroke: '#FFFFFF', strokeWidth: 2 }}
               />
+              {chartData.length > 0 && (
+                <ReferenceDot
+                  x={chartData[chartData.length - 1].timeMs}
+                  y={chartData[chartData.length - 1].price}
+                  r={4}
+                  fill={strokeColor}
+                  stroke="#FFFFFF"
+                  strokeWidth={2}
+                />
+              )}
             </AreaChart>
           ) : chartType === 'bar' ? (
             <BarChart
@@ -659,21 +668,18 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
                 strokeWidth={2.6}
                 dot={false}
                 isAnimationActive={false}
-                activeDot={{ r: 5, fill: strokeColor, stroke: '#FFFFFF', strokeWidth: 2 }}
               />
 
-              {/* Milestone Event Dots */}
-              {chartData.map((d, i) => d.eventId && d.price !== null && (
+              {chartData.length > 0 && (
                 <ReferenceDot
-                  key={i}
-                  x={d.timeMs}
-                  y={d.price}
-                  r={5}
-                  fill={d.diff >= 0 ? '#00B386' : '#EF4444'}
+                  x={chartData[chartData.length - 1].timeMs}
+                  y={chartData[chartData.length - 1].price}
+                  r={4}
+                  fill={strokeColor}
                   stroke="#FFFFFF"
                   strokeWidth={2}
                 />
-              ))}
+              )}
             </LineChart>
           )}
         </ResponsiveContainer>
