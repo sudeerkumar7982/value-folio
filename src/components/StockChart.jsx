@@ -4,6 +4,7 @@ import {
   XAxis, YAxis, Tooltip, ReferenceLine, ReferenceDot
 } from 'recharts';
 import { Bell, Bookmark, Link2, SlidersHorizontal, Check, RefreshCw } from 'lucide-react';
+import { getMarketSessionFor, getMarketStatus, isMarketOpenAt } from '../../shared/marketCalendar.js';
 
 // ── Custom Crosshair Vertical Cursor ──
 const CrosshairCursor = ({ points, height, top }) => {
@@ -77,27 +78,27 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
     const sortedTicks = [...ticks].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
     if (timeRange === '1D') {
-      // Market Session Start: 9:15 AM today (standard NSE/BSE / Dixon / Zerodha session)
-      const sessionOpen = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 15, 0, 0);
-      let sessionStartMs = sessionOpen.getTime();
-      // If currently before 9:15 AM today, show past 6 hours
-      if (sessionStartMs > now.getTime()) {
-        sessionStartMs = now.getTime() - (6 * 3600 * 1000);
-      }
-
-      const todayTicks = sortedTicks.filter(t => new Date(t.timestamp).getTime() >= sessionStartMs);
-      const ticksBeforeSession = sortedTicks.filter(t => new Date(t.timestamp).getTime() < sessionStartMs);
-
-      let openPrice;
-      if (ticksBeforeSession.length > 0) {
-        openPrice = ticksBeforeSession[ticksBeforeSession.length - 1].price;
-      } else if (todayTicks.length > 0) {
-        openPrice = todayTicks[0].price;
-      } else if (profile?.startingPrice) {
-        openPrice = profile.startingPrice;
-      } else {
-        openPrice = 100;
-      }
+      const currentSession = getMarketSessionFor(now.getTime());
+      const latestMarketTick = [...sortedTicks].reverse().find(tick => isMarketOpenAt(Date.parse(tick.timestamp)));
+      const session = currentSession ||
+        (latestMarketTick && getMarketSessionFor(Date.parse(latestMarketTick.timestamp))) ||
+        (() => {
+          const status = getMarketStatus(now.getTime());
+          return { marketOpen: Date.parse(status.opensAt), marketClose: Date.parse(status.closesAt) };
+        })();
+      const { marketOpen: sessionStartMs, marketClose: sessionEndMs } = session;
+      const sessionTicks = sortedTicks.filter(tick => {
+        const timestamp = Date.parse(tick.timestamp);
+        return timestamp >= sessionStartMs && timestamp < sessionEndMs && isMarketOpenAt(timestamp);
+      });
+      const ticksBeforeSession = sortedTicks.filter(tick => {
+        const timestamp = Date.parse(tick.timestamp);
+        return timestamp < sessionStartMs && isMarketOpenAt(timestamp);
+      });
+      const openPrice = sessionTicks[0]?.price ??
+        ticksBeforeSession[ticksBeforeSession.length - 1]?.price ??
+        profile?.startingPrice ??
+        100;
 
       const dataPoints = [];
 
@@ -106,7 +107,11 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
         timeMs: sessionStartMs,
         timestamp: new Date(sessionStartMs).toISOString(),
         dateLabel: '09:15 AM',
-        fullDate: new Date(sessionStartMs).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
+        fullDate: new Date(sessionStartMs).toLocaleString('en-US', {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+          timeZone: 'Asia/Kolkata'
+        }),
         price: openPrice,
         label: '🔔 Market Open Baseline (09:15 AM)',
         eventId: null,
@@ -115,11 +120,17 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       });
 
       let prevP = openPrice;
-      todayTicks.forEach(tick => {
+      sessionTicks.forEach(tick => {
         if (tick.eventId && String(tick.eventId).startsWith('circuit-reset')) return;
 
         const d = new Date(tick.timestamp);
-        const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+        const timeStr = d.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true,
+          timeZone: 'Asia/Kolkata'
+        });
         const price = tick.price;
         const diff = Number((price - prevP).toFixed(2));
         const diffPct = prevP > 0 ? Number(((diff / prevP) * 100).toFixed(2)) : 0;
@@ -129,7 +140,11 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
           timeMs: d.getTime(),
           timestamp: tick.timestamp,
           dateLabel: timeStr,
-          fullDate: d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'medium' }),
+          fullDate: d.toLocaleString('en-US', {
+            dateStyle: 'medium',
+            timeStyle: 'medium',
+            timeZone: 'Asia/Kolkata'
+          }),
           price,
           label: tick.label || 'Live Price Tick',
           eventId: tick.eventId,
@@ -139,15 +154,28 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       });
 
 
-      // Ensure the latest point anchors to right now
-      const latestPrice = Number(profile?.currentPrice ?? (sortedTicks.length > 0 ? sortedTicks[sortedTicks.length - 1].price : openPrice));
+      // Only anchor to the live price while the exchange is open.
+      const latestPrice = Number(
+        isMarketOpenAt(now.getTime())
+          ? profile?.currentPrice ?? sessionTicks[sessionTicks.length - 1]?.price ?? openPrice
+          : sessionTicks[sessionTicks.length - 1]?.price ?? openPrice
+      );
       const lastPointMs = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].timeMs : sessionStartMs;
-      if (now.getTime() - lastPointMs > 4000) {
+      if (isMarketOpenAt(now.getTime()) && now.getTime() - lastPointMs > 4000) {
         dataPoints.push({
           timeMs: now.getTime(),
           timestamp: now.toISOString(),
-          dateLabel: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
-          fullDate: now.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
+          dateLabel: now.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+            timeZone: 'Asia/Kolkata'
+          }),
+          fullDate: now.toLocaleString('en-US', {
+            dateStyle: 'medium',
+            timeStyle: 'short',
+            timeZone: 'Asia/Kolkata'
+          }),
           price: latestPrice,
           label: 'Current Live Market Price',
           eventId: null,
@@ -159,8 +187,13 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       return {
         formattedData: dataPoints,
         openingPrice: openPrice,
-        xDomain: [sessionStartMs, Math.max(now.getTime(), sessionStartMs + 3600000)],
-        xFormatter: (val) => new Date(val).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+        xDomain: [sessionStartMs, sessionEndMs],
+        xFormatter: (val) => new Date(val).toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+          timeZone: 'Asia/Kolkata'
+        })
       };
     }
 
@@ -356,7 +389,11 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
                 <span className="text-slate-700 font-semibold">{hoverData.label}</span>
               </span>
             ) : (
-              <span>24/7 continuous tick engine active • {formattedData.length} live data points</span>
+              <span>
+                {timeRange === '1D'
+                  ? 'NSE session • 9:15 AM – 3:30 PM IST'
+                  : 'Historical market data'} • {formattedData.length} chart data points
+              </span>
             )}
           </div>
         </div>
