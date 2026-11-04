@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ensureRichIntradayHistory, simulateCatchUpTicks } from './marketSimulation.js';
-import { isMarketOpenAt } from './marketCalendar.js';
+import { getTradingSessionsBetween, isMarketOpenAt } from './marketCalendar.js';
 
 test('market opens and closes at the specified IST times', () => {
   assert.equal(isMarketOpenAt(Date.parse('2026-03-04T03:44:59.999Z')), false);
@@ -12,6 +12,25 @@ test('market opens and closes at the specified IST times', () => {
 test('market is closed on weekends and NSE trading holidays', () => {
   assert.equal(isMarketOpenAt(Date.parse('2026-03-07T05:00:00.000Z')), false);
   assert.equal(isMarketOpenAt(Date.parse('2026-03-03T05:00:00.000Z')), false);
+});
+
+test('historical chart sessions exclude non-trading hours and compress overnight gaps', () => {
+  const sessions = getTradingSessionsBetween(
+    Date.parse('2026-03-06T03:00:00.000Z'),
+    Date.parse('2026-03-09T12:00:00.000Z')
+  );
+
+  assert.equal(sessions.length, 2);
+  assert.deepEqual(sessions.map(session => session.end - session.start), [
+    6.25 * 60 * 60 * 1000,
+    6.25 * 60 * 60 * 1000
+  ]);
+  assert.equal(sessions[0].offset, 0);
+  assert.equal(sessions[1].offset, sessions[0].end - sessions[0].start);
+  assert.ok(sessions.every(session =>
+    isMarketOpenAt(session.start) &&
+    !isMarketOpenAt(session.end)
+  ));
 });
 
 test('intraday history is not generated before market open or on a holiday', () => {

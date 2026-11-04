@@ -1,5 +1,6 @@
 const TIME_ZONE = 'Asia/Kolkata';
 const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
 const MARKET_OPEN_MINUTES = 9 * 60 + 15;
 const MARKET_CLOSE_MINUTES = 15 * 60 + 30;
 
@@ -106,4 +107,30 @@ export function getMarketSessionFor(timestampMs = Date.now()) {
   }
 
   return getSessionBounds(exchangeDate);
+}
+
+export function getTradingSessionsBetween(startMs, endMs) {
+  if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) return [];
+
+  const startDate = getExchangeDate(startMs);
+  const endDate = getExchangeDate(endMs);
+  let dateCursor = Date.UTC(startDate.year, startDate.month, startDate.day, 12);
+  const lastDate = Date.UTC(endDate.year, endDate.month, endDate.day, 12);
+  const sessions = [];
+  let tradingDuration = 0;
+
+  while (dateCursor <= lastDate) {
+    const session = getMarketSessionFor(dateCursor);
+    if (session) {
+      const start = Math.max(startMs, session.marketOpen);
+      const end = Math.min(endMs, session.marketClose);
+      if (end > start) {
+        sessions.push({ start, end, offset: tradingDuration });
+        tradingDuration += end - start;
+      }
+    }
+    dateCursor += DAY_MS;
+  }
+
+  return sessions;
 }

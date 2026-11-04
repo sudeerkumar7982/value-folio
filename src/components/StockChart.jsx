@@ -4,7 +4,12 @@ import {
   XAxis, YAxis, Tooltip, ReferenceLine, ReferenceDot
 } from 'recharts';
 import { Bell, Bookmark, Link2, SlidersHorizontal, Check, RefreshCw } from 'lucide-react';
-import { getMarketSessionFor, getMarketStatus, isMarketOpenAt } from '../../shared/marketCalendar.js';
+import {
+  getMarketSessionFor,
+  getMarketStatus,
+  getTradingSessionsBetween,
+  isMarketOpenAt
+} from '../../shared/marketCalendar.js';
 
 // ── Custom Crosshair Vertical Cursor ──
 const CrosshairCursor = ({ points, height, top }) => {
@@ -207,45 +212,74 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
     else if (timeRange === '3Y') daysBack = 3 * 365;
     else if (timeRange === '5Y') daysBack = 5 * 365;
 
+    const marketTicks = sortedTicks.filter(tick => isMarketOpenAt(Date.parse(tick.timestamp)));
     const windowStartMs = daysBack !== null
       ? now.getTime() - (daysBack * 24 * 60 * 60 * 1000)
-      : (sortedTicks[0] ? new Date(sortedTicks[0].timestamp).getTime() : now.getTime() - 86400000);
+      : (marketTicks[0] ? Date.parse(marketTicks[0].timestamp) : now.getTime() - 86400000);
 
-    let filtered = sortedTicks;
-    let openPrice = sortedTicks[0]?.price || profile?.startingPrice || 100;
+    const filtered = marketTicks.filter(tick => Date.parse(tick.timestamp) >= windowStartMs);
+    let openPrice = marketTicks[0]?.price || profile?.startingPrice || 100;
 
     if (daysBack !== null) {
-      filtered = sortedTicks.filter(t => new Date(t.timestamp).getTime() >= windowStartMs);
-      const beforeWindow = sortedTicks.filter(t => new Date(t.timestamp).getTime() < windowStartMs);
+      const beforeWindow = marketTicks.filter(tick => Date.parse(tick.timestamp) < windowStartMs);
       if (beforeWindow.length > 0) openPrice = beforeWindow[beforeWindow.length - 1].price;
-      else if (sortedTicks.length > 0) openPrice = sortedTicks[0].price;
+      else if (marketTicks.length > 0) openPrice = marketTicks[0].price;
       else if (profile?.startingPrice) openPrice = profile.startingPrice;
     }
 
+    const sessions = getTradingSessionsBetween(windowStartMs, now.getTime());
+    const sessionsByDate = new Map(
+      sessions.map(session => [getMarketStatus(session.start).date, session])
+    );
+    const tradingDuration = sessions.reduce((duration, session) => {
+      return duration + session.end - session.start;
+    }, 0);
     let prevP = openPrice;
     const dataPoints = [];
 
-    const startDate = new Date(windowStartMs);
-    dataPoints.push({
-      timeMs: windowStartMs,
-      timestamp: startDate.toISOString(),
-      dateLabel: startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      fullDate: startDate.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
-      price: prevP,
-      label: timeRange === 'ALL' ? 'IPO Listing Date' : `${timeRange} Opening Baseline`,
-      eventId: null,
-      diff: 0,
-      diffPct: 0
-    });
+    if (sessions.length > 0) {
+      const startDate = new Date(sessions[0].start);
+      dataPoints.push({
+        timeMs: 0,
+        timestamp: startDate.toISOString(),
+        dateLabel: startDate.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          timeZone: 'Asia/Kolkata'
+        }),
+        fullDate: startDate.toLocaleString('en-US', {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+          timeZone: 'Asia/Kolkata'
+        }),
+        price: prevP,
+        label: timeRange === 'ALL' ? 'IPO Listing Date' : `${timeRange} Opening Baseline`,
+        eventId: null,
+        diff: 0,
+        diffPct: 0
+      });
+    }
 
     filtered.forEach((tick) => {
-      const d = new Date(tick.timestamp);
-      if (d.getTime() < windowStartMs) return;
+      const timestampMs = Date.parse(tick.timestamp);
+      const session = sessionsByDate.get(getMarketStatus(timestampMs).date);
+      if (!session || timestampMs < session.start || timestampMs >= session.end) return;
+      const d = new Date(timestampMs);
 
       let dateLabel;
-      if (timeRange === '1W') dateLabel = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-      else if (timeRange === '1M' || timeRange === '3M') dateLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      else dateLabel = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+      if (timeRange === '1W') {
+        dateLabel = d.toLocaleDateString('en-US', {
+          weekday: 'short', month: 'short', day: 'numeric', timeZone: 'Asia/Kolkata'
+        });
+      } else if (timeRange === '1M' || timeRange === '3M') {
+        dateLabel = d.toLocaleDateString('en-US', {
+          month: 'short', day: 'numeric', timeZone: 'Asia/Kolkata'
+        });
+      } else {
+        dateLabel = d.toLocaleDateString('en-US', {
+          month: 'short', year: '2-digit', timeZone: 'Asia/Kolkata'
+        });
+      }
 
       const price = tick.price;
       const diff = Number((price - prevP).toFixed(2));
@@ -253,10 +287,14 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       prevP = price;
 
       dataPoints.push({
-        timeMs: d.getTime(),
+        timeMs: session.offset + timestampMs - session.start,
         timestamp: tick.timestamp,
         dateLabel,
-        fullDate: d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
+        fullDate: d.toLocaleString('en-US', {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+          timeZone: 'Asia/Kolkata'
+        }),
         price,
         label: tick.label || 'Price Tick',
         eventId: tick.eventId,
@@ -265,14 +303,30 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       });
     });
 
-    const latestPrice = Number(profile?.currentPrice ?? (sortedTicks.length > 0 ? sortedTicks[sortedTicks.length - 1].price : openPrice));
-    const lastPointMs = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].timeMs : windowStartMs;
-    if (now.getTime() - lastPointMs > 60000) {
+    const latestSession = sessions[sessions.length - 1];
+    const currentMarketOpen = isMarketOpenAt(now.getTime());
+    const latestPrice = Number(
+      currentMarketOpen
+        ? profile?.currentPrice ?? marketTicks[marketTicks.length - 1]?.price ?? openPrice
+        : marketTicks[marketTicks.length - 1]?.price ?? openPrice
+    );
+    const lastPointTimestamp = dataPoints[dataPoints.length - 1]?.timestamp;
+    if (currentMarketOpen && latestSession &&
+      now.getTime() - (lastPointTimestamp ? Date.parse(lastPointTimestamp) : latestSession.start) > 60000) {
+      const dateLabel = now.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        timeZone: 'Asia/Kolkata'
+      });
       dataPoints.push({
-        timeMs: now.getTime(),
+        timeMs: latestSession.offset + now.getTime() - latestSession.start,
         timestamp: now.toISOString(),
-        dateLabel: now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        fullDate: now.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
+        dateLabel,
+        fullDate: now.toLocaleString('en-US', {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+          timeZone: 'Asia/Kolkata'
+        }),
         price: latestPrice,
         label: 'Current Live Market Price',
         eventId: null,
@@ -284,12 +338,25 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
     return {
       formattedData: dataPoints,
       openingPrice: openPrice,
-      xDomain: [windowStartMs, Math.max(now.getTime(), windowStartMs + 86400000)],
+      xDomain: [0, Math.max(tradingDuration, 1)],
       xFormatter: (val) => {
-        const d = new Date(val);
-        if (timeRange === '1W') return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-        if (timeRange === '1M' || timeRange === '3M') return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+        const numericValue = Math.min(Math.max(Number(val), 0), tradingDuration);
+        const session = sessions.find(item => numericValue <= item.offset + item.end - item.start);
+        if (!session) return '';
+        const timestamp = new Date(session.start + numericValue - session.offset);
+        if (timeRange === '1W') {
+          return timestamp.toLocaleDateString('en-US', {
+            weekday: 'short', month: 'short', day: 'numeric', timeZone: 'Asia/Kolkata'
+          });
+        }
+        if (timeRange === '1M' || timeRange === '3M') {
+          return timestamp.toLocaleDateString('en-US', {
+            month: 'short', day: 'numeric', timeZone: 'Asia/Kolkata'
+          });
+        }
+        return timestamp.toLocaleDateString('en-US', {
+          month: 'short', year: '2-digit', timeZone: 'Asia/Kolkata'
+        });
       }
     };
   }, [ticks, timeRange, profile]);
