@@ -188,6 +188,11 @@ export default function App() {
     }
   };
 
+  const handleEditEvent = async (id, updates) => {
+    await API.updateEvent(id, updates, activeSymbol);
+    await loadData(activeSymbol);
+  };
+
   const handleClearEvents = async () => {
     if (window.confirm('Delete all human news feed events? Stock price will return to base IPO listing price.')) {
       await API.clearEvents();
@@ -368,6 +373,7 @@ export default function App() {
                 events={events}
                 onClearEvents={handleClearEvents}
                 onDeleteSingleEvent={handleDeleteSingleEvent}
+                onEditEvent={handleEditEvent}
               />
             </div>
           ) : (

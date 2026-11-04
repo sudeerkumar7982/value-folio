@@ -691,6 +691,43 @@ const dbMethods = {
     return event;
   },
 
+  updateEvent: async (eventId, updates, symbol) => {
+    const store = await readStore();
+    const sym = symbol || store.activeSymbol;
+    const stock = store.stocks[sym];
+    if (!stock) return null;
+
+    const event = stock.events.find(item => item.id === eventId);
+    if (!event) return null;
+
+    if (pool) {
+      await waitForTickFlush();
+      await pool.query(
+        'UPDATE price_ticks SET label = $1 WHERE symbol = $2 AND event_id = $3',
+        [updates.title, sym, eventId]
+      );
+    }
+
+    event.title = updates.title;
+    event.description = updates.description;
+
+    if (pool) {
+      tickCache[sym]?.forEach(tick => {
+        if (tick.eventId === eventId) tick.label = event.title;
+      });
+      pendingDbTicks[sym]?.forEach(tick => {
+        if (tick.eventId === eventId) tick.label = event.title;
+      });
+    } else {
+      stock.priceTicks?.forEach(tick => {
+        if (tick.eventId === eventId) tick.label = event.title;
+      });
+    }
+
+    await writeStoreNow(store);
+    return event;
+  },
+
   deleteEvent: async (eventId, symbol) => {
     const store = await readStore();
     const sym = symbol || store.activeSymbol;

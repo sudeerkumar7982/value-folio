@@ -1,12 +1,46 @@
 import React, { useState } from 'react';
-import { Newspaper, Search, Filter, ArrowUpRight, ArrowDownRight, Tag, Trash2 } from 'lucide-react';
+import { Newspaper, Search, Filter, ArrowUpRight, ArrowDownRight, Tag, Trash2, Pencil, Save, X } from 'lucide-react';
 
-export function LifeNewsFeed({ events, onClearEvents, onDeleteSingleEvent }) {
+export function LifeNewsFeed({ events, onClearEvents, onDeleteSingleEvent, onEditEvent }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sectorFilter, setSectorFilter] = useState('ALL');
   const [sentimentFilter, setSentimentFilter] = useState('ALL');
+  const [editingEventId, setEditingEventId] = useState(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [savingEvent, setSavingEvent] = useState(false);
+  const [editError, setEditError] = useState('');
 
   if (!events) return null;
+
+  const startEditing = (evt) => {
+    setEditingEventId(evt.id);
+    setEditTitle(evt.title);
+    setEditDescription(evt.description || '');
+    setEditError('');
+  };
+
+  const cancelEditing = () => {
+    setEditingEventId(null);
+    setEditError('');
+  };
+
+  const saveEditing = async (event, eventId) => {
+    event.preventDefault();
+    const title = editTitle.trim();
+    if (!title) return;
+
+    setSavingEvent(true);
+    setEditError('');
+    try {
+      await onEditEvent(eventId, { title, description: editDescription });
+      setEditingEventId(null);
+    } catch (error) {
+      setEditError(error.message || 'Unable to save event details.');
+    } finally {
+      setSavingEvent(false);
+    }
+  };
 
   const filtered = events.filter((evt) => {
     const matchesSearch = evt.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -88,6 +122,7 @@ export function LifeNewsFeed({ events, onClearEvents, onDeleteSingleEvent }) {
         {filtered.length > 0 ? (
           filtered.map((evt) => {
             const isPos = evt.impactPercent >= 0;
+            const isEditing = editingEventId === evt.id;
             const dateStr = new Date(evt.timestamp).toLocaleString('en-US', {
               month: 'short',
               day: 'numeric',
@@ -130,18 +165,64 @@ export function LifeNewsFeed({ events, onClearEvents, onDeleteSingleEvent }) {
                       </span>
                     </div>
 
-                    <h4 className="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
-                      {evt.title}
-                    </h4>
-
-                    {evt.description && (
-                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                        {evt.description}
-                      </p>
+                    {isEditing ? (
+                      <form
+                        onSubmit={(event) => saveEditing(event, evt.id)}
+                        className="space-y-2"
+                      >
+                        <input
+                          type="text"
+                          aria-label="Event title"
+                          required
+                          maxLength={200}
+                          value={editTitle}
+                          onChange={(event) => setEditTitle(event.target.value)}
+                          className="w-full bg-white border border-[#E2E0D8] rounded-lg px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-blue-500"
+                        />
+                        <textarea
+                          aria-label="Event description"
+                          rows={3}
+                          maxLength={2000}
+                          value={editDescription}
+                          onChange={(event) => setEditDescription(event.target.value)}
+                          className="w-full bg-white border border-[#E2E0D8] rounded-lg px-3 py-2 text-xs text-slate-700 outline-none focus:border-blue-500 resize-y"
+                        />
+                        {editError && <p role="alert" className="text-xs text-rose-600">{editError}</p>}
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="submit"
+                            disabled={savingEvent || !editTitle.trim()}
+                            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5"
+                          >
+                            <Save className="w-3.5 h-3.5" />
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            disabled={savingEvent}
+                            onClick={cancelEditing}
+                            className="bg-white border border-[#E2E0D8] hover:bg-slate-50 text-slate-600 text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <>
+                        <h4 className="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
+                          {evt.title}
+                        </h4>
+                        {evt.description && (
+                          <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                            {evt.description}
+                          </p>
+                        )}
+                      </>
                     )}
                   </div>
 
-                  {/* Price Movement Box & Delete Button */}
+                  {/* Price Movement Box & Event Actions */}
                   <div className="flex items-center space-x-2 self-start">
                     <div className="bg-white border border-[#E2E0D8] px-3 py-2 rounded-xl text-right font-mono min-w-[110px]">
                       <span className="text-[10px] text-slate-400 block">PRICE IMPACT</span>
@@ -153,7 +234,16 @@ export function LifeNewsFeed({ events, onClearEvents, onDeleteSingleEvent }) {
                       </div>
                     </div>
 
-                    {/* Delete Single Event Button */}
+                    <button
+                      onClick={() => startEditing(evt)}
+                      disabled={savingEvent}
+                      className="p-2 text-slate-400 hover:text-blue-600 bg-white hover:bg-blue-50 border border-[#E2E0D8] hover:border-blue-200 rounded-xl transition-all disabled:opacity-50"
+                      title="Edit event title and description"
+                      aria-label={`Edit ${evt.title}`}
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+
                     <button
                       onClick={() => onDeleteSingleEvent && onDeleteSingleEvent(evt.id)}
                       className="p-2 text-slate-400 hover:text-rose-600 bg-white hover:bg-rose-50 border border-[#E2E0D8] hover:border-rose-200 rounded-xl transition-all"

@@ -479,6 +479,56 @@ export const API = {
     return stock ? stock.events || [] : [];
   },
 
+  updateEvent: async (id, { title, description }, symbol = null) => {
+    const store = getLocalStore();
+    const sym = symbol || store.activeSymbol || '';
+    let response;
+
+    try {
+      response = await apiFetch('/api/events/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, title, description, symbol: sym })
+      });
+    } catch (error) {
+      console.warn('Backend server updateEvent unavailable, updating local store:', error);
+    }
+
+    if (response) {
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to update event (${response.status}).`);
+      }
+
+      const { event } = await response.json();
+      const localStock = store.stocks[sym];
+      if (localStock) {
+        const localEvent = localStock.events.find(item => item.id === id);
+        if (localEvent) {
+          localEvent.title = event.title;
+          localEvent.description = event.description;
+        }
+        localStock.priceTicks?.forEach(tick => {
+          if (tick.eventId === id) tick.label = event.title;
+        });
+        saveLocalStore(store);
+      }
+      return event;
+    }
+
+    const localStock = store.stocks[sym];
+    const localEvent = localStock?.events.find(item => item.id === id);
+    if (!localEvent) throw new Error('Event not found.');
+
+    localEvent.title = title.trim();
+    localEvent.description = description;
+    localStock.priceTicks?.forEach(tick => {
+      if (tick.eventId === id) tick.label = localEvent.title;
+    });
+    saveLocalStore(store);
+    return localEvent;
+  },
+
   getIPOs: async () => {
     try {
       const res = await apiFetch('/api/ipos');

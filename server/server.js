@@ -231,6 +231,29 @@ app.post('/api/events/delete', async (req, res) => {
   }
 });
 
+// Update the title and description of a single news event
+app.post('/api/events/update', async (req, res) => {
+  try {
+    const { id, title, description, symbol } = req.body;
+    if (!id) return res.status(400).json({ error: 'Event ID required' });
+    if (typeof title !== 'string' || !title.trim()) {
+      return res.status(400).json({ error: 'Event title is required' });
+    }
+    if (title.trim().length > 200 || typeof description !== 'string' || description.length > 2000) {
+      return res.status(400).json({ error: 'Event title or description is invalid' });
+    }
+
+    const event = await DB.updateEvent(id, {
+      title: title.trim(),
+      description
+    }, symbol);
+    if (!event) return res.status(404).json({ error: 'Event not found' });
+    res.json({ success: true, event });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Clear all newsfeed events
 app.post('/api/events/clear', async (req, res) => {
   try {
