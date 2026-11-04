@@ -1,12 +1,47 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ensureRichIntradayHistory, simulateCatchUpTicks } from './marketSimulation.js';
+import {
+  calculateMarketMovePercent,
+  calculateSentimentDriftPercent,
+  ensureRichIntradayHistory,
+  getSentimentCircuitPercentages,
+  simulateCatchUpTicks
+} from './marketSimulation.js';
 import { getTradingSessionsBetween, isMarketOpenAt } from './marketCalendar.js';
 
 test('market opens and closes at the specified IST times', () => {
   assert.equal(isMarketOpenAt(Date.parse('2026-03-04T03:44:59.999Z')), false);
   assert.equal(isMarketOpenAt(Date.parse('2026-03-04T03:45:00.000Z')), true);
   assert.equal(isMarketOpenAt(Date.parse('2026-03-04T10:00:00.000Z')), false);
+});
+
+test('sentiment creates directional drift and adjusts circuit bands', () => {
+  assert.ok(calculateSentimentDriftPercent(80, 30000) > 0);
+  assert.equal(calculateSentimentDriftPercent(50, 30000), 0);
+  assert.ok(calculateSentimentDriftPercent(20, 30000) < 0);
+
+  const averageMove = (score) => {
+    let total = 0;
+    const sampleCount = 600;
+    for (let index = 0; index < sampleCount; index++) {
+      total += calculateMarketMovePercent(
+        100,
+        100,
+        score,
+        'TEST',
+        Date.UTC(2026, 0, 1) + index * 30000,
+        ((index * 37) % 199 + 0.5) / 200,
+        30000
+      );
+    }
+    return total / sampleCount;
+  };
+  assert.ok(averageMove(80) > averageMove(50));
+  assert.ok(averageMove(50) > averageMove(20));
+
+  assert.deepEqual(getSentimentCircuitPercentages(85), { upperCircuitPct: 20, lowerCircuitPct: 5 });
+  assert.deepEqual(getSentimentCircuitPercentages(50), { upperCircuitPct: 10, lowerCircuitPct: 10 });
+  assert.deepEqual(getSentimentCircuitPercentages(15), { upperCircuitPct: 5, lowerCircuitPct: 20 });
 });
 
 test('market is closed on weekends and NSE trading holidays', () => {

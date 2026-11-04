@@ -23,13 +23,27 @@ function boxMuller(u1, u2) {
   return r * Math.cos(theta); // N(0,1)
 }
 
+export function getSentimentCircuitPercentages(sentimentScore) {
+  const score = Math.max(0, Math.min(100, Number(sentimentScore) || 0));
+  if (score >= 80) return { upperCircuitPct: 20, lowerCircuitPct: 5 };
+  if (score >= 60) return { upperCircuitPct: 15, lowerCircuitPct: 8 };
+  if (score >= 40) return { upperCircuitPct: 10, lowerCircuitPct: 10 };
+  if (score >= 20) return { upperCircuitPct: 8, lowerCircuitPct: 15 };
+  return { upperCircuitPct: 5, lowerCircuitPct: 20 };
+}
+
+export function calculateSentimentDriftPercent(sentimentScore, intervalMs = 1000) {
+  const score = Math.max(0, Math.min(100, Number(sentimentScore) || 0));
+  const intervalScale = Math.max(0, intervalMs) / 30000;
+  return (score - 50) * 0.0003 * intervalScale;
+}
+
 /**
  * Calculates the % price move for a single tick using GBM.
  *
  * Calibration (30-second tick interval):
- *   σ per tick = 0.18%  →  ±₹0.22 on a ₹120 stock per tick
- *   Daily range ≈ ±3-5% from opening (Groww-style intraday)
- *   Mean reversion activates at 1% drift — creates visible up/down oscillations
+ *   Positive life-event sentiment adds upward drift; negative sentiment adds
+ *   downward drift. Random noise keeps the intraday movement organic.
  */
 export function calculateMarketMovePercent(
   currentPrice,
@@ -52,7 +66,7 @@ export function calculateMarketMovePercent(
   const u2 = Math.max(0.001, Math.min(0.999, pseudoHash(nowMs * 0.001 + score)));
   const Z  = boxMuller(u1, u2);                 // N(0,1)
   const intervalScale = Math.max(0, intervalMs) / 30000;
-  const sigmaTick = 0.18 * Math.sqrt(intervalScale);
+  const sigmaTick = 0.12 * Math.sqrt(intervalScale);
   const gbmNoise  = sigmaTick * Z;               // core random walk
 
   // ── Momentum texture (4-min cycle) ────────────────────────────────────────
@@ -64,16 +78,16 @@ export function calculateMarketMovePercent(
   const medRad = ((tSec + symbolSeed * 13) / 240) * Math.PI * 2;
   const momentum = (Math.sin(medRad) * 0.025 + Math.cos(medRad * 1.5) * 0.012) * intervalScale;
 
-  // ── Sentiment drift (μ per tick) ──────────────────────────────────────────
-  // BULLISH (score=75): +0.003% per tick → gentle long-term upward nudge.
-  const mu = (score - 50) * 0.00006 * intervalScale;
+  // ── Human-life sentiment drift (μ per tick) ───────────────────────────────
+  const mu = calculateSentimentDriftPercent(score, intervalMs);
 
   // ── Mean reversion toward today's opening ────────────────────────────────
   // Activates when price drifts >1% from opening — creates visible oscillations.
   // This is what makes the chart go up AND come back down organically.
   const driftPct = ((current - reference) / reference) * 100;
+  const reversionStrength = 0.004 * (1 - 0.8 * Math.abs(score - 50) / 50);
   const reversion = driftPct > 1 || driftPct < -1
-    ? Math.max(-0.12 * intervalScale, Math.min(0.12 * intervalScale, -driftPct * 0.025 * intervalScale))
+    ? Math.max(-0.08 * intervalScale, Math.min(0.08 * intervalScale, -driftPct * reversionStrength * intervalScale))
     : 0;
 
   const total = gbmNoise + momentum + mu + reversion;
@@ -105,15 +119,7 @@ function getStockMarketParams(stock) {
     sentimentScore = Math.min(Math.max(Math.round(65 + priceChange * 1.5), 10), 95);
   }
 
-  // Wide circuit bands — safety net for extreme life events only.
-  // Normal GBM movement (σ=0.057% per tick) will never reach these.
-  let upperCircuitPct = 40;
-  let lowerCircuitPct = 40;
-  if      (sentimentScore >= 80) { upperCircuitPct = 60; lowerCircuitPct = 25; }
-  else if (sentimentScore >= 60) { upperCircuitPct = 50; lowerCircuitPct = 30; }
-  else if (sentimentScore >= 40) { upperCircuitPct = 40; lowerCircuitPct = 40; }
-  else if (sentimentScore >= 20) { upperCircuitPct = 30; lowerCircuitPct = 50; }
-  else                           { upperCircuitPct = 20; lowerCircuitPct = 60; }
+  const { upperCircuitPct, lowerCircuitPct } = getSentimentCircuitPercentages(sentimentScore);
 
   const lastEventTick    = Array.isArray(stock.priceTicks)
     ? [...stock.priceTicks].reverse().find(t => t.eventId !== null && !String(t.eventId).startsWith('circuit-reset'))

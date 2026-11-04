@@ -1,6 +1,7 @@
 /**
  * Price Engine & Market Metrics Calculator for Human Life Stocks
  */
+import { getSentimentCircuitPercentages } from '../../shared/marketSimulation.js';
 
 export function getCircuitLimitsBySentiment(basePrice, sentimentData) {
   const base = Number(basePrice || 100);
@@ -12,22 +13,7 @@ export function getCircuitLimitsBySentiment(basePrice, sentimentData) {
     score >= 20 ? 'BEARISH' : 'VERY_BEARISH'
   );
 
-  // Wide bands — circuits are a safety net for extreme life events only.
-  // Normal simulation waves (±0.085% per tick) will never reach these.
-  let upperCircuitPct = 40;
-  let lowerCircuitPct = 40;
-
-  if (sentiment === 'VERY_BULLISH' || score >= 80) {
-    upperCircuitPct = 60; lowerCircuitPct = 25;
-  } else if (sentiment === 'BULLISH' || score >= 60) {
-    upperCircuitPct = 50; lowerCircuitPct = 30;
-  } else if (sentiment === 'BEARISH' || (score >= 20 && score < 40)) {
-    upperCircuitPct = 30; lowerCircuitPct = 50;
-  } else if (sentiment === 'VERY_BEARISH' || score < 20) {
-    upperCircuitPct = 20; lowerCircuitPct = 60;
-  } else {
-    upperCircuitPct = 40; lowerCircuitPct = 40;
-  }
+  const { upperCircuitPct, lowerCircuitPct } = getSentimentCircuitPercentages(score);
 
   const upperCircuit = Number((base * (1 + upperCircuitPct / 100)).toFixed(2));
   const lowerCircuit = Number((base * (1 - lowerCircuitPct / 100)).toFixed(2));

@@ -1,4 +1,9 @@
-import { calculateMarketMovePercent, simulateCatchUpTicks, ensureRichIntradayHistory } from '../../shared/marketSimulation.js';
+import {
+  calculateMarketMovePercent,
+  getSentimentCircuitPercentages,
+  simulateCatchUpTicks,
+  ensureRichIntradayHistory
+} from '../../shared/marketSimulation.js';
 import { getMarketStatus } from '../../shared/marketCalendar.js';
 
 export function getApiBaseUrl() {
@@ -188,26 +193,7 @@ export function getCircuitLimitsBySentiment(basePrice, sentimentData) {
     score >= 20 ? 'BEARISH' : 'VERY_BEARISH'
   );
 
-  let upperCircuitPct = 10;
-  let lowerCircuitPct = 10;
-
-  if (sentiment === 'VERY_BULLISH' || score >= 80) {
-    upperCircuitPct = 20;
-    lowerCircuitPct = 5;
-  } else if (sentiment === 'BULLISH' || score >= 60) {
-    upperCircuitPct = 15;
-    lowerCircuitPct = 8;
-  } else if (sentiment === 'BEARISH' || (score >= 20 && score < 40)) {
-    upperCircuitPct = 8;
-    lowerCircuitPct = 15;
-  } else if (sentiment === 'VERY_BEARISH' || score < 20) {
-    upperCircuitPct = 5;
-    lowerCircuitPct = 20;
-  } else {
-    // NEUTRAL
-    upperCircuitPct = 10;
-    lowerCircuitPct = 10;
-  }
+  const { upperCircuitPct, lowerCircuitPct } = getSentimentCircuitPercentages(score);
 
   const upperCircuit = Number((base * (1 + upperCircuitPct / 100)).toFixed(2));
   const lowerCircuit = Number((base * (1 - lowerCircuitPct / 100)).toFixed(2));
