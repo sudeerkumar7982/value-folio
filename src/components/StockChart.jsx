@@ -81,48 +81,65 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
   const { formattedData, openingPrice, xDomain, xFormatter } = useMemo(() => {
     const now = new Date();
     const sortedTicks = [...ticks].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    const profileListingMs = Date.parse(profile?.createdAt || '');
+    const firstTickMs = sortedTicks.length > 0 ? Date.parse(sortedTicks[0].timestamp) : NaN;
+    const listingTimeMs = Number.isFinite(profileListingMs)
+      ? profileListingMs
+      : Number.isFinite(firstTickMs) ? firstTickMs : 0;
 
     if (timeRange === '1D') {
       const currentSession = getMarketSessionFor(now.getTime());
-      const latestMarketTick = [...sortedTicks].reverse().find(tick => isMarketOpenAt(Date.parse(tick.timestamp)));
+      const latestMarketTick = [...sortedTicks].reverse().find(tick => {
+        const timestamp = Date.parse(tick.timestamp);
+        return timestamp >= listingTimeMs && isMarketOpenAt(timestamp);
+      });
       const session = currentSession ||
         (latestMarketTick && getMarketSessionFor(Date.parse(latestMarketTick.timestamp))) ||
         (() => {
           const status = getMarketStatus(now.getTime());
           return { marketOpen: Date.parse(status.opensAt), marketClose: Date.parse(status.closesAt) };
         })();
-      const { marketOpen: sessionStartMs, marketClose: sessionEndMs } = session;
+      const sessionEndMs = session.marketClose;
+      const sessionStartMs = Math.max(session.marketOpen, listingTimeMs);
       const sessionTicks = sortedTicks.filter(tick => {
         const timestamp = Date.parse(tick.timestamp);
         return timestamp >= sessionStartMs && timestamp < sessionEndMs && isMarketOpenAt(timestamp);
       });
       const ticksBeforeSession = sortedTicks.filter(tick => {
         const timestamp = Date.parse(tick.timestamp);
-        return timestamp < sessionStartMs && isMarketOpenAt(timestamp);
+        return timestamp >= listingTimeMs && timestamp < sessionStartMs && isMarketOpenAt(timestamp);
       });
       const openPrice = sessionTicks[0]?.price ??
         ticksBeforeSession[ticksBeforeSession.length - 1]?.price ??
+        profile?.listingPrice ??
         profile?.startingPrice ??
         100;
 
       const dataPoints = [];
 
-      // Opening baseline point
-      dataPoints.push({
-        timeMs: sessionStartMs,
-        timestamp: new Date(sessionStartMs).toISOString(),
-        dateLabel: '09:15 AM',
-        fullDate: new Date(sessionStartMs).toLocaleString('en-US', {
-          dateStyle: 'medium',
-          timeStyle: 'short',
+      if (sessionStartMs < sessionEndMs) {
+        const sessionStartLabel = new Date(sessionStartMs).toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
           timeZone: 'Asia/Kolkata'
-        }),
-        price: openPrice,
-        label: '🔔 Market Open Baseline (09:15 AM)',
-        eventId: null,
-        diff: 0,
-        diffPct: 0
-      });
+        });
+        dataPoints.push({
+          timeMs: sessionStartMs,
+          timestamp: new Date(sessionStartMs).toISOString(),
+          dateLabel: sessionStartLabel,
+          fullDate: new Date(sessionStartMs).toLocaleString('en-US', {
+            dateStyle: 'medium',
+            timeStyle: 'short',
+            timeZone: 'Asia/Kolkata'
+          }),
+          price: openPrice,
+          label: `🔔 Trading Session Baseline (${sessionStartLabel})`,
+          eventId: null,
+          diff: 0,
+          diffPct: 0
+        });
+      }
 
       let prevP = openPrice;
       sessionTicks.forEach(tick => {
@@ -192,7 +209,9 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       return {
         formattedData: dataPoints,
         openingPrice: openPrice,
-        xDomain: [sessionStartMs, sessionEndMs],
+        xDomain: sessionStartMs < sessionEndMs
+          ? [sessionStartMs, sessionEndMs]
+          : [sessionEndMs, sessionEndMs + 1],
         xFormatter: (val) => new Date(val).toLocaleTimeString('en-US', {
           hour: '2-digit',
           minute: '2-digit',
@@ -212,19 +231,21 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
     else if (timeRange === '3Y') daysBack = 3 * 365;
     else if (timeRange === '5Y') daysBack = 5 * 365;
 
-    const marketTicks = sortedTicks.filter(tick => isMarketOpenAt(Date.parse(tick.timestamp)));
-    const windowStartMs = daysBack !== null
+    const marketTicks = sortedTicks.filter(tick => {
+      const timestamp = Date.parse(tick.timestamp);
+      return timestamp >= listingTimeMs && isMarketOpenAt(timestamp);
+    });
+    const requestedWindowStartMs = daysBack !== null
       ? now.getTime() - (daysBack * 24 * 60 * 60 * 1000)
-      : (marketTicks[0] ? Date.parse(marketTicks[0].timestamp) : now.getTime() - 86400000);
+      : listingTimeMs;
+    const windowStartMs = Math.max(requestedWindowStartMs, listingTimeMs);
 
     const filtered = marketTicks.filter(tick => Date.parse(tick.timestamp) >= windowStartMs);
-    let openPrice = marketTicks[0]?.price || profile?.startingPrice || 100;
+    let openPrice = profile?.listingPrice || profile?.startingPrice || marketTicks[0]?.price || 100;
 
     if (daysBack !== null) {
       const beforeWindow = marketTicks.filter(tick => Date.parse(tick.timestamp) < windowStartMs);
       if (beforeWindow.length > 0) openPrice = beforeWindow[beforeWindow.length - 1].price;
-      else if (marketTicks.length > 0) openPrice = marketTicks[0].price;
-      else if (profile?.startingPrice) openPrice = profile.startingPrice;
     }
 
     const sessions = getTradingSessionsBetween(windowStartMs, now.getTime());
@@ -253,7 +274,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
           timeZone: 'Asia/Kolkata'
         }),
         price: prevP,
-        label: timeRange === 'ALL' ? 'IPO Listing Date' : `${timeRange} Opening Baseline`,
+        label: timeRange === 'ALL' ? 'Listing Price Baseline' : `${timeRange} Opening Baseline`,
         eventId: null,
         diff: 0,
         diffPct: 0

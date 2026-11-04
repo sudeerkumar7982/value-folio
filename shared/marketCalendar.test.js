@@ -33,6 +33,23 @@ test('historical chart sessions exclude non-trading hours and compress overnight
   ));
 });
 
+test('historical chart can start at listing time and skips pre-listing hours', () => {
+  const listingDuringSession = Date.parse('2026-03-04T08:00:00.000Z');
+  const duringSession = getTradingSessionsBetween(
+    listingDuringSession,
+    Date.parse('2026-03-05T10:00:00.000Z')
+  );
+  assert.equal(duringSession[0].start, listingDuringSession);
+  assert.equal(duringSession[0].offset, 0);
+
+  const listingAfterClose = Date.parse('2026-03-04T11:00:00.000Z');
+  const afterClose = getTradingSessionsBetween(
+    listingAfterClose,
+    Date.parse('2026-03-05T10:00:00.000Z')
+  );
+  assert.equal(afterClose[0].start, Date.parse('2026-03-05T03:45:00.000Z'));
+});
+
 test('intraday history is not generated before market open or on a holiday', () => {
   for (const timestamp of [
     Date.parse('2026-03-04T03:44:00.000Z'),
