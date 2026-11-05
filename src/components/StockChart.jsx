@@ -238,7 +238,12 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
     const requestedWindowStartMs = daysBack !== null
       ? now.getTime() - (daysBack * 24 * 60 * 60 * 1000)
       : listingTimeMs;
-    const windowStartMs = Math.max(requestedWindowStartMs, listingTimeMs);
+    let windowStartMs = Math.max(requestedWindowStartMs, listingTimeMs);
+    let sessions = getTradingSessionsBetween(windowStartMs, now.getTime());
+    if (timeRange === '1W' && sessions.length > 5) {
+      sessions = sessions.slice(-5);
+      windowStartMs = sessions[0].start;
+    }
 
     const filtered = marketTicks.filter(tick => Date.parse(tick.timestamp) >= windowStartMs);
     let openPrice = profile?.listingPrice || profile?.startingPrice || marketTicks[0]?.price || 100;
@@ -248,56 +253,38 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       if (beforeWindow.length > 0) openPrice = beforeWindow[beforeWindow.length - 1].price;
     }
 
-    const sessions = getTradingSessionsBetween(windowStartMs, now.getTime());
     const sessionsByDate = new Map(
       sessions.map(session => [getMarketStatus(session.start).date, session])
     );
-    const tradingDuration = sessions.reduce((duration, session) => {
-      return duration + session.end - session.start;
-    }, 0);
-    let prevP = openPrice;
-    const dataPoints = [];
-
-    if (sessions.length > 0) {
-      const startDate = new Date(sessions[0].start);
-      dataPoints.push({
-        timeMs: 0,
-        timestamp: startDate.toISOString(),
-        dateLabel: startDate.toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          timeZone: 'Asia/Kolkata'
-        }),
-        fullDate: startDate.toLocaleString('en-US', {
-          dateStyle: 'medium',
-          timeStyle: 'short',
-          timeZone: 'Asia/Kolkata'
-        }),
-        price: prevP,
-        label: timeRange === 'ALL' ? 'Listing Price Baseline' : `${timeRange} Opening Baseline`,
-        eventId: null,
-        diff: 0,
-        diffPct: 0
-      });
-    }
-
-    filtered.forEach((tick) => {
+    const dailyTicks = new Map();
+    filtered.forEach(tick => {
       const timestampMs = Date.parse(tick.timestamp);
       const session = sessionsByDate.get(getMarketStatus(timestampMs).date);
-      if (!session || timestampMs < session.start || timestampMs >= session.end) return;
-      const d = new Date(timestampMs);
+      if (session && timestampMs >= session.start && timestampMs < session.end) {
+        dailyTicks.set(getMarketStatus(timestampMs).date, tick);
+      }
+    });
+
+    let prevP = openPrice;
+    const dataPoints = [];
+    const currentDate = getMarketStatus(now.getTime()).date;
+
+    sessions.forEach(session => {
+      const date = getMarketStatus(session.start).date;
+      const tick = dailyTicks.get(date);
+      if (!tick) return;
 
       let dateLabel;
       if (timeRange === '1W') {
-        dateLabel = d.toLocaleDateString('en-US', {
+        dateLabel = new Date(session.start).toLocaleDateString('en-US', {
           weekday: 'short', month: 'short', day: 'numeric', timeZone: 'Asia/Kolkata'
         });
       } else if (timeRange === '1M' || timeRange === '3M') {
-        dateLabel = d.toLocaleDateString('en-US', {
+        dateLabel = new Date(session.start).toLocaleDateString('en-US', {
           month: 'short', day: 'numeric', timeZone: 'Asia/Kolkata'
         });
       } else {
-        dateLabel = d.toLocaleDateString('en-US', {
+        dateLabel = new Date(session.start).toLocaleDateString('en-US', {
           month: 'short', year: '2-digit', timeZone: 'Asia/Kolkata'
         });
       }
@@ -308,77 +295,30 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       prevP = price;
 
       dataPoints.push({
-        timeMs: session.offset + timestampMs - session.start,
+        timeMs: dataPoints.length,
         timestamp: tick.timestamp,
         dateLabel,
-        fullDate: d.toLocaleString('en-US', {
-          dateStyle: 'medium',
-          timeStyle: 'short',
+        fullDate: new Date(session.start).toLocaleDateString('en-US', {
+          dateStyle: 'full',
           timeZone: 'Asia/Kolkata'
         }),
         price,
-        label: tick.label || 'Price Tick',
+        label: date === currentDate && isMarketOpenAt(now.getTime())
+          ? 'Live Price (session in progress)'
+          : 'Daily Closing Price',
         eventId: tick.eventId,
         diff,
         diffPct
       });
     });
 
-    const latestSession = sessions[sessions.length - 1];
-    const currentMarketOpen = isMarketOpenAt(now.getTime());
-    const latestPrice = Number(
-      currentMarketOpen
-        ? profile?.currentPrice ?? marketTicks[marketTicks.length - 1]?.price ?? openPrice
-        : marketTicks[marketTicks.length - 1]?.price ?? openPrice
-    );
-    const lastPointTimestamp = dataPoints[dataPoints.length - 1]?.timestamp;
-    if (currentMarketOpen && latestSession &&
-      now.getTime() - (lastPointTimestamp ? Date.parse(lastPointTimestamp) : latestSession.start) > 60000) {
-      const dateLabel = now.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        timeZone: 'Asia/Kolkata'
-      });
-      dataPoints.push({
-        timeMs: latestSession.offset + now.getTime() - latestSession.start,
-        timestamp: now.toISOString(),
-        dateLabel,
-        fullDate: now.toLocaleString('en-US', {
-          dateStyle: 'medium',
-          timeStyle: 'short',
-          timeZone: 'Asia/Kolkata'
-        }),
-        price: latestPrice,
-        label: 'Current Live Market Price',
-        eventId: null,
-        diff: 0,
-        diffPct: 0
-      });
-    }
+    const dateLabels = dataPoints.map(point => point.dateLabel);
 
     return {
       formattedData: dataPoints,
       openingPrice: openPrice,
-      xDomain: [0, Math.max(tradingDuration, 1)],
-      xFormatter: (val) => {
-        const numericValue = Math.min(Math.max(Number(val), 0), tradingDuration);
-        const session = sessions.find(item => numericValue <= item.offset + item.end - item.start);
-        if (!session) return '';
-        const timestamp = new Date(session.start + numericValue - session.offset);
-        if (timeRange === '1W') {
-          return timestamp.toLocaleDateString('en-US', {
-            weekday: 'short', month: 'short', day: 'numeric', timeZone: 'Asia/Kolkata'
-          });
-        }
-        if (timeRange === '1M' || timeRange === '3M') {
-          return timestamp.toLocaleDateString('en-US', {
-            month: 'short', day: 'numeric', timeZone: 'Asia/Kolkata'
-          });
-        }
-        return timestamp.toLocaleDateString('en-US', {
-          month: 'short', year: '2-digit', timeZone: 'Asia/Kolkata'
-        });
-      }
+      xDomain: [0, Math.max(dataPoints.length - 1, 1)],
+      xFormatter: val => dateLabels[Math.min(Math.max(Math.round(Number(val)), 0), dateLabels.length - 1)] || ''
     };
   }, [ticks, timeRange, profile]);
 
@@ -480,7 +420,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
               <span>
                 {timeRange === '1D'
                   ? 'NSE session • 9:15 AM – 3:30 PM IST'
-                  : 'Historical market data'} • {formattedData.length} chart data points
+                  : 'Weekday closing prices'} • {formattedData.length} chart data points
               </span>
             )}
           </div>
@@ -585,7 +525,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
             </AreaChart>
           ) : chartType === 'bar' ? (
             <BarChart
-              data={chartData.filter((_, idx) => idx % 2 === 0)}
+              data={chartData}
               margin={{ top: 15, right: 10, left: 0, bottom: 0 }}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
