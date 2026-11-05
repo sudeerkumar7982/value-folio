@@ -352,14 +352,10 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Row 1: Main Interactive Timeline Chart & Sector Pillars Breakdown */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
-                  <StockChart priceTicks={priceTicks} profile={profile} symbol={profile?.symbol || ''} />
-                </div>
-                <div className="space-y-6">
-                  <MarketDepth currentPrice={profile?.currentPrice || 100} symbol={profile?.symbol || ''} />
-                </div>
+              {/* Full-width chart with the order book below */}
+              <div className="space-y-6">
+                <StockChart priceTicks={priceTicks} profile={profile} symbol={profile?.symbol || ''} />
+                <MarketDepth currentPrice={profile?.currentPrice || 100} symbol={profile?.symbol || ''} />
               </div>
 
               {/* Row 2: Today's Top Catalysts & Setbacks Highlights */}
