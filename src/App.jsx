@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import StockHeader from './components/StockHeader.jsx';
 import { StockChart } from './components/StockChart.jsx';
 import { TodayHighlights } from './components/TodayHighlights.jsx';
-import { SectorBreakdown } from './components/SectorBreakdown.jsx';
 import { LifeNewsFeed } from './components/LifeNewsFeed.jsx';
 import { AddEventModal } from './components/AddEventModal.jsx';
 import { TradingExchange } from './components/TradingExchange.jsx';
@@ -219,7 +218,6 @@ export default function App() {
   }
 
   const profile = data?.profile || null;
-  const sectors = data?.sectors || null;
   const metrics = data?.metrics || null;
   const priceTicks = data?.priceTicks || [];
 
@@ -360,7 +358,6 @@ export default function App() {
                   <StockChart priceTicks={priceTicks} profile={profile} symbol={profile?.symbol || ''} />
                 </div>
                 <div className="space-y-6">
-                  <SectorBreakdown sectors={sectors} />
                   <MarketDepth currentPrice={profile?.currentPrice || 100} symbol={profile?.symbol || ''} />
                 </div>
               </div>

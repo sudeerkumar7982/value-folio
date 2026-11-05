@@ -678,7 +678,7 @@ const dbMethods = {
     stock.events.unshift(event);
     stock.profile.currentPrice = event.newPrice;
 
-    const tick = { timestamp: event.timestamp, price: event.newPrice, eventId: event.id, label: event.title };
+    const tick = { timestamp: event.postedAt || new Date().toISOString(), price: event.newPrice, eventId: event.id, label: event.title };
 
     if (pool) {
       addCacheTick(sym, tick);

@@ -855,7 +855,7 @@ export const API = {
           if (serverData.newPrice) {
             stock.profile.currentPrice = serverData.newPrice;
             stock.priceTicks.push({
-              timestamp: serverData.event?.timestamp || new Date().toISOString(),
+              timestamp: serverData.event?.postedAt || new Date().toISOString(),
               price: serverData.newPrice,
               eventId: serverData.event?.id || `evt-${Date.now()}`,
               label: title
@@ -916,12 +916,13 @@ export const API = {
       impactPercent,
       previousPrice,
       newPrice,
+      postedAt: new Date().toISOString(),
       timestamp: eventTimestamp
     };
 
     stock.events.unshift(newEvent);
     stock.priceTicks.push({
-      timestamp: newEvent.timestamp,
+      timestamp: newEvent.postedAt,
       price: newPrice,
       eventId: newEvent.id,
       label: title

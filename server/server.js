@@ -371,6 +371,7 @@ app.post('/api/events/commit', async (req, res) => {
       impactPercent,
       previousPrice,
       newPrice,
+      postedAt: new Date().toISOString(),
       timestamp: eventTimestamp
     };
 
