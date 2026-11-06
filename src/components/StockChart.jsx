@@ -38,21 +38,34 @@ function reduceChartPoints(data, maxPoints = 6000) {
   });
   const targetRegularPoints = Math.max(maxPoints - eventIndexes.length, 4);
   const bucketCount = Math.max(1, Math.floor(targetRegularPoints / 4));
-  const bucketSize = Math.ceil(data.length / bucketCount);
+  const firstX = Number(data[0].timeMs);
+  const lastX = Number(data[data.length - 1].timeMs);
+  const xRange = lastX - firstX;
   const indexes = new Set(eventIndexes);
+  const buckets = new Map();
 
-  for (let start = 0; start < data.length; start += bucketSize) {
-    const end = Math.min(start + bucketSize, data.length);
-    let minIndex = start;
-    let maxIndex = start;
-    for (let index = start + 1; index < end; index++) {
-      if (data[index].price < data[minIndex].price) minIndex = index;
-      if (data[index].price > data[maxIndex].price) maxIndex = index;
+  data.forEach((point, index) => {
+    const x = Number(point.timeMs);
+    const bucketIndex = xRange > 0 && Number.isFinite(x)
+      ? Math.min(Math.floor(((x - firstX) / xRange) * bucketCount), bucketCount - 1)
+      : Math.min(Math.floor((index / data.length) * bucketCount), bucketCount - 1);
+    const bucket = buckets.get(bucketIndex);
+
+    if (!bucket) {
+      buckets.set(bucketIndex, { first: index, last: index, min: index, max: index });
+      return;
     }
-    indexes.add(start);
-    indexes.add(end - 1);
-    indexes.add(minIndex);
-    indexes.add(maxIndex);
+
+    bucket.last = index;
+    if (point.price < data[bucket.min].price) bucket.min = index;
+    if (point.price > data[bucket.max].price) bucket.max = index;
+  });
+
+  for (const bucket of buckets.values()) {
+    indexes.add(bucket.first);
+    indexes.add(bucket.last);
+    indexes.add(bucket.min);
+    indexes.add(bucket.max);
   }
 
   return [...indexes].sort((a, b) => a - b).map(index => data[index]);
@@ -590,7 +603,13 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
               />
               <Tooltip cursor={<CrosshairCursor />} content={() => null} />
 
-              {/* Pure High-Density Line */}
+              <ReferenceLine
+                y={openingPrice}
+                stroke="#CBD5E1"
+                strokeDasharray="4 4"
+                strokeWidth={1}
+              />
+
               <Line
                 type="linear"
                 dataKey="price"
