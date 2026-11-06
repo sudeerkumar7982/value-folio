@@ -125,6 +125,63 @@ function sampleLinePoints(data, domain, maxPoints = 120) {
   return sampled;
 }
 
+function sampleMinutePoints(data, domain) {
+  if (data.length === 0) return data;
+
+  const minuteMs = 60 * 1000;
+  const firstX = Number(domain?.[0] ?? data[0].timeMs);
+  const lastX = Number(data[data.length - 1].timeMs);
+  if (!Number.isFinite(firstX) || !Number.isFinite(lastX) || lastX < firstX) return data;
+
+  const minuteCount = Math.floor((lastX - firstX) / minuteMs) + 1;
+  const sampled = [];
+  let dataIndex = 0;
+  let lastPoint = null;
+
+  if (Number(data[0].timeMs) === firstX) {
+    sampled.push(data[0]);
+    lastPoint = data[0];
+  }
+
+  for (let minuteIndex = 0; minuteIndex < minuteCount; minuteIndex++) {
+    const minuteStart = firstX + minuteIndex * minuteMs;
+    const minuteEnd = minuteStart + minuteMs;
+    let minutePoint = null;
+
+    while (dataIndex < data.length && Number(data[dataIndex].timeMs) < minuteEnd) {
+      minutePoint = data[dataIndex];
+      dataIndex++;
+    }
+
+    if (minutePoint) lastPoint = minutePoint;
+    if (!lastPoint) continue;
+
+    const minuteDate = new Date(minuteStart);
+    sampled.push({
+      ...lastPoint,
+      timeMs: minuteStart + minuteMs / 2,
+      timestamp: minuteDate.toISOString(),
+      dateLabel: minuteDate.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: 'Asia/Kolkata'
+      }),
+      fullDate: minuteDate.toLocaleString('en-US', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+        timeZone: 'Asia/Kolkata'
+      }),
+      ...(minutePoint ? {} : {
+        label: 'Last known price (no update this minute)',
+        eventId: null
+      })
+    });
+  }
+
+  return sampled;
+}
+
 export function StockChart({ priceTicks = [], profile, symbol = '' }) {
   const [timeRange, setTimeRange] = useState('1D');
   const [chartType, setChartType] = useState('line'); // 'line', 'area', 'bar'
@@ -391,9 +448,11 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
 
   const chartData = useMemo(
     () => chartType === 'line'
-      ? sampleLinePoints(formattedData, xDomain)
+      ? timeRange === '1D'
+        ? sampleMinutePoints(formattedData, xDomain)
+        : sampleLinePoints(formattedData, xDomain)
       : reduceChartPoints(formattedData),
-    [formattedData, chartType, xDomain]
+    [formattedData, chartType, timeRange, xDomain]
   );
   const priceBounds = formattedData.reduce((bounds, point) => {
     if (point.price === null || Number.isNaN(point.price)) return bounds;
