@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   ResponsiveContainer, LineChart, Line, AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, Tooltip, ReferenceLine, ReferenceDot
@@ -226,6 +226,7 @@ export function StockChart({ priceTicks = [], profile, metrics, symbol = '' }) {
   const [hoverData, setHoverData] = useState(null);
   const [showTerminal, setShowTerminal] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [trackedLiveHigh, setTrackedLiveHigh] = useState(null);
 
   const ticks = useMemo(() => {
     if (priceTicks && priceTicks.length > 0) {
@@ -505,6 +506,18 @@ export function StockChart({ priceTicks = [], profile, metrics, symbol = '' }) {
     return bounds;
   }, { min: openingPrice, max: openingPrice, latest: openingPrice });
   const latestPrice = Number(profile?.currentPrice ?? priceBounds.latest);
+  const activeSymbol = profile?.symbol || symbol;
+  useEffect(() => {
+    if (!Number.isFinite(latestPrice)) return;
+
+    setTrackedLiveHigh(previous => {
+      if (previous?.symbol !== activeSymbol || latestPrice > previous.price) {
+        return { symbol: activeSymbol, price: latestPrice, timestamp: Date.now() };
+      }
+      return previous;
+    });
+  }, [activeSymbol, latestPrice]);
+
   const displayedYearBounds = useMemo(() => {
     const historicalBounds = timeRange === '1Y'
       ? chartData.reduce((bounds, point) => {
@@ -518,11 +531,20 @@ export function StockChart({ priceTicks = [], profile, metrics, symbol = '' }) {
       : yearGraphBounds;
 
     if (!Number.isFinite(latestPrice)) return historicalBounds;
+    const trackedHigh = trackedLiveHigh?.symbol === activeSymbol &&
+      trackedLiveHigh.timestamp >= Date.now() - 365 * 24 * 60 * 60 * 1000
+      ? trackedLiveHigh.price
+      : null;
+    const historicalHigh = Math.max(
+      historicalBounds.high ?? -Infinity,
+      latestPrice,
+      trackedHigh ?? -Infinity
+    );
     return {
-      high: historicalBounds.high === null ? latestPrice : Math.max(historicalBounds.high, latestPrice),
+      high: Number.isFinite(historicalHigh) ? historicalHigh : null,
       low: historicalBounds.low === null ? latestPrice : Math.min(historicalBounds.low, latestPrice)
     };
-  }, [chartData, latestPrice, timeRange, yearGraphBounds]);
+  }, [activeSymbol, chartData, latestPrice, timeRange, trackedLiveHigh, yearGraphBounds]);
 
   const periodChangeAmt = Number((latestPrice - openingPrice).toFixed(2));
   const periodChangePct = openingPrice > 0 ? Number(((periodChangeAmt / openingPrice) * 100).toFixed(2)) : 0;
