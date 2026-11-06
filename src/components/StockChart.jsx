@@ -497,6 +497,19 @@ export function StockChart({ priceTicks = [], profile, metrics, symbol = '' }) {
       : reduceChartPoints(formattedData),
     [formattedData, chartType, timeRange, xDomain]
   );
+  const displayedYearBounds = useMemo(() => {
+    if (timeRange !== '1Y') return yearGraphBounds;
+
+    return chartData.reduce((bounds, point) => {
+      const price = Number(point.price);
+      if (!Number.isFinite(price)) return bounds;
+      return {
+        high: bounds.high === null ? price : Math.max(bounds.high, price),
+        low: bounds.low === null ? price : Math.min(bounds.low, price)
+      };
+    }, { high: null, low: null });
+  }, [chartData, timeRange, yearGraphBounds]);
+
   const priceBounds = formattedData.reduce((bounds, point) => {
     if (point.price === null || Number.isNaN(point.price)) return bounds;
     bounds.min = Math.min(bounds.min, point.price);
@@ -788,13 +801,15 @@ export function StockChart({ priceTicks = [], profile, metrics, symbol = '' }) {
         {[
           { label: 'Today High', value: metrics?.todayHigh },
           { label: 'Today Low', value: metrics?.todayLow },
-          { label: '52-week High', value: yearGraphBounds.high },
-          { label: '52-week Low', value: yearGraphBounds.low }
+          { label: '52-week High', value: displayedYearBounds.high },
+          { label: '52-week Low', value: displayedYearBounds.low }
         ].map(({ label, value }) => (
           <div key={label} className="rounded-xl border border-slate-100 bg-slate-50/70 px-3 py-2">
             <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{label}</div>
             <div className="mt-0.5 font-mono text-sm font-bold text-slate-800">
-              {Number.isFinite(Number(value)) ? `₹${Number(value).toFixed(2)}` : '—'}
+              {value !== null && value !== undefined && Number.isFinite(Number(value))
+                ? `₹${Number(value).toFixed(2)}`
+                : '—'}
             </div>
           </div>
         ))}
