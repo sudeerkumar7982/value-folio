@@ -92,37 +92,44 @@ function sampleLinePoints(data, domain, maxPoints = 120) {
   const firstX = Number(domain?.[0] ?? data[0].timeMs);
   const lastX = Number(domain?.[1] ?? data[data.length - 1].timeMs);
   const xRange = Math.max(lastX - firstX, 0);
-  const bucketCount = maxPoints;
-  const buckets = Array.from({ length: bucketCount }, () => []);
+  const bucketCount = Math.max(1, Math.floor(maxPoints / 4));
+  const buckets = Array.from({ length: bucketCount }, () => null);
 
   data.forEach((point, index) => {
     const x = Number(point.timeMs);
     const bucketIndex = xRange > 0 && Number.isFinite(x)
       ? Math.min(Math.max(Math.floor(((x - firstX) / xRange) * bucketCount), 0), bucketCount - 1)
       : Math.min(Math.floor((index / data.length) * bucketCount), bucketCount - 1);
-    buckets[bucketIndex].push(index);
+    const bucket = buckets[bucketIndex];
+
+    if (!bucket) {
+      buckets[bucketIndex] = {
+        first: index,
+        last: index,
+        min: index,
+        max: index,
+        event: point.eventId ? index : null
+      };
+      return;
+    }
+
+    bucket.last = index;
+    if (point.price < data[bucket.min].price) bucket.min = index;
+    if (point.price > data[bucket.max].price) bucket.max = index;
+    if (bucket.event === null && point.eventId) bucket.event = index;
   });
 
-  const sampled = [];
-  for (let bucketIndex = 0; bucketIndex < buckets.length; bucketIndex++) {
-    const bucket = buckets[bucketIndex];
-    if (bucket.length === 0) continue;
-    const eventIndex = bucket.find(index => data[index].eventId);
-    const candidates = eventIndex === undefined ? bucket : [eventIndex];
-    const orderedPrices = candidates.map(index => data[index].price).sort((a, b) => a - b);
-    const medianPrice = orderedPrices[Math.floor(orderedPrices.length / 2)];
-    const representativeIndex = candidates.reduce((bestIndex, index) =>
-      Math.abs(data[index].price - medianPrice) < Math.abs(data[bestIndex].price - medianPrice)
-        ? index
-        : bestIndex
-    , candidates[0]);
-    sampled.push({
-      ...data[representativeIndex],
-      timeMs: firstX + ((bucketIndex + 0.5) / bucketCount) * xRange
-    });
-  }
+  const indexes = new Set();
+  buckets.forEach(bucket => {
+    if (!bucket) return;
+    indexes.add(bucket.first);
+    indexes.add(bucket.last);
+    indexes.add(bucket.min);
+    indexes.add(bucket.max);
+    if (bucket.event !== null) indexes.add(bucket.event);
+  });
 
-  return sampled;
+  return [...indexes].sort((a, b) => a - b).map(index => data[index]);
 }
 
 function sampleMinutePoints(data, domain) {
