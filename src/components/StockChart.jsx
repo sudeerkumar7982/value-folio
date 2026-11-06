@@ -21,13 +21,28 @@ const CrosshairCursor = ({ points, height, top }) => {
       y1={top || 0}
       x2={x}
       y2={(top || 0) + height}
-      stroke="#94A3B8"
+      stroke="#CBD5E1"
       strokeWidth={1}
-      strokeDasharray="3 3"
       style={{ pointerEvents: 'none' }}
     />
   );
 };
+
+function ChartHoverTooltip({ active, payload }) {
+  const point = payload?.[0]?.payload;
+  if (!active || !point) return null;
+
+  return (
+    <div
+      className="whitespace-nowrap rounded-lg bg-white px-2.5 py-1 text-xs text-slate-600 shadow-sm"
+      style={{ transform: 'translate(-50%, calc(-100% - 10px))' }}
+    >
+      <strong className="text-slate-800">₹{Number(point.price).toFixed(2)}</strong>
+      <span className="mx-1.5 text-slate-300">|</span>
+      {point.dateLabel}
+    </div>
+  );
+}
 
 function reduceChartPoints(data, maxPoints = 6000) {
   if (data.length <= maxPoints) return data;
@@ -508,15 +523,6 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
       {/* ── Main Chart Canvas (Zerodha / Dixon Style) ── */}
       <div className="relative h-72 w-full pt-1 min-h-[300px]">
 
-        {/* Floating crosshair pill at top-left when hovered */}
-        {hoverData && (
-          <div className="absolute top-2 left-2 z-10 text-xs font-mono font-semibold text-slate-700 bg-white/95 border border-slate-200 px-2.5 py-1 rounded-lg shadow-sm pointer-events-none select-none flex items-center space-x-2">
-            <span className="font-bold text-slate-900">₹{Number(hoverData.price).toFixed(2)}</span>
-            <span className="text-slate-300">|</span>
-            <span className="text-slate-500">{hoverData.dateLabel}</span>
-          </div>
-        )}
-
         <ResponsiveContainer width="100%" height={300}>
           {chartType === 'area' ? (
             <AreaChart
@@ -551,7 +557,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
                 axisLine={false}
                 tickFormatter={(val) => `₹${val}`}
               />
-              <Tooltip cursor={<CrosshairCursor />} content={() => null} />
+              <Tooltip cursor={<CrosshairCursor />} content={<ChartHoverTooltip />} />
               <ReferenceLine
                 y={openingPrice}
                 stroke="#CBD5E1"
@@ -605,7 +611,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
                 axisLine={false}
                 tickFormatter={(val) => `₹${val}`}
               />
-              <Tooltip cursor={<CrosshairCursor />} content={() => null} />
+              <Tooltip cursor={<CrosshairCursor />} content={<ChartHoverTooltip />} />
               <ReferenceLine
                 y={openingPrice}
                 stroke="#CBD5E1"
@@ -640,7 +646,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
                 hide
                 tickFormatter={(val) => `₹${val}`}
               />
-              <Tooltip cursor={<CrosshairCursor />} content={() => null} />
+              <Tooltip cursor={<CrosshairCursor />} content={<ChartHoverTooltip />} />
 
               <ReferenceLine
                 y={openingPrice}
@@ -655,6 +661,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
                 stroke={strokeColor}
                 strokeWidth={2.6}
                 dot={false}
+                activeDot={{ r: 5, fill: strokeColor, stroke: '#D1FAE5', strokeWidth: 3 }}
                 isAnimationActive={false}
               />
 
