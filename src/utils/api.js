@@ -5,6 +5,7 @@ import {
   ensureRichIntradayHistory
 } from '../../shared/marketSimulation.js';
 import { getMarketStatus } from '../../shared/marketCalendar.js';
+import { getPriceRanges } from '../../shared/priceRanges.js';
 import { computeStockSentiment } from '../../shared/stockSentiment.js';
 
 export { computeStockSentiment };
@@ -182,15 +183,20 @@ function computeMetrics(priceTicks, stock = null) {
       currentPrice: base, startingPrice: base, previousPrice: base,
       changeAmount: 0, changePercent: 0, totalChangeAmount: 0, totalChangePercent: 0,
       highPrice: base, lowPrice: base, totalEvents: 0,
-      todayHigh: base, todayLow: base,
-      fiftyTwoWeekHigh: base, fiftyTwoWeekLow: base,
+      todayHigh: null, todayLow: null,
+      fiftyTwoWeekHigh: null, fiftyTwoWeekLow: null,
       ...circuits
     };
   }
 
-  const now = new Date();
-  const startOfDayMs = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).getTime();
-  const sorted = [...priceTicks].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  const nowMs = Date.now();
+  const todayDate = getMarketStatus(nowMs).date;
+  const startOfDayMs = Date.parse(`${todayDate}T00:00:00+05:30`);
+  const sorted = [...priceTicks]
+    .filter(tick => Number.isFinite(Date.parse(tick.timestamp)) &&
+      Date.parse(tick.timestamp) <= nowMs &&
+      Number.isFinite(Number(tick.price)))
+    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
   const ticksBeforeToday = sorted.filter(t => new Date(t.timestamp).getTime() < startOfDayMs);
 
   let openingPrice;
@@ -213,16 +219,7 @@ function computeMetrics(priceTicks, stock = null) {
   const currentPrice = prices[prices.length - 1];
   const startingPrice = openingPrice;
   const previousPrice = prices.length > 1 ? prices[prices.length - 2] : startingPrice;
-  const todayDate = getMarketStatus(now.getTime()).date;
-  const fiftyTwoWeeksAgo = now.getTime() - 52 * 7 * 24 * 60 * 60 * 1000;
-  const todayPrices = [];
-  const fiftyTwoWeekPrices = [];
-
-  sorted.forEach(tick => {
-    const timestamp = new Date(tick.timestamp).getTime();
-    if (getMarketStatus(timestamp).date === todayDate) todayPrices.push(tick.price);
-    if (timestamp >= fiftyTwoWeeksAgo && timestamp <= now.getTime()) fiftyTwoWeekPrices.push(tick.price);
-  });
+  const priceRanges = getPriceRanges(sorted, nowMs);
 
   const changeAmount = Number((currentPrice - previousPrice).toFixed(2));
   const changePercent = previousPrice > 0 ? Number(((changeAmount / previousPrice) * 100).toFixed(2)) : 0;
@@ -239,10 +236,7 @@ function computeMetrics(priceTicks, stock = null) {
     totalChangePercent,
     highPrice: Math.max(...prices),
     lowPrice: Math.min(...prices),
-    todayHigh: Math.max(...(todayPrices.length > 0 ? todayPrices : [currentPrice])),
-    todayLow: Math.min(...(todayPrices.length > 0 ? todayPrices : [currentPrice])),
-    fiftyTwoWeekHigh: Math.max(...(fiftyTwoWeekPrices.length > 0 ? fiftyTwoWeekPrices : [currentPrice])),
-    fiftyTwoWeekLow: Math.min(...(fiftyTwoWeekPrices.length > 0 ? fiftyTwoWeekPrices : [currentPrice])),
+    ...priceRanges,
     totalEvents: priceTicks.filter(h => h.eventId !== null).length,
     ...circuits
   };

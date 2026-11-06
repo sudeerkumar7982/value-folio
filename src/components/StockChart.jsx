@@ -202,7 +202,8 @@ function getYearGraphPriceBounds(ticks, profile) {
   ticks.forEach(tick => {
     const timestampMs = Date.parse(tick.timestamp);
     const price = Number(tick.price);
-    if (timestampMs < startMs || timestampMs > nowMs || !Number.isFinite(price)) return;
+    if (timestampMs < startMs || timestampMs > nowMs || !Number.isFinite(price) ||
+        !isMarketOpenAt(timestampMs)) return;
     high = high === null ? price : Math.max(high, price);
     low = low === null ? price : Math.min(low, price);
   });

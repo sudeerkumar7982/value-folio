@@ -3,6 +3,7 @@
  */
 import { getSentimentCircuitPercentages } from '../../shared/marketSimulation.js';
 import { getMarketStatus } from '../../shared/marketCalendar.js';
+import { getPriceRanges } from '../../shared/priceRanges.js';
 
 export function getCircuitLimitsBySentiment(basePrice, sentimentData) {
   const base = Number(basePrice || 100);
@@ -50,7 +51,7 @@ export function calculateSectorUpdates(currentSectors, primarySector, delta) {
   return updated;
 }
 
-export function computeStockMetrics(priceHistory, stock = null) {
+export function computeStockMetrics(priceHistory, stock = null, nowMs = Date.now()) {
   if (!priceHistory || priceHistory.length === 0) {
     const base = stock?.profile?.startingPrice || 100;
     const circuits = getCircuitLimitsBySentiment(base, stock?.sentiment);
@@ -64,18 +65,22 @@ export function computeStockMetrics(priceHistory, stock = null) {
       totalChangePercent: 0,
       highPrice: base,
       lowPrice: base,
-      todayHigh: base,
-      todayLow: base,
-      fiftyTwoWeekHigh: base,
-      fiftyTwoWeekLow: base,
+      todayHigh: null,
+      todayLow: null,
+      fiftyTwoWeekHigh: null,
+      fiftyTwoWeekLow: null,
       totalEvents: 0,
       ...circuits
     };
   }
 
-  const now = new Date();
-  const startOfDayMs = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).getTime();
-  const sorted = [...priceHistory].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  const todayDate = getMarketStatus(nowMs).date;
+  const startOfDayMs = Date.parse(`${todayDate}T00:00:00+05:30`);
+  const sorted = priceHistory
+    .filter(tick => Number.isFinite(Date.parse(tick.timestamp)) &&
+      Date.parse(tick.timestamp) <= nowMs &&
+      Number.isFinite(Number(tick.price)))
+    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
   const ticksBeforeToday = sorted.filter(t => new Date(t.timestamp).getTime() < startOfDayMs);
 
   let openingPrice;
@@ -97,16 +102,7 @@ export function computeStockMetrics(priceHistory, stock = null) {
   const currentPrice = prices[prices.length - 1];
   const startingPrice = openingPrice;
   const previousPrice = prices.length > 1 ? prices[prices.length - 2] : startingPrice;
-  const todayDate = getMarketStatus(now.getTime()).date;
-  const fiftyTwoWeeksAgo = now.getTime() - 52 * 7 * 24 * 60 * 60 * 1000;
-  const todayPrices = [];
-  const fiftyTwoWeekPrices = [];
-
-  sorted.forEach(tick => {
-    const timestamp = new Date(tick.timestamp).getTime();
-    if (getMarketStatus(timestamp).date === todayDate) todayPrices.push(tick.price);
-    if (timestamp >= fiftyTwoWeeksAgo && timestamp <= now.getTime()) fiftyTwoWeekPrices.push(tick.price);
-  });
+  const priceRanges = getPriceRanges(sorted, nowMs);
 
   const changeAmount = Number((currentPrice - previousPrice).toFixed(2));
   const changePercent = previousPrice > 0 ? Number(((changeAmount / previousPrice) * 100).toFixed(2)) : 0;
@@ -124,10 +120,7 @@ export function computeStockMetrics(priceHistory, stock = null) {
     totalChangePercent,
     highPrice: Math.max(...prices),
     lowPrice: Math.min(...prices),
-    todayHigh: Math.max(...(todayPrices.length > 0 ? todayPrices : [currentPrice])),
-    todayLow: Math.min(...(todayPrices.length > 0 ? todayPrices : [currentPrice])),
-    fiftyTwoWeekHigh: Math.max(...(fiftyTwoWeekPrices.length > 0 ? fiftyTwoWeekPrices : [currentPrice])),
-    fiftyTwoWeekLow: Math.min(...(fiftyTwoWeekPrices.length > 0 ? fiftyTwoWeekPrices : [currentPrice])),
+    ...priceRanges,
     totalEvents: priceHistory.filter(h => h.eventId !== null).length,
     ...circuits
   };

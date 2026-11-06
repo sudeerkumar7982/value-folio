@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "test": "node --test shared/marketCalendar.test.js shared/stockSentiment.test.js server/ai/sentimentEngine.test.js server/engine/priceEngine.test.js",
+    "test": "node --test shared/marketCalendar.test.js shared/stockSentiment.test.js shared/priceRanges.test.js server/ai/sentimentEngine.test.js server/engine/priceEngine.test.js",
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
