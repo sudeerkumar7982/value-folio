@@ -322,7 +322,10 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
     };
   }, [ticks, timeRange, profile]);
 
-  const chartData = useMemo(() => reduceChartPoints(formattedData), [formattedData]);
+  const chartData = useMemo(
+    () => reduceChartPoints(formattedData, chartType === 'line' ? 1000 : 6000),
+    [formattedData, chartType]
+  );
   const priceBounds = formattedData.reduce((bounds, point) => {
     if (point.price === null || Number.isNaN(point.price)) return bounds;
     bounds.min = Math.min(bounds.min, point.price);
@@ -577,29 +580,15 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
                 dataKey="timeMs"
                 domain={xDomain}
                 tickFormatter={xFormatter}
-                stroke="#94A3B8"
-                fontSize={11}
-                tickLine={false}
-                axisLine={false}
+                hide
               />
               <YAxis
                 orientation="right"
                 domain={[minPrice, maxPrice]}
-                stroke="#94A3B8"
-                fontSize={11}
-                tickLine={false}
-                axisLine={false}
+                hide
                 tickFormatter={(val) => `₹${val}`}
               />
               <Tooltip cursor={<CrosshairCursor />} content={() => null} />
-              
-              {/* Dashed Horizontal Baseline across Opening Price */}
-              <ReferenceLine
-                y={openingPrice}
-                stroke="#CBD5E1"
-                strokeDasharray="4 4"
-                strokeWidth={1}
-              />
 
               {/* Pure High-Density Line */}
               <Line
