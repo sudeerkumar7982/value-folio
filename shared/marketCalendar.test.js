@@ -7,7 +7,13 @@ import {
   getSentimentCircuitPercentages,
   simulateCatchUpTicks
 } from './marketSimulation.js';
-import { getTradingSessionsBetween, isMarketOpenAt } from './marketCalendar.js';
+import {
+  getMarketSessionFor,
+  getMarketStatus,
+  getTradingSessionsBetween,
+  isMarketOpenAt,
+  isTradingDay
+} from './marketCalendar.js';
 
 test('market opens and closes at the specified IST times', () => {
   assert.equal(isMarketOpenAt(Date.parse('2026-03-04T03:44:59.999Z')), false);
@@ -98,6 +104,54 @@ test('event impact drives price movement even when the sentiment label disagrees
 test('market is closed on weekends and NSE trading holidays', () => {
   assert.equal(isMarketOpenAt(Date.parse('2026-03-07T05:00:00.000Z')), false);
   assert.equal(isMarketOpenAt(Date.parse('2026-03-03T05:00:00.000Z')), false);
+});
+
+test('Diwali Muhurat trading overrides the Sunday holiday only for its special session', () => {
+  const beforePreOpen = Date.parse('2026-11-08T08:34:59.999Z');
+  const preOpen = Date.parse('2026-11-08T08:35:00.000Z');
+  const beforeTrading = Date.parse('2026-11-08T08:49:59.999Z');
+  const tradingOpen = Date.parse('2026-11-08T08:50:00.000Z');
+  const beforeClose = Date.parse('2026-11-08T09:59:59.999Z');
+  const tradingClose = Date.parse('2026-11-08T10:00:00.000Z');
+
+  assert.equal(isTradingDay(tradingOpen), true);
+  assert.equal(isMarketOpenAt(beforePreOpen), false);
+  assert.equal(isMarketOpenAt(preOpen), false);
+  assert.equal(isMarketOpenAt(beforeTrading), false);
+  assert.equal(isMarketOpenAt(tradingOpen), true);
+  assert.equal(isMarketOpenAt(beforeClose), true);
+  assert.equal(isMarketOpenAt(tradingClose), false);
+
+  const status = getMarketStatus(tradingOpen);
+  assert.equal(status.specialSession, 'Diwali Muhurat Trading');
+  assert.equal(status.preOpeningStartsAt, '2026-11-08T08:35:00.000Z');
+  assert.equal(status.preOpeningEndsAt, '2026-11-08T08:50:00.000Z');
+  assert.equal(status.opensAt, '2026-11-08T08:50:00.000Z');
+  assert.equal(status.closingAuctionEndsAt, '2026-11-08T09:45:00.000Z');
+  assert.equal(status.closesAt, '2026-11-08T10:00:00.000Z');
+
+  const session = getMarketSessionFor(tradingOpen);
+  assert.deepEqual(session, {
+    marketOpen: tradingOpen,
+    marketClose: tradingClose
+  });
+  const followingDay = getMarketStatus(Date.parse('2026-11-09T08:50:00.000Z'));
+  assert.equal(followingDay.specialSession, undefined);
+  assert.equal(followingDay.opensAt, '2026-11-09T03:45:00.000Z');
+
+  const sessions = getTradingSessionsBetween(
+    Date.parse('2026-11-08T08:30:00.000Z'),
+    Date.parse('2026-11-08T10:15:00.000Z')
+  );
+  assert.deepEqual(sessions, [{ start: tradingOpen, end: tradingClose, offset: 0 }]);
+
+  const stock = {
+    profile: { symbol: 'TEST', currentPrice: 100, startingPrice: 100 },
+    priceTicks: []
+  };
+  ensureRichIntradayHistory(stock, Date.parse('2026-11-08T09:00:00.000Z'));
+  assert.equal(stock.priceTicks[0].timestamp, '2026-11-08T08:50:00.000Z');
+  assert.ok(stock.priceTicks.every(tick => isMarketOpenAt(Date.parse(tick.timestamp))));
 });
 
 test('historical chart sessions exclude non-trading hours and compress overnight gaps', () => {

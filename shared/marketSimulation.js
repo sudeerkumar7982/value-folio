@@ -32,6 +32,15 @@ const EVENT_IMPORTANCE_WEIGHTS = {
 };
 const EVENT_IMPACT_HALF_LIFE_MS = 7 * 24 * 60 * 60 * 1000;
 
+function formatMarketTime(timestampMs) {
+  return new Intl.DateTimeFormat('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  }).format(timestampMs);
+}
+
 export function getSentimentCircuitPercentages(sentimentScore) {
   const score = Math.max(0, Math.min(100, Number(sentimentScore) || 0));
   if (score >= 80) return { upperCircuitPct: 20, lowerCircuitPct: 5 };
@@ -216,7 +225,7 @@ export function simulateCatchUpTicks(stock, targetNowMs = Date.now(), maxTicksTo
 }
 
 /**
- * Backfills today's intraday history with GBM ticks from 9:15 AM to now.
+ * Backfills today's intraday history with GBM ticks from the session open to now.
  * Uses unbiased pseudo-random so there's no systematic upward/downward drift.
  */
 export function ensureRichIntradayHistory(stock, targetNowMs = Date.now()) {
@@ -260,7 +269,12 @@ export function ensureRichIntradayHistory(stock, targetNowMs = Date.now()) {
     if (tMs > historyEndMs) break;
 
     if (i === 0) {
-      generated.push({ timestamp: new Date(tMs).toISOString(), price: currentP, eventId: null, label: '🔔 Market Open (9:15 AM)' });
+      generated.push({
+        timestamp: new Date(tMs).toISOString(),
+        price: currentP,
+        eventId: null,
+        label: `🔔 Market Open (${formatMarketTime(marketOpenMs)} IST)`
+      });
       continue;
     }
 

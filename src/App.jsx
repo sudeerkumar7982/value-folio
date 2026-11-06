@@ -11,7 +11,7 @@ import { IPOHub } from './components/IPOHub.jsx';
 import { MarketScreener } from './components/MarketScreener.jsx';
 import { MarketDepth } from './components/MarketDepth.jsx';
 import { PortfolioModal } from './components/PortfolioModal.jsx';
-import { Activity, ShieldCheck, Flame, TrendingUp, TrendingDown, Plus, BarChart2, DollarSign, Rocket, Trash2 } from 'lucide-react';
+import { Activity, ShieldCheck, Flame, TrendingUp, TrendingDown, Plus, BarChart2, DollarSign, Rocket, Trash2, CalendarDays, Clock } from 'lucide-react';
 import { API } from './utils/api.js';
 import { getMarketStatus } from '../shared/marketCalendar.js';
 
@@ -220,6 +220,17 @@ export default function App() {
   const profile = data?.profile || null;
   const metrics = data?.metrics || null;
   const priceTicks = data?.priceTicks || [];
+  const isMuhuratDate = marketSession.date === '2026-11-08';
+  const muhuratNow = Date.now();
+  const muhuratStatus = !isMuhuratDate
+    ? (marketSession.date < '2026-11-08' ? 'Upcoming' : 'Session complete')
+    : muhuratNow < Date.parse(marketSession.preOpeningStartsAt)
+      ? 'Scheduled today'
+      : muhuratNow < Date.parse(marketSession.preOpeningEndsAt)
+        ? 'Pre-opening'
+        : muhuratNow < Date.parse(marketSession.closesAt)
+          ? 'Trading session'
+          : 'Session complete';
 
   return (
     <div className="min-h-screen bg-[#F7F6F1] text-slate-800 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
@@ -246,6 +257,53 @@ export default function App() {
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        {activeTab === 'DASHBOARD' && (
+          <section className="overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-orange-50 p-5 shadow-sm sm:p-6">
+            <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-start gap-3">
+                <div className="rounded-xl bg-amber-100 p-2.5 text-amber-700">
+                  <CalendarDays className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-lg font-extrabold text-slate-800">Diwali Muhurat Trading</h2>
+                    <span className="rounded-full border border-amber-200 bg-white px-2.5 py-0.5 text-xs font-bold text-amber-700">
+                      {muhuratStatus}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Sunday, November 8, 2026 <span className="font-semibold">• IST</span>
+                  </p>
+                  <p className="mt-2 max-w-2xl text-sm text-slate-500">
+                    The special session runs only on this date; live market updates follow the trading window below.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-3 md:min-w-[520px]">
+                <div className="rounded-xl border border-amber-100 bg-white/80 p-3">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <Clock className="h-3.5 w-3.5" /> Pre-opening
+                  </div>
+                  <div className="mt-1 font-bold text-slate-800">2:05 PM – 2:20 PM</div>
+                </div>
+                <div className="rounded-xl border border-amber-100 bg-white/80 p-3">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <Clock className="h-3.5 w-3.5" /> Trading
+                  </div>
+                  <div className="mt-1 font-bold text-slate-800">2:20 PM – 3:30 PM</div>
+                </div>
+                <div className="rounded-xl border border-amber-100 bg-white/80 p-3">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <Clock className="h-3.5 w-3.5" /> Closing auction
+                  </div>
+                  <div className="mt-1 font-bold text-slate-800">CAS shares end at 3:15 PM</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
         
         {/* TAB 1: Main Active Stock Dashboard */}
         {activeTab === 'DASHBOARD' && (

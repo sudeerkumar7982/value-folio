@@ -3,6 +3,15 @@ const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MARKET_OPEN_MINUTES = 9 * 60 + 15;
 const MARKET_CLOSE_MINUTES = 15 * 60 + 30;
+const SPECIAL_SESSIONS = new Map([
+  ['2026-11-08', {
+    name: 'Diwali Muhurat Trading',
+    preOpeningStartMinutes: 14 * 60 + 5,
+    marketOpenMinutes: 14 * 60 + 20,
+    closingAuctionEndMinutes: 15 * 60 + 15,
+    marketCloseMinutes: 15 * 60 + 30
+  }]
+]);
 
 const holidays = new Map([
   ['2026-01-15', 'Municipal Corporation Election - Maharashtra'],
@@ -46,21 +55,44 @@ function getExchangeDate(timestampMs) {
 }
 
 function getSessionBounds(dateParts) {
+  const specialSession = SPECIAL_SESSIONS.get(dateParts.dateKey);
+  const openMinutes = specialSession?.marketOpenMinutes ?? MARKET_OPEN_MINUTES;
+  const closeMinutes = specialSession?.marketCloseMinutes ?? MARKET_CLOSE_MINUTES;
   const marketOpen = Date.UTC(
     dateParts.year,
     dateParts.month,
     dateParts.day,
-    9,
-    15
+    Math.floor(openMinutes / 60),
+    openMinutes % 60
   ) - IST_OFFSET_MS;
   const marketClose = Date.UTC(
     dateParts.year,
     dateParts.month,
     dateParts.day,
-    15,
-    30
+    Math.floor(closeMinutes / 60),
+    closeMinutes % 60
   ) - IST_OFFSET_MS;
   return { marketOpen, marketClose };
+}
+
+function getSpecialSessionTimes(dateParts) {
+  const specialSession = SPECIAL_SESSIONS.get(dateParts.dateKey);
+  if (!specialSession) return {};
+
+  const atMinutes = minutes => new Date(Date.UTC(
+    dateParts.year,
+    dateParts.month,
+    dateParts.day,
+    Math.floor(minutes / 60),
+    minutes % 60
+  ) - IST_OFFSET_MS).toISOString();
+
+  return {
+    specialSession: specialSession.name,
+    preOpeningStartsAt: atMinutes(specialSession.preOpeningStartMinutes),
+    preOpeningEndsAt: atMinutes(specialSession.marketOpenMinutes),
+    closingAuctionEndsAt: atMinutes(specialSession.closingAuctionEndMinutes)
+  };
 }
 
 export function setTradingHolidays(records = []) {
@@ -73,15 +105,18 @@ export function setTradingHolidays(records = []) {
 
 export function isTradingDay(timestampMs = Date.now()) {
   const { weekday, dateKey } = getExchangeDate(timestampMs);
-  return weekday !== 0 && weekday !== 6 && !holidays.has(dateKey);
+  return SPECIAL_SESSIONS.has(dateKey) || (weekday !== 0 && weekday !== 6 && !holidays.has(dateKey));
 }
 
 export function isMarketOpenAt(timestampMs = Date.now()) {
   const exchangeDate = getExchangeDate(timestampMs);
-  if (exchangeDate.weekday === 0 || exchangeDate.weekday === 6 || holidays.has(exchangeDate.dateKey)) {
+  const specialSession = SPECIAL_SESSIONS.get(exchangeDate.dateKey);
+  if (!specialSession && (exchangeDate.weekday === 0 || exchangeDate.weekday === 6 || holidays.has(exchangeDate.dateKey))) {
     return false;
   }
-  return exchangeDate.minutes >= MARKET_OPEN_MINUTES && exchangeDate.minutes < MARKET_CLOSE_MINUTES;
+  const openMinutes = specialSession?.marketOpenMinutes ?? MARKET_OPEN_MINUTES;
+  const closeMinutes = specialSession?.marketCloseMinutes ?? MARKET_CLOSE_MINUTES;
+  return exchangeDate.minutes >= openMinutes && exchangeDate.minutes < closeMinutes;
 }
 
 export function getMarketStatus(timestampMs = Date.now()) {
@@ -92,17 +127,19 @@ export function getMarketStatus(timestampMs = Date.now()) {
   return {
     timezone: TIME_ZONE,
     marketOpen: isMarketOpenAt(timestampMs),
-    tradingDay: exchangeDate.weekday !== 0 && exchangeDate.weekday !== 6 && !holiday,
+    tradingDay: isTradingDay(timestampMs),
     date: exchangeDate.dateKey,
     holiday,
     opensAt: new Date(marketOpen).toISOString(),
-    closesAt: new Date(marketClose).toISOString()
+    closesAt: new Date(marketClose).toISOString(),
+    ...getSpecialSessionTimes(exchangeDate)
   };
 }
 
 export function getMarketSessionFor(timestampMs = Date.now()) {
   const exchangeDate = getExchangeDate(timestampMs);
-  if (exchangeDate.weekday === 0 || exchangeDate.weekday === 6 || holidays.has(exchangeDate.dateKey)) {
+  if (!SPECIAL_SESSIONS.has(exchangeDate.dateKey) &&
+      (exchangeDate.weekday === 0 || exchangeDate.weekday === 6 || holidays.has(exchangeDate.dateKey))) {
     return null;
   }
 
