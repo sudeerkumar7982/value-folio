@@ -302,7 +302,7 @@ export function StockChart({ priceTicks = [], profile, metrics, symbol = '' }) {
             timeZone: 'Asia/Kolkata'
           }),
           price: openPrice,
-          label: `🔔 Trading Session Baseline (${sessionStartLabel})`,
+          label: `🔔 Opening Price Baseline (${sessionStartLabel})`,
           eventId: null,
           diff: 0,
           diffPct: 0

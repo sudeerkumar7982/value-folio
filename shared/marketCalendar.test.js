@@ -47,6 +47,26 @@ test('regular weekday pre-opening runs from 9:00 to 9:15 IST without live tradin
   assert.equal(getMarketStatus(Date.parse('2026-03-03T03:30:00.000Z')).preOpeningStartsAt, undefined);
 });
 
+test('market catch-up does not fluctuate or add ticks during regular pre-opening', () => {
+  const stock = {
+    profile: { symbol: 'TEST', currentPrice: 125, startingPrice: 100 },
+    priceTicks: [{
+      timestamp: '2026-03-03T10:00:00.000Z',
+      price: 125,
+      eventId: null
+    }]
+  };
+
+  simulateCatchUpTicks(stock, Date.parse('2026-03-04T03:40:00.000Z'));
+
+  assert.equal(stock.profile.currentPrice, 125);
+  assert.deepEqual(stock.priceTicks, [{
+    timestamp: '2026-03-03T10:00:00.000Z',
+    price: 125,
+    eventId: null
+  }]);
+});
+
 test('real-life event impact drives rally strength and circuit bands remain unchanged', () => {
   const nowMs = Date.UTC(2026, 0, 1);
   const strongBullishEvent = [{
