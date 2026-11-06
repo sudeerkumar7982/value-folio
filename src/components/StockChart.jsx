@@ -335,8 +335,8 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
   const periodChangePct = openingPrice > 0 ? Number(((periodChangeAmt / openingPrice) * 100).toFixed(2)) : 0;
   const isUpTrend = periodChangeAmt >= 0;
 
-  // Exact Zerodha / Dixon emerald green for positive trend, vivid red for negative
-  const strokeColor = isUpTrend ? '#00B386' : '#EF4444';
+  // Use a darker green chart line with a soft two-tone fill on positive trends.
+  const strokeColor = isUpTrend ? '#006B4F' : '#EF4444';
 
   const minVal = priceBounds.min;
   const maxVal = priceBounds.max;
@@ -472,7 +472,8 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
             >
               <defs>
                 <linearGradient id="stockAreaGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={strokeColor} stopOpacity={0.16} />
+                  <stop offset="5%" stopColor={isUpTrend ? '#006B4F' : strokeColor} stopOpacity={0.2} />
+                  <stop offset="55%" stopColor={isUpTrend ? '#00B386' : strokeColor} stopOpacity={0.08} />
                   <stop offset="95%" stopColor={strokeColor} stopOpacity={0.0} />
                 </linearGradient>
               </defs>
