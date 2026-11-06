@@ -497,19 +497,6 @@ export function StockChart({ priceTicks = [], profile, metrics, symbol = '' }) {
       : reduceChartPoints(formattedData),
     [formattedData, chartType, timeRange, xDomain]
   );
-  const displayedYearBounds = useMemo(() => {
-    if (timeRange !== '1Y') return yearGraphBounds;
-
-    return chartData.reduce((bounds, point) => {
-      const price = Number(point.price);
-      if (!Number.isFinite(price)) return bounds;
-      return {
-        high: bounds.high === null ? price : Math.max(bounds.high, price),
-        low: bounds.low === null ? price : Math.min(bounds.low, price)
-      };
-    }, { high: null, low: null });
-  }, [chartData, timeRange, yearGraphBounds]);
-
   const priceBounds = formattedData.reduce((bounds, point) => {
     if (point.price === null || Number.isNaN(point.price)) return bounds;
     bounds.min = Math.min(bounds.min, point.price);
@@ -518,6 +505,25 @@ export function StockChart({ priceTicks = [], profile, metrics, symbol = '' }) {
     return bounds;
   }, { min: openingPrice, max: openingPrice, latest: openingPrice });
   const latestPrice = Number(profile?.currentPrice ?? priceBounds.latest);
+  const displayedYearBounds = useMemo(() => {
+    const historicalBounds = timeRange === '1Y'
+      ? chartData.reduce((bounds, point) => {
+        const price = Number(point.price);
+        if (!Number.isFinite(price)) return bounds;
+        return {
+          high: bounds.high === null ? price : Math.max(bounds.high, price),
+          low: bounds.low === null ? price : Math.min(bounds.low, price)
+        };
+      }, { high: null, low: null })
+      : yearGraphBounds;
+
+    if (!Number.isFinite(latestPrice)) return historicalBounds;
+    return {
+      high: historicalBounds.high === null ? latestPrice : Math.max(historicalBounds.high, latestPrice),
+      low: historicalBounds.low === null ? latestPrice : Math.min(historicalBounds.low, latestPrice)
+    };
+  }, [chartData, latestPrice, timeRange, yearGraphBounds]);
+
   const periodChangeAmt = Number((latestPrice - openingPrice).toFixed(2));
   const periodChangePct = openingPrice > 0 ? Number(((periodChangeAmt / openingPrice) * 100).toFixed(2)) : 0;
   const isUpTrend = periodChangeAmt >= 0;
