@@ -182,7 +182,7 @@ function sampleMinutePoints(data, domain) {
   return sampled;
 }
 
-export function StockChart({ priceTicks = [], profile, symbol = '' }) {
+export function StockChart({ priceTicks = [], profile, metrics, symbol = '' }) {
   const [timeRange, setTimeRange] = useState('1D');
   const [chartType, setChartType] = useState('line'); // 'line', 'area', 'bar'
   const [hoverData, setHoverData] = useState(null);
@@ -739,6 +739,22 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
             </LineChart>
           )}
         </ResponsiveContainer>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" aria-label="Price ranges">
+        {[
+          { label: 'Today High', value: metrics?.todayHigh },
+          { label: 'Today Low', value: metrics?.todayLow },
+          { label: '52-week High', value: metrics?.fiftyTwoWeekHigh },
+          { label: '52-week Low', value: metrics?.fiftyTwoWeekLow }
+        ].map(({ label, value }) => (
+          <div key={label} className="rounded-xl border border-slate-100 bg-slate-50/70 px-3 py-2">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{label}</div>
+            <div className="mt-0.5 font-mono text-sm font-bold text-slate-800">
+              {Number.isFinite(Number(value)) ? `₹${Number(value).toFixed(2)}` : '—'}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* ── Bottom Controls Bar (Pixel-Matched to Screenshot) ── */}

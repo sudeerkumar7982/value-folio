@@ -354,7 +354,7 @@ export default function App() {
 
               {/* Full-width chart with the order book below */}
               <div className="space-y-6">
-                <StockChart priceTicks={priceTicks} profile={profile} symbol={profile?.symbol || ''} />
+                <StockChart priceTicks={priceTicks} profile={profile} metrics={metrics} symbol={profile?.symbol || ''} />
                 <MarketDepth currentPrice={profile?.currentPrice || 100} symbol={profile?.symbol || ''} />
               </div>
 

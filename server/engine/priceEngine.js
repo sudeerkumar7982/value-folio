@@ -2,6 +2,7 @@
  * Price Engine & Market Metrics Calculator for Human Life Stocks
  */
 import { getSentimentCircuitPercentages } from '../../shared/marketSimulation.js';
+import { getMarketStatus } from '../../shared/marketCalendar.js';
 
 export function getCircuitLimitsBySentiment(basePrice, sentimentData) {
   const base = Number(basePrice || 100);
@@ -63,6 +64,10 @@ export function computeStockMetrics(priceHistory, stock = null) {
       totalChangePercent: 0,
       highPrice: base,
       lowPrice: base,
+      todayHigh: base,
+      todayLow: base,
+      fiftyTwoWeekHigh: base,
+      fiftyTwoWeekLow: base,
       totalEvents: 0,
       ...circuits
     };
@@ -92,6 +97,16 @@ export function computeStockMetrics(priceHistory, stock = null) {
   const currentPrice = prices[prices.length - 1];
   const startingPrice = openingPrice;
   const previousPrice = prices.length > 1 ? prices[prices.length - 2] : startingPrice;
+  const todayDate = getMarketStatus(now.getTime()).date;
+  const fiftyTwoWeeksAgo = now.getTime() - 52 * 7 * 24 * 60 * 60 * 1000;
+  const todayPrices = [];
+  const fiftyTwoWeekPrices = [];
+
+  sorted.forEach(tick => {
+    const timestamp = new Date(tick.timestamp).getTime();
+    if (getMarketStatus(timestamp).date === todayDate) todayPrices.push(tick.price);
+    if (timestamp >= fiftyTwoWeeksAgo) fiftyTwoWeekPrices.push(tick.price);
+  });
 
   const changeAmount = Number((currentPrice - previousPrice).toFixed(2));
   const changePercent = previousPrice > 0 ? Number(((changeAmount / previousPrice) * 100).toFixed(2)) : 0;
@@ -109,6 +124,10 @@ export function computeStockMetrics(priceHistory, stock = null) {
     totalChangePercent,
     highPrice: Math.max(...prices),
     lowPrice: Math.min(...prices),
+    todayHigh: Math.max(...(todayPrices.length > 0 ? todayPrices : [currentPrice])),
+    todayLow: Math.min(...(todayPrices.length > 0 ? todayPrices : [currentPrice])),
+    fiftyTwoWeekHigh: Math.max(...(fiftyTwoWeekPrices.length > 0 ? fiftyTwoWeekPrices : [currentPrice])),
+    fiftyTwoWeekLow: Math.min(...(fiftyTwoWeekPrices.length > 0 ? fiftyTwoWeekPrices : [currentPrice])),
     totalEvents: priceHistory.filter(h => h.eventId !== null).length,
     ...circuits
   };
