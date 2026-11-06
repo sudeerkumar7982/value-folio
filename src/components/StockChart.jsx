@@ -86,12 +86,12 @@ function reduceChartPoints(data, maxPoints = 6000) {
   return [...indexes].sort((a, b) => a - b).map(index => data[index]);
 }
 
-function sampleLinePoints(data, maxPoints = 120) {
+function sampleLinePoints(data, domain, maxPoints = 120) {
   if (data.length <= maxPoints) return data;
 
-  const firstX = Number(data[0].timeMs);
-  const lastX = Number(data[data.length - 1].timeMs);
-  const xRange = lastX - firstX;
+  const firstX = Number(domain?.[0] ?? data[0].timeMs);
+  const lastX = Number(domain?.[1] ?? data[data.length - 1].timeMs);
+  const xRange = Math.max(lastX - firstX, 0);
   const bucketCount = Math.max(1, maxPoints - 2);
   const buckets = Array.from({ length: bucketCount }, () => []);
   const eventIndexes = new Set();
@@ -99,7 +99,7 @@ function sampleLinePoints(data, maxPoints = 120) {
   data.forEach((point, index) => {
     const x = Number(point.timeMs);
     const bucketIndex = xRange > 0 && Number.isFinite(x)
-      ? Math.min(Math.floor(((x - firstX) / xRange) * bucketCount), bucketCount - 1)
+      ? Math.min(Math.max(Math.floor(((x - firstX) / xRange) * bucketCount), 0), bucketCount - 1)
       : Math.min(Math.floor((index / data.length) * bucketCount), bucketCount - 1);
     buckets[bucketIndex].push(index);
     if (point.eventId) eventIndexes.add(index);
@@ -109,15 +109,7 @@ function sampleLinePoints(data, maxPoints = 120) {
 
   for (const bucket of buckets) {
     if (bucket.length === 0) continue;
-
-    const orderedPrices = bucket.map(index => data[index].price).sort((a, b) => a - b);
-    const medianPrice = orderedPrices[Math.floor(orderedPrices.length / 2)];
-    const representativeIndex = bucket.reduce((bestIndex, index) =>
-      Math.abs(data[index].price - medianPrice) < Math.abs(data[bestIndex].price - medianPrice)
-        ? index
-        : bestIndex
-    , bucket[0]);
-    selected.add(representativeIndex);
+    selected.add(bucket[0]);
   }
 
   return [...selected].sort((a, b) => a - b).map(index => data[index]);
@@ -389,9 +381,9 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
 
   const chartData = useMemo(
     () => chartType === 'line'
-      ? sampleLinePoints(formattedData)
+      ? sampleLinePoints(formattedData, xDomain)
       : reduceChartPoints(formattedData),
-    [formattedData, chartType]
+    [formattedData, chartType, xDomain]
   );
   const priceBounds = formattedData.reduce((bounds, point) => {
     if (point.price === null || Number.isNaN(point.price)) return bounds;
