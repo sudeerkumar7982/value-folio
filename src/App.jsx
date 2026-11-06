@@ -230,7 +230,7 @@ export default function App() {
       : muhuratNow < Date.parse(localMarketSession.preOpeningEndsAt)
         ? 'Pre-opening'
         : muhuratNow < Date.parse(localMarketSession.closesAt)
-          ? 'Trading session'
+          ? 'Live Now'
           : 'Session complete';
 
   return (
