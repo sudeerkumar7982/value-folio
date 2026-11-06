@@ -282,7 +282,9 @@ export default function App() {
           </section>
         )}
 
-        {activeTab === 'DASHBOARD' && marketSession.date <= '2026-11-08' && (
+        {activeTab === 'DASHBOARD' &&
+          marketSession.date >= '2026-11-06' &&
+          marketSession.date <= '2026-11-08' && (
           <section className="relative overflow-hidden rounded-3xl border-2 border-amber-300 bg-gradient-to-br from-amber-950 via-orange-900 to-rose-900 p-6 text-white shadow-xl shadow-amber-900/15 sm:p-8">
             <div className="pointer-events-none absolute -right-12 -top-20 h-64 w-64 rounded-full bg-amber-400/15 blur-3xl" />
             <div className="relative flex flex-col gap-7">
