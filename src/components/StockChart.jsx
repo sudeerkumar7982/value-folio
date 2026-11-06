@@ -71,6 +71,59 @@ function reduceChartPoints(data, maxPoints = 6000) {
   return [...indexes].sort((a, b) => a - b).map(index => data[index]);
 }
 
+function sampleLinePoints(data, maxPoints = 120) {
+  if (data.length <= maxPoints) return data;
+
+  const firstX = Number(data[0].timeMs);
+  const lastX = Number(data[data.length - 1].timeMs);
+  const xRange = lastX - firstX;
+  const bucketCount = Math.max(1, maxPoints - 2);
+  const buckets = Array.from({ length: bucketCount }, () => []);
+  const eventIndexes = new Set();
+
+  data.forEach((point, index) => {
+    const x = Number(point.timeMs);
+    const bucketIndex = xRange > 0 && Number.isFinite(x)
+      ? Math.min(Math.floor(((x - firstX) / xRange) * bucketCount), bucketCount - 1)
+      : Math.min(Math.floor((index / data.length) * bucketCount), bucketCount - 1);
+    buckets[bucketIndex].push(index);
+    if (point.eventId) eventIndexes.add(index);
+  });
+
+  const selected = new Set([0, data.length - 1, ...eventIndexes]);
+  let previousIndex = 0;
+
+  for (let bucketIndex = 0; bucketIndex < buckets.length; bucketIndex++) {
+    const bucket = buckets[bucketIndex];
+    if (bucket.length === 0) continue;
+
+    const nextBucket = buckets.slice(bucketIndex + 1).find(points => points.length > 0);
+    const averagePoints = nextBucket?.map(index => data[index]) || [data[data.length - 1]];
+    const averageX = averagePoints.reduce((total, point) => total + Number(point.timeMs), 0) / averagePoints.length;
+    const averageY = averagePoints.reduce((total, point) => total + point.price, 0) / averagePoints.length;
+    const previous = data[previousIndex];
+    let bestIndex = bucket[0];
+    let largestArea = -1;
+
+    for (const index of bucket) {
+      const point = data[index];
+      const area = Math.abs(
+        (Number(previous.timeMs) - averageX) * (point.price - previous.price) -
+        (Number(previous.timeMs) - Number(point.timeMs)) * (averageY - previous.price)
+      );
+      if (area > largestArea) {
+        largestArea = area;
+        bestIndex = index;
+      }
+    }
+
+    selected.add(bestIndex);
+    previousIndex = bestIndex;
+  }
+
+  return [...selected].sort((a, b) => a - b).map(index => data[index]);
+}
+
 export function StockChart({ priceTicks = [], profile, symbol = '' }) {
   const [timeRange, setTimeRange] = useState('1D');
   const [chartType, setChartType] = useState('line'); // 'line', 'area', 'bar'
@@ -336,7 +389,9 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
   }, [ticks, timeRange, profile]);
 
   const chartData = useMemo(
-    () => reduceChartPoints(formattedData, chartType === 'line' ? 300 : 6000),
+    () => chartType === 'line'
+      ? sampleLinePoints(formattedData)
+      : reduceChartPoints(formattedData),
     [formattedData, chartType]
   );
   const priceBounds = formattedData.reduce((bounds, point) => {
