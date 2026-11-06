@@ -191,13 +191,15 @@ function sampleMinutePoints(data, domain) {
 
 function getYearGraphPriceBounds(ticks, profile) {
   const nowMs = Date.now();
-  const windowStartMs = nowMs - 52 * 7 * 24 * 60 * 60 * 1000;
+  const windowStartMs = nowMs - 365 * 24 * 60 * 60 * 1000;
   const profileListingMs = Date.parse(profile?.createdAt || '');
   const startMs = Number.isFinite(profileListingMs)
     ? Math.max(windowStartMs, profileListingMs)
     : windowStartMs;
   let high = null;
   let low = null;
+  let firstSessionDate = null;
+  let firstSessionLastTick = -Infinity;
 
   ticks.forEach(tick => {
     const timestampMs = Date.parse(tick.timestamp);
@@ -205,7 +207,15 @@ function getYearGraphPriceBounds(ticks, profile) {
     if (timestampMs < startMs || timestampMs > nowMs || !Number.isFinite(price) ||
         !isMarketOpenAt(timestampMs)) return;
     high = high === null ? price : Math.max(high, price);
-    low = low === null ? price : Math.min(low, price);
+    const sessionDate = getMarketStatus(timestampMs).date;
+    if (firstSessionDate === null || sessionDate < firstSessionDate) {
+      firstSessionDate = sessionDate;
+      firstSessionLastTick = timestampMs;
+      low = price;
+    } else if (sessionDate === firstSessionDate && timestampMs > firstSessionLastTick) {
+      firstSessionLastTick = timestampMs;
+      low = price;
+    }
   });
 
   return { high, low };
