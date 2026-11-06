@@ -182,6 +182,37 @@ function sampleMinutePoints(data, domain) {
   return sampled;
 }
 
+function getYearGraphPriceBounds(ticks, profile) {
+  const nowMs = Date.now();
+  const sortedTicks = [...ticks].sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp));
+  const profileListingMs = Date.parse(profile?.createdAt || '');
+  const firstTickMs = sortedTicks.length > 0 ? Date.parse(sortedTicks[0].timestamp) : NaN;
+  const listingTimeMs = Number.isFinite(profileListingMs)
+    ? profileListingMs
+    : Number.isFinite(firstTickMs) ? firstTickMs : 0;
+  const windowStartMs = Math.max(nowMs - 365 * 24 * 60 * 60 * 1000, listingTimeMs);
+  const sessions = getTradingSessionsBetween(windowStartMs, nowMs);
+  const sessionsByDate = new Map(
+    sessions.map(session => [getMarketStatus(session.start).date, session])
+  );
+  const dailyTicks = new Map();
+
+  sortedTicks.forEach(tick => {
+    const timestampMs = Date.parse(tick.timestamp);
+    if (timestampMs < windowStartMs || !isMarketOpenAt(timestampMs)) return;
+    const date = getMarketStatus(timestampMs).date;
+    const session = sessionsByDate.get(date);
+    if (session && timestampMs >= session.start && timestampMs < session.end) {
+      dailyTicks.set(date, tick);
+    }
+  });
+
+  const prices = [...dailyTicks.values()].map(tick => Number(tick.price)).filter(Number.isFinite);
+  return prices.length > 0
+    ? { high: Math.max(...prices), low: Math.min(...prices) }
+    : { high: null, low: null };
+}
+
 export function StockChart({ priceTicks = [], profile, metrics, symbol = '' }) {
   const [timeRange, setTimeRange] = useState('1D');
   const [chartType, setChartType] = useState('line'); // 'line', 'area', 'bar'
@@ -201,6 +232,11 @@ export function StockChart({ priceTicks = [], profile, metrics, symbol = '' }) {
       label: `${profile?.symbol || symbol || 'STOCK'} Listing Price`
     }];
   }, [priceTicks, profile, symbol]);
+
+  const yearGraphBounds = useMemo(
+    () => getYearGraphPriceBounds(ticks, profile),
+    [ticks, profile]
+  );
 
   const { formattedData, openingPrice, xDomain, xFormatter } = useMemo(() => {
     const now = new Date();
@@ -745,8 +781,8 @@ export function StockChart({ priceTicks = [], profile, metrics, symbol = '' }) {
         {[
           { label: 'Today High', value: metrics?.todayHigh },
           { label: 'Today Low', value: metrics?.todayLow },
-          { label: '52-week High', value: metrics?.fiftyTwoWeekHigh },
-          { label: '52-week Low', value: metrics?.fiftyTwoWeekLow }
+          { label: '52-week High', value: yearGraphBounds.high },
+          { label: '52-week Low', value: yearGraphBounds.low }
         ].map(({ label, value }) => (
           <div key={label} className="rounded-xl border border-slate-100 bg-slate-50/70 px-3 py-2">
             <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{label}</div>
