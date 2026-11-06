@@ -220,15 +220,16 @@ export default function App() {
   const profile = data?.profile || null;
   const metrics = data?.metrics || null;
   const priceTicks = data?.priceTicks || [];
-  const isMuhuratDate = marketSession.date === '2026-11-08';
+  const localMarketSession = getMarketStatus();
+  const isMuhuratDate = localMarketSession.date === '2026-11-08';
   const muhuratNow = Date.now();
   const muhuratStatus = !isMuhuratDate
-    ? (marketSession.date < '2026-11-08' ? 'Upcoming' : 'Session complete')
-    : muhuratNow < Date.parse(marketSession.preOpeningStartsAt)
+    ? (localMarketSession.date < '2026-11-08' ? 'Upcoming' : 'Session complete')
+    : muhuratNow < Date.parse(localMarketSession.preOpeningStartsAt)
       ? 'Scheduled today'
-      : muhuratNow < Date.parse(marketSession.preOpeningEndsAt)
+      : muhuratNow < Date.parse(localMarketSession.preOpeningEndsAt)
         ? 'Pre-opening'
-        : muhuratNow < Date.parse(marketSession.closesAt)
+        : muhuratNow < Date.parse(localMarketSession.closesAt)
           ? 'Trading session'
           : 'Session complete';
 
@@ -283,8 +284,8 @@ export default function App() {
         )}
 
         {activeTab === 'DASHBOARD' &&
-          marketSession.date >= '2026-11-06' &&
-          marketSession.date <= '2026-11-08' && (
+          localMarketSession.date >= '2026-11-06' &&
+          localMarketSession.date <= '2026-11-08' && (
           <section className="relative overflow-hidden rounded-3xl border-2 border-amber-300 bg-gradient-to-br from-amber-950 via-orange-900 to-rose-900 p-6 text-white shadow-xl shadow-amber-900/15 sm:p-8">
             <div className="pointer-events-none absolute -right-12 -top-20 h-64 w-64 rounded-full bg-amber-400/15 blur-3xl" />
             <div className="relative flex flex-col gap-7">
