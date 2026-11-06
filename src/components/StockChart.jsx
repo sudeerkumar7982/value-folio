@@ -323,7 +323,7 @@ export function StockChart({ priceTicks = [], profile, symbol = '' }) {
   }, [ticks, timeRange, profile]);
 
   const chartData = useMemo(
-    () => reduceChartPoints(formattedData, chartType === 'line' ? 1000 : 6000),
+    () => reduceChartPoints(formattedData, chartType === 'line' ? 300 : 6000),
     [formattedData, chartType]
   );
   const priceBounds = formattedData.reduce((bounds, point) => {
