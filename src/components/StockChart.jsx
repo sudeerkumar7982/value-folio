@@ -91,34 +91,18 @@ function sampleLinePoints(data, maxPoints = 120) {
   });
 
   const selected = new Set([0, data.length - 1, ...eventIndexes]);
-  let previousIndex = 0;
 
-  for (let bucketIndex = 0; bucketIndex < buckets.length; bucketIndex++) {
-    const bucket = buckets[bucketIndex];
+  for (const bucket of buckets) {
     if (bucket.length === 0) continue;
 
-    const nextBucket = buckets.slice(bucketIndex + 1).find(points => points.length > 0);
-    const averagePoints = nextBucket?.map(index => data[index]) || [data[data.length - 1]];
-    const averageX = averagePoints.reduce((total, point) => total + Number(point.timeMs), 0) / averagePoints.length;
-    const averageY = averagePoints.reduce((total, point) => total + point.price, 0) / averagePoints.length;
-    const previous = data[previousIndex];
-    let bestIndex = bucket[0];
-    let largestArea = -1;
-
-    for (const index of bucket) {
-      const point = data[index];
-      const area = Math.abs(
-        (Number(previous.timeMs) - averageX) * (point.price - previous.price) -
-        (Number(previous.timeMs) - Number(point.timeMs)) * (averageY - previous.price)
-      );
-      if (area > largestArea) {
-        largestArea = area;
-        bestIndex = index;
-      }
-    }
-
-    selected.add(bestIndex);
-    previousIndex = bestIndex;
+    const orderedPrices = bucket.map(index => data[index].price).sort((a, b) => a - b);
+    const medianPrice = orderedPrices[Math.floor(orderedPrices.length / 2)];
+    const representativeIndex = bucket.reduce((bestIndex, index) =>
+      Math.abs(data[index].price - medianPrice) < Math.abs(data[bestIndex].price - medianPrice)
+        ? index
+        : bestIndex
+    , bucket[0]);
+    selected.add(representativeIndex);
   }
 
   return [...selected].sort((a, b) => a - b).map(index => data[index]);
