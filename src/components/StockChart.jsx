@@ -109,7 +109,18 @@ function sampleLinePoints(data, domain, maxPoints = 120) {
 
   for (const bucket of buckets) {
     if (bucket.length === 0) continue;
+    let minIndex = bucket[0];
+    let maxIndex = bucket[0];
+
+    for (const index of bucket.slice(1)) {
+      if (data[index].price < data[minIndex].price) minIndex = index;
+      if (data[index].price > data[maxIndex].price) maxIndex = index;
+    }
+
     selected.add(bucket[0]);
+    selected.add(bucket[bucket.length - 1]);
+    selected.add(minIndex);
+    selected.add(maxIndex);
   }
 
   return [...selected].sort((a, b) => a - b).map(index => data[index]);
