@@ -24,6 +24,14 @@ function boxMuller(u1, u2) {
   return r * Math.cos(theta); // N(0,1)
 }
 
+const EVENT_IMPORTANCE_WEIGHTS = {
+  LOW: 0.7,
+  MEDIUM: 1,
+  HIGH: 1.6,
+  CRITICAL: 2.2
+};
+const EVENT_IMPACT_HALF_LIFE_MS = 7 * 24 * 60 * 60 * 1000;
+
 export function getSentimentCircuitPercentages(sentimentScore) {
   const score = Math.max(0, Math.min(100, Number(sentimentScore) || 0));
   if (score >= 80) return { upperCircuitPct: 20, lowerCircuitPct: 5 };
@@ -33,23 +41,47 @@ export function getSentimentCircuitPercentages(sentimentScore) {
   return { upperCircuitPct: 5, lowerCircuitPct: 20 };
 }
 
-export function calculateSentimentDriftPercent(sentimentScore, intervalMs = 1000) {
-  const score = Math.max(0, Math.min(100, Number(sentimentScore) || 0));
+export function calculateEventDriftPercent(events, nowMs = Date.now(), intervalMs = 1000) {
   const intervalScale = Math.max(0, intervalMs) / 30000;
-  return (score - 50) * 0.0003 * intervalScale;
+  let weightedImpact = 0;
+  let totalWeight = 0;
+
+  for (const event of Array.isArray(events) ? events : []) {
+    if (!event) continue;
+    const impact = Number(event.impactPercent);
+    const sentimentSign = event.sentiment === 'POSITIVE' ? 1 : event.sentiment === 'NEGATIVE' ? -1 : 0;
+    const signedImpact = Number.isFinite(impact) && impact !== 0
+      ? impact
+      : sentimentSign * 10;
+    if (!signedImpact) continue;
+
+    const postedAt = Date.parse(event.postedAt || event.timestamp || '');
+    if (Number.isFinite(postedAt) && postedAt > nowMs) continue;
+    const ageMs = Number.isFinite(postedAt) ? nowMs - postedAt : 0;
+    const recencyWeight = Math.pow(0.5, ageMs / EVENT_IMPACT_HALF_LIFE_MS);
+    const importanceWeight = EVENT_IMPORTANCE_WEIGHTS[event.importance] || EVENT_IMPORTANCE_WEIGHTS.MEDIUM;
+    const weight = recencyWeight * importanceWeight;
+
+    weightedImpact += Math.max(-35, Math.min(35, signedImpact)) / 25 * weight;
+    totalWeight += weight;
+  }
+
+  if (totalWeight === 0) return 0;
+  const eventStrength = Math.max(-1, Math.min(1, weightedImpact / totalWeight));
+  return eventStrength * 0.04 * intervalScale;
 }
 
 /**
  * Calculates the % price move for a single tick using GBM.
  *
  * Calibration (30-second tick interval):
- *   Positive life-event sentiment adds upward drift; negative sentiment adds
- *   downward drift. Random noise keeps the intraday movement organic.
+ *   Recent, weighted real-life events add directional drift. Random noise
+ *   keeps the intraday movement organic.
  */
 export function calculateMarketMovePercent(
   currentPrice,
   referencePrice,     // today's opening price — mean-reversion anchor
-  sentimentScore,
+  events,
   symbol,
   nowMs = Date.now(),
   randomValue = Math.random(),
@@ -57,14 +89,13 @@ export function calculateMarketMovePercent(
 ) {
   const current   = Number(currentPrice)  || 100;
   const reference = Number(referencePrice) || current;
-  const score     = Math.max(0, Math.min(100, Number(sentimentScore) || 50));
 
   // ── GBM core ──────────────────────────────────────────────────────────────
   // σ per 30-second tick calibrated to ~2.2% daily volatility.
   // We approximate N(0,1) from the single uniform randomValue using a simple
   // approximation (close enough for simulation purposes).
   const u1 = Math.max(0.001, Math.min(0.999, randomValue));
-  const u2 = Math.max(0.001, Math.min(0.999, pseudoHash(nowMs * 0.001 + score)));
+  const u2 = Math.max(0.001, Math.min(0.999, pseudoHash(nowMs * 0.001 + symbol.length)));
   const Z  = boxMuller(u1, u2);                 // N(0,1)
   const intervalScale = Math.max(0, intervalMs) / 30000;
   const sigmaTick = 0.08 * Math.sqrt(intervalScale);
@@ -80,13 +111,13 @@ export function calculateMarketMovePercent(
   const momentum = (Math.sin(medRad) * 0.025 + Math.cos(medRad * 1.5) * 0.012) * intervalScale;
 
   // ── Human-life sentiment drift (μ per tick) ───────────────────────────────
-  const mu = calculateSentimentDriftPercent(score, intervalMs);
+  const mu = calculateEventDriftPercent(events, nowMs, intervalMs);
 
   // ── Mean reversion toward today's opening ────────────────────────────────
   // Activates when price drifts >1% from opening — creates visible oscillations.
   // This is what makes the chart go up AND come back down organically.
   const driftPct = ((current - reference) / reference) * 100;
-  const reversionStrength = 0.004 * (1 - 0.8 * Math.abs(score - 50) / 50);
+  const reversionStrength = 0.004;
   const reversion = driftPct > 1 || driftPct < -1
     ? Math.max(-0.08 * intervalScale, Math.min(0.08 * intervalScale, -driftPct * reversionStrength * intervalScale))
     : 0;
@@ -147,7 +178,7 @@ export function simulateCatchUpTicks(stock, targetNowMs = Date.now(), maxTicksTo
   else if (elapsedMs > 2 * 60 * 1000)        stepMs = 4 * 1000;
   else                                        stepMs = 2 * 1000;
 
-  const { symbol, sentimentScore, upperCircuitPct, lowerCircuitPct, startingPrice, upperCircuit, lowerCircuit } = getStockMarketParams(stock);
+  const { symbol, upperCircuitPct, lowerCircuitPct, startingPrice, upperCircuit, lowerCircuit } = getStockMarketParams(stock);
   let simPrice      = Number(stock.profile.currentPrice || lastTick.price || 100);
   let currentTimeMs = lastTimeMs + stepMs;
   let tickIndex     = 0;
@@ -161,7 +192,7 @@ export function simulateCatchUpTicks(stock, targetNowMs = Date.now(), maxTicksTo
     // Unbiased pseudo-random pair: mean ≈ 0.5 each
     const u1 = pseudoHash(currentTimeMs * 0.001731 + tickIndex * 127.1);
     const u2 = pseudoHash(currentTimeMs * 0.003713 + tickIndex * 311.7);
-    const noise = calculateMarketMovePercent(simPrice, startingPrice, sentimentScore, symbol, currentTimeMs, u1, stepMs);
+    const noise = calculateMarketMovePercent(simPrice, startingPrice, stock.events, symbol, currentTimeMs, u1, stepMs);
 
     const rawPrice = simPrice * (1 + noise / 100);
     simPrice = Number(Math.min(Math.max(rawPrice, lowerCircuit), upperCircuit).toFixed(2));
@@ -201,7 +232,7 @@ export function ensureRichIntradayHistory(stock, targetNowMs = Date.now()) {
   const todayTicks = stock.priceTicks.filter(t => new Date(t.timestamp).getTime() >= marketOpenMs);
   if (todayTicks.length >= 120) return stock;  // already rich enough
 
-  const { symbol, sentimentScore, upperCircuit, lowerCircuit } = getStockMarketParams(stock);
+  const { symbol, upperCircuit, lowerCircuit } = getStockMarketParams(stock);
   // Start the GBM walk from the CURRENT price (not IPO startingPrice).
   // This centers the generated chart around the actual live price so the
   // oscillations look realistic and don't appear as a sloping line from IPO.
@@ -235,7 +266,7 @@ export function ensureRichIntradayHistory(stock, targetNowMs = Date.now()) {
 
     // Unbiased pseudo-random pair
     const u1    = pseudoHash(tMs * 0.001731 + i * 127.1);
-    const noise = calculateMarketMovePercent(currentP, openAnchor, sentimentScore, symbol, tMs, u1, stepMs);
+    const noise = calculateMarketMovePercent(currentP, openAnchor, stock.events, symbol, tMs, u1, stepMs);
 
     const rawPrice = currentP * (1 + noise / 100);
     currentP = Number(Math.min(Math.max(rawPrice, lowerCircuit), upperCircuit).toFixed(2));

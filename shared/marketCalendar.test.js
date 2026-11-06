@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   calculateMarketMovePercent,
-  calculateSentimentDriftPercent,
+  calculateEventDriftPercent,
   ensureRichIntradayHistory,
   getSentimentCircuitPercentages,
   simulateCatchUpTicks
@@ -15,41 +15,61 @@ test('market opens and closes at the specified IST times', () => {
   assert.equal(isMarketOpenAt(Date.parse('2026-03-04T10:00:00.000Z')), false);
 });
 
-test('sentiment creates directional drift and adjusts circuit bands', () => {
-  assert.ok(calculateSentimentDriftPercent(80, 30000) > 0);
-  assert.equal(calculateSentimentDriftPercent(50, 30000), 0);
-  assert.ok(calculateSentimentDriftPercent(20, 30000) < 0);
+test('real-life event impact drives rally strength and circuit bands remain unchanged', () => {
+  const nowMs = Date.UTC(2026, 0, 1);
+  const strongBullishEvent = [{
+    impactPercent: 25,
+    sentiment: 'POSITIVE',
+    importance: 'CRITICAL',
+    postedAt: new Date(nowMs).toISOString()
+  }];
+  const strongBearishEvent = [{
+    impactPercent: -25,
+    sentiment: 'NEGATIVE',
+    importance: 'CRITICAL',
+    postedAt: new Date(nowMs).toISOString()
+  }];
+  assert.ok(calculateEventDriftPercent(strongBullishEvent, nowMs, 30000) > 0);
+  assert.ok(calculateEventDriftPercent(strongBearishEvent, nowMs, 30000) < 0);
+  assert.equal(calculateEventDriftPercent([], nowMs, 30000), 0);
+  assert.ok(calculateEventDriftPercent(strongBullishEvent, nowMs, 30000) >
+    calculateEventDriftPercent([{ ...strongBullishEvent[0], impactPercent: 3 }], nowMs, 30000));
+  assert.equal(calculateEventDriftPercent([{
+    ...strongBullishEvent[0],
+    postedAt: new Date(nowMs + 1).toISOString()
+  }], nowMs, 30000), 0);
 
-  const averageMove = (score) => {
+  const averageMove = (events) => {
     let total = 0;
     const sampleCount = 600;
     for (let index = 0; index < sampleCount; index++) {
       total += calculateMarketMovePercent(
         100,
         100,
-        score,
+        events,
         'TEST',
-        Date.UTC(2026, 0, 1) + index * 30000,
+        nowMs + index * 30000,
         ((index * 37) % 199 + 0.5) / 200,
         30000
       );
     }
     return total / sampleCount;
   };
-  assert.ok(averageMove(80) > averageMove(50));
-  assert.ok(averageMove(50) > averageMove(20));
+  assert.ok(averageMove(strongBullishEvent) > averageMove([]));
+  assert.ok(averageMove([]) > averageMove(strongBearishEvent));
 
   assert.deepEqual(getSentimentCircuitPercentages(85), { upperCircuitPct: 20, lowerCircuitPct: 5 });
   assert.deepEqual(getSentimentCircuitPercentages(50), { upperCircuitPct: 10, lowerCircuitPct: 10 });
   assert.deepEqual(getSentimentCircuitPercentages(15), { upperCircuitPct: 5, lowerCircuitPct: 20 });
 });
 
-test('neutral sentiment does not produce outsized simulated price swings', () => {
-  const moves = Array.from({ length: 600 }, (_, index) =>
+test('event impact drives price movement even when the sentiment label disagrees', () => {
+  const nowMs = Date.UTC(2026, 0, 1);
+  const movesForEvents = events => Array.from({ length: 600 }, (_, index) =>
     calculateMarketMovePercent(
       100,
       100,
-      50,
+      events,
       'TEST',
       Date.UTC(2026, 0, 1) + index * 30000,
       ((index * 37) % 199 + 0.5) / 200,
@@ -57,7 +77,22 @@ test('neutral sentiment does not produce outsized simulated price swings', () =>
     )
   );
 
-  assert.ok(Math.max(...moves.map(Math.abs)) < 0.5);
+  const eventImpact = [{
+    impactPercent: 25,
+    sentiment: 'NEUTRAL',
+    importance: 'CRITICAL',
+    postedAt: new Date(nowMs).toISOString()
+  }];
+  const neutralImpact = [{
+    impactPercent: 0,
+    sentiment: 'NEUTRAL',
+    importance: 'CRITICAL',
+    postedAt: new Date(nowMs).toISOString()
+  }];
+  const averageMove = moves => moves.reduce((total, move) => total + move, 0) / moves.length;
+
+  assert.ok(averageMove(movesForEvents(eventImpact)) > averageMove(movesForEvents(neutralImpact)));
+  assert.ok(Math.max(...movesForEvents(neutralImpact).map(Math.abs)) < 0.5);
 });
 
 test('market is closed on weekends and NSE trading holidays', () => {

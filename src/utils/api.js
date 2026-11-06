@@ -946,7 +946,6 @@ export const API = {
     if (!stock) return null;
 
     const sentimentData = computeStockSentiment(stock);
-    const score = sentimentData ? (sentimentData.sentimentScore || 50) : 50;
 
     // Anchor baseline is the price right after latest event or starting price
     const lastEventTick = [...stock.priceTicks].reverse().find(t => t.eventId !== null);
@@ -955,7 +954,7 @@ export const API = {
     const noise = calculateMarketMovePercent(
       stock.profile.currentPrice,
       circuitAnchorPrice,
-      score,
+      stock.events,
       stockKey,
       Date.now(),
       Math.random(),

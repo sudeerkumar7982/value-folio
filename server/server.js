@@ -471,7 +471,7 @@ async function advanceMarket(symbol) {
   const noise = calculateMarketMovePercent(
     profile ? profile.currentPrice : 100,
     metrics.startingPrice,  // anchor to today's opening — price oscillates around this
-    sentimentData.sentimentScore,
+    events,
     symbol,
     Date.now(),
     Math.random(),
