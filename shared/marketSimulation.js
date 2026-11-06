@@ -1,4 +1,5 @@
 import { getMarketSessionFor, isMarketOpenAt } from './marketCalendar.js';
+import { computeStockSentiment } from './stockSentiment.js';
 
 /**
  * Realistic Market Simulation Engine — Geometric Brownian Motion (GBM)
@@ -59,14 +60,14 @@ export function calculateMarketMovePercent(
   const score     = Math.max(0, Math.min(100, Number(sentimentScore) || 50));
 
   // ── GBM core ──────────────────────────────────────────────────────────────
-  // σ per tick calibrated to ~2.2% daily volatility (realistic mid-cap stock).
+  // σ per 30-second tick calibrated to ~2.2% daily volatility.
   // We approximate N(0,1) from the single uniform randomValue using a simple
   // approximation (close enough for simulation purposes).
   const u1 = Math.max(0.001, Math.min(0.999, randomValue));
   const u2 = Math.max(0.001, Math.min(0.999, pseudoHash(nowMs * 0.001 + score)));
   const Z  = boxMuller(u1, u2);                 // N(0,1)
   const intervalScale = Math.max(0, intervalMs) / 30000;
-  const sigmaTick = 0.12 * Math.sqrt(intervalScale);
+  const sigmaTick = 0.08 * Math.sqrt(intervalScale);
   const gbmNoise  = sigmaTick * Z;               // core random walk
 
   // ── Momentum texture (4-min cycle) ────────────────────────────────────────
@@ -103,21 +104,7 @@ function getStockMarketParams(stock) {
   const startingPrice = Number(stock.profile?.startingPrice || stock.profile?.listingPrice || 100);
   const symbol        = stock.profile?.symbol || 'STOCK';
 
-  let sentimentScore = 50;
-  if (stock.events && stock.events.length > 0) {
-    let posCount = 0;
-    stock.events.forEach(e => {
-      if (e.sentiment === 'POSITIVE' || (e.impactPercent && e.impactPercent > 0)) posCount++;
-    });
-    const positiveRatio      = (posCount / stock.events.length) * 100;
-    const priceChangePercent = ((currentPrice - startingPrice) / startingPrice) * 100;
-    sentimentScore = Math.min(Math.max(
-      Math.round(50 + (positiveRatio - 50) * 0.4 + Math.min(Math.max(priceChangePercent * 1.2, -25), 25)),
-      5), 98);
-  } else {
-    const priceChange = ((currentPrice - startingPrice) / startingPrice) * 100;
-    sentimentScore = Math.min(Math.max(Math.round(65 + priceChange * 1.5), 10), 95);
-  }
+  const { sentimentScore } = computeStockSentiment(stock);
 
   const { upperCircuitPct, lowerCircuitPct } = getSentimentCircuitPercentages(sentimentScore);
 

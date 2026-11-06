@@ -106,7 +106,7 @@ export function AddEventModal({ isOpen, onClose, onCommitSuccess, currentPrice, 
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-800">Log Human Life Event</h2>
-              <p className="text-xs text-slate-500">AI sentiment model evaluates life events and calculates stock impact</p>
+              <p className="text-xs text-slate-500">Your real-life event sentiment drives this stock's price and sector impact</p>
             </div>
           </div>
 
@@ -189,7 +189,7 @@ export function AddEventModal({ isOpen, onClose, onCommitSuccess, currentPrice, 
             <input
               type="text"
               required
-              placeholder="e.g. Sudeer received a software engineering offer"
+              placeholder="Describe what happened in real life, e.g. received a job offer"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full bg-[#F7F6F1] border border-[#E2E0D8] focus:border-blue-500 rounded-xl px-4 py-2.5 text-slate-800 placeholder-slate-400 text-sm outline-none transition-all"

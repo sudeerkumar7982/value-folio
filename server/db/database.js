@@ -18,6 +18,7 @@ import { fileURLToPath } from 'url';
 import pg from 'pg';
 import { computeStockMetrics } from '../engine/priceEngine.js';
 import { simulateCatchUpTicks, ensureRichIntradayHistory } from '../../shared/marketSimulation.js';
+import { computeStockSentiment } from '../../shared/stockSentiment.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -420,48 +421,7 @@ async function writeStoreNow(data) {
 }
 
 
-// ── Sentiment helper (exported) ───────────────────────────────────────────────
-
-export function computeStockSentiment(stock) {
-  if (!stock) return { sentiment: 'NEUTRAL', sentimentScore: 50, sentimentLabel: 'Neutral ⚖️', positiveRatio: 50 };
-
-  const events = stock.events || [];
-  const profile = stock.profile || {};
-  const currentPrice = profile.currentPrice || 100;
-  const startingPrice = profile.startingPrice || 100;
-
-  if (events.length === 0) {
-    const priceChange = ((currentPrice - startingPrice) / startingPrice) * 100;
-    const score = Math.min(Math.max(Math.round(65 + priceChange * 1.5), 10), 95);
-    return {
-      sentiment: score >= 80 ? 'VERY_BULLISH' : score >= 60 ? 'BULLISH' : score >= 40 ? 'NEUTRAL' : score >= 20 ? 'BEARISH' : 'VERY_BEARISH',
-      sentimentScore: score,
-      sentimentLabel: score >= 80 ? 'Very Bullish 🔥' : score >= 60 ? 'Bullish 📈' : score >= 40 ? 'Neutral ⚖️' : score >= 20 ? 'Bearish 📉' : 'Very Bearish 🔻',
-      positiveRatio: 100
-    };
-  }
-
-  let posCount = 0;
-  events.forEach(e => {
-    if (e.sentiment === 'POSITIVE' || e.impactPercent > 0) posCount++;
-  });
-
-  const positiveRatio = Math.round((posCount / events.length) * 100);
-  const priceChangePercent = ((currentPrice - startingPrice) / startingPrice) * 100;
-
-  let sentimentScore = Math.round(50 + (positiveRatio - 50) * 0.4 + Math.min(Math.max(priceChangePercent * 1.2, -25), 25));
-  sentimentScore = Math.min(Math.max(sentimentScore, 5), 98);
-
-  let sentiment = 'NEUTRAL';
-  let sentimentLabel = 'Neutral ⚖️';
-  if (sentimentScore >= 80) { sentiment = 'VERY_BULLISH'; sentimentLabel = 'Very Bullish 🔥'; }
-  else if (sentimentScore >= 60) { sentiment = 'BULLISH'; sentimentLabel = 'Bullish 📈'; }
-  else if (sentimentScore >= 40) { sentiment = 'NEUTRAL'; sentimentLabel = 'Neutral ⚖️'; }
-  else if (sentimentScore >= 20) { sentiment = 'BEARISH'; sentimentLabel = 'Bearish 📉'; }
-  else { sentiment = 'VERY_BEARISH'; sentimentLabel = 'Very Bearish 🔻'; }
-
-  return { sentiment, sentimentScore, sentimentLabel, positiveRatio, totalEvents: events.length };
-}
+export { computeStockSentiment };
 
 // ── DB method implementations ─────────────────────────────────────────────────
 

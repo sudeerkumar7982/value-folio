@@ -71,6 +71,10 @@ const POSITIVE_LEXICON = [
   { word: 'recognized', weight: 3.5, sector: 'Social', importance: 'MEDIUM' },
   { word: 'featured', weight: 3.8, sector: 'Social', importance: 'HIGH' },
   { word: 'speaker', weight: 3.5, sector: 'Social', importance: 'MEDIUM' },
+  { word: 'married', weight: 4.0, sector: 'Social', importance: 'HIGH' },
+  { word: 'engaged', weight: 3.5, sector: 'Social', importance: 'MEDIUM' },
+  { word: 'reconciled', weight: 3.2, sector: 'Social', importance: 'MEDIUM' },
+  { word: 'welcomed a baby', weight: 4.0, sector: 'Wellbeing', importance: 'HIGH' },
 
   // Wellbeing
   { word: 'workout', weight: 2.5, sector: 'Wellbeing', importance: 'LOW' },
@@ -116,12 +120,22 @@ const NEGATIVE_LEXICON = [
   { word: 'argument', weight: -2.5, sector: 'Social', importance: 'LOW' },
   { word: 'conflict', weight: -2.8, sector: 'Social', importance: 'MEDIUM' },
   { word: 'criticism', weight: -2.0, sector: 'Social', importance: 'LOW' },
+  { word: 'breakup', weight: -3.8, sector: 'Social', importance: 'HIGH' },
+  { word: 'divorce', weight: -4.0, sector: 'Social', importance: 'HIGH' },
+  { word: 'separated', weight: -3.5, sector: 'Social', importance: 'HIGH' },
+  { word: 'bereavement', weight: -4.5, sector: 'Social', importance: 'CRITICAL' },
+  { word: 'passed away', weight: -4.5, sector: 'Social', importance: 'CRITICAL' },
 
   // Wellbeing
   { word: 'sick', weight: -2.8, sector: 'Wellbeing', importance: 'LOW' },
   { word: 'burnout', weight: -4.0, sector: 'Wellbeing', importance: 'HIGH' },
   { word: 'injury', weight: -3.5, sector: 'Wellbeing', importance: 'MEDIUM' },
-  { word: 'hospital', weight: -4.5, sector: 'Wellbeing', importance: 'HIGH' }
+  { word: 'hospital', weight: -4.5, sector: 'Wellbeing', importance: 'HIGH' },
+  { word: 'diagnosed', weight: -3.5, sector: 'Wellbeing', importance: 'HIGH' },
+  { word: 'chronic illness', weight: -4.5, sector: 'Wellbeing', importance: 'CRITICAL' },
+  { word: 'relapse', weight: -4.0, sector: 'Wellbeing', importance: 'HIGH' },
+  { word: 'evicted', weight: -4.5, sector: 'Finance', importance: 'CRITICAL' },
+  { word: 'unexpected bill', weight: -2.8, sector: 'Finance', importance: 'MEDIUM' }
 ];
 
 const IMPORTANCE_MULTIPLIERS = {
@@ -215,7 +229,6 @@ export async function analyzeLifeEvent(eventTitle, description = '', preferredSe
       score -= 3.2;
       maxImportance = 'MEDIUM';
     } else {
-      score += 1.5;
       maxImportance = 'LOW';
     }
   }
@@ -260,16 +273,15 @@ export async function analyzeLifeEvent(eventTitle, description = '', preferredSe
   const impMultiplier = IMPORTANCE_MULTIPLIERS[maxImportance] || 1.0;
   let dynamicImpact = score * 1.6 * intensity * impMultiplier;
 
-  // Add organic micro-variance based on text hash
-  const textHash = text.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const organicVariance = ((textHash % 100) / 100) * 0.8 - 0.4;
-  let impactPercent = Number((dynamicImpact + organicVariance).toFixed(2));
+  let impactPercent = Number(dynamicImpact.toFixed(2));
 
   // Cap between -25% and +35%
   impactPercent = Math.min(Math.max(impactPercent, -25.0), 35.0);
 
   // Confidence calculation
-  const confidence = Math.min(Math.round(70 + matches.length * 7 + Math.abs(score) * 2.5), 99);
+  const confidence = matches.length > 0
+    ? Math.min(Math.round(70 + matches.length * 7 + Math.abs(score) * 2.5), 99)
+    : 55;
 
   // Sector Score adjustment (+/- rating points for the sector)
   const sectorDelta = Math.round(impactPercent * 0.75);

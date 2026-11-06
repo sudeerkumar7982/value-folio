@@ -44,6 +44,22 @@ test('sentiment creates directional drift and adjusts circuit bands', () => {
   assert.deepEqual(getSentimentCircuitPercentages(15), { upperCircuitPct: 5, lowerCircuitPct: 20 });
 });
 
+test('neutral sentiment does not produce outsized simulated price swings', () => {
+  const moves = Array.from({ length: 600 }, (_, index) =>
+    calculateMarketMovePercent(
+      100,
+      100,
+      50,
+      'TEST',
+      Date.UTC(2026, 0, 1) + index * 30000,
+      ((index * 37) % 199 + 0.5) / 200,
+      30000
+    )
+  );
+
+  assert.ok(Math.max(...moves.map(Math.abs)) < 0.5);
+});
+
 test('market is closed on weekends and NSE trading holidays', () => {
   assert.equal(isMarketOpenAt(Date.parse('2026-03-07T05:00:00.000Z')), false);
   assert.equal(isMarketOpenAt(Date.parse('2026-03-03T05:00:00.000Z')), false);

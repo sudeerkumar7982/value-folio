@@ -5,6 +5,9 @@ import {
   ensureRichIntradayHistory
 } from '../../shared/marketSimulation.js';
 import { getMarketStatus } from '../../shared/marketCalendar.js';
+import { computeStockSentiment } from '../../shared/stockSentiment.js';
+
+export { computeStockSentiment };
 
 export function getApiBaseUrl() {
   try {
@@ -43,21 +46,41 @@ export async function apiFetch(path, options) {
 function analyzeLifeEventLocal(eventTitle, description = '', preferredSector = null) {
   const text = `${eventTitle} ${description}`.toLowerCase();
   let sentiment = 'NEUTRAL';
-  let impactPercent = 3.5;
+  let impactPercent = 0;
+  let confidence = 55;
+  let importance = 'LOW';
   let primarySector = (preferredSector && preferredSector !== 'Auto') ? preferredSector : 'Projects';
 
-  if (text.includes('reject') || text.includes('fail') || text.includes('fire') || text.includes('loss') || text.includes('bug') || text.includes('cancel')) {
+  const negativeTerms = [
+    'passed away', 'bereavement', 'breakup', 'divorce', 'separated', 'diagnosed',
+    'chronic illness', 'relapse', 'evicted', 'unexpected bill', 'reject', 'fail',
+    'fire', 'loss', 'bug', 'cancel', 'sick', 'burnout', 'injury', 'hospital'
+  ];
+  const positiveTerms = [
+    'offer', 'passed exam', 'pass exam', 'win', 'promote', 'profit', 'hired',
+    'award', 'married', 'engaged', 'reconciled', 'recovered', 'graduated',
+    'scholarship', 'welcomed a baby'
+  ];
+
+  if (negativeTerms.some(term => text.includes(term))) {
     sentiment = 'NEGATIVE';
     impactPercent = -4.5;
-  } else if (text.includes('offer') || text.includes('pass') || text.includes('win') || text.includes('promote') || text.includes('profit') || text.includes('hired') || text.includes('award')) {
+    confidence = 78;
+    importance = 'HIGH';
+    if (['diagnosed', 'chronic illness', 'bereavement', 'passed away', 'evicted'].some(term => text.includes(term))) {
+      importance = 'CRITICAL';
+    }
+  } else if (positiveTerms.some(term => text.includes(term))) {
     sentiment = 'POSITIVE';
     impactPercent = 6.2;
+    confidence = 78;
+    importance = 'HIGH';
   }
 
   return {
     sentiment,
-    confidence: 85,
-    importance: 'HIGH',
+    confidence,
+    importance,
     impactPercent,
     primarySector,
     sectorDelta: Math.round(impactPercent * 0.75),
@@ -122,65 +145,6 @@ function saveLocalStore(data) {
   } catch (e) {
     console.error('LocalStorage write error:', e);
   }
-}
-
-export function computeStockSentiment(stock) {
-  if (!stock) return { sentiment: 'NEUTRAL', sentimentScore: 50, sentimentLabel: 'Neutral ⚖️', positiveRatio: 50 };
-
-  const events = stock.events || [];
-  const profile = stock.profile || {};
-  const currentPrice = profile.currentPrice || 100;
-  const startingPrice = profile.startingPrice || 100;
-
-  if (events.length === 0) {
-    const priceChange = ((currentPrice - startingPrice) / startingPrice) * 100;
-    const score = Math.min(Math.max(Math.round(65 + priceChange * 1.5), 10), 95);
-    return {
-      sentiment: score >= 80 ? 'VERY_BULLISH' : score >= 60 ? 'BULLISH' : score >= 40 ? 'NEUTRAL' : score >= 20 ? 'BEARISH' : 'VERY_BEARISH',
-      sentimentScore: score,
-      sentimentLabel: score >= 80 ? 'Very Bullish 🔥' : score >= 60 ? 'Bullish 📈' : score >= 40 ? 'Neutral ⚖️' : score >= 20 ? 'Bearish 📉' : 'Very Bearish 🔻',
-      positiveRatio: 100
-    };
-  }
-
-  let posCount = 0;
-
-  events.forEach(e => {
-    if (e.sentiment === 'POSITIVE' || e.impactPercent > 0) posCount++;
-  });
-
-  const positiveRatio = Math.round((posCount / events.length) * 100);
-  const priceChangePercent = ((currentPrice - startingPrice) / startingPrice) * 100;
-
-  let sentimentScore = Math.round(50 + (positiveRatio - 50) * 0.4 + Math.min(Math.max(priceChangePercent * 1.2, -25), 25));
-  sentimentScore = Math.min(Math.max(sentimentScore, 5), 98);
-
-  let sentiment = 'NEUTRAL';
-  let sentimentLabel = 'Neutral ⚖️';
-  if (sentimentScore >= 80) {
-    sentiment = 'VERY_BULLISH';
-    sentimentLabel = 'Very Bullish 🔥';
-  } else if (sentimentScore >= 60) {
-    sentiment = 'BULLISH';
-    sentimentLabel = 'Bullish 📈';
-  } else if (sentimentScore >= 40) {
-    sentiment = 'NEUTRAL';
-    sentimentLabel = 'Neutral ⚖️';
-  } else if (sentimentScore >= 20) {
-    sentiment = 'BEARISH';
-    sentimentLabel = 'Bearish 📉';
-  } else {
-    sentiment = 'VERY_BEARISH';
-    sentimentLabel = 'Very Bearish 🔻';
-  }
-
-  return {
-    sentiment,
-    sentimentScore,
-    sentimentLabel,
-    positiveRatio,
-    totalEvents: events.length
-  };
 }
 
 export function getCircuitLimitsBySentiment(basePrice, sentimentData) {
