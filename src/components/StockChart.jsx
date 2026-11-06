@@ -92,9 +92,8 @@ function sampleLinePoints(data, domain, maxPoints = 120) {
   const firstX = Number(domain?.[0] ?? data[0].timeMs);
   const lastX = Number(domain?.[1] ?? data[data.length - 1].timeMs);
   const xRange = Math.max(lastX - firstX, 0);
-  const bucketCount = Math.max(1, maxPoints - 2);
+  const bucketCount = maxPoints;
   const buckets = Array.from({ length: bucketCount }, () => []);
-  const eventIndexes = new Set();
 
   data.forEach((point, index) => {
     const x = Number(point.timeMs);
@@ -102,28 +101,28 @@ function sampleLinePoints(data, domain, maxPoints = 120) {
       ? Math.min(Math.max(Math.floor(((x - firstX) / xRange) * bucketCount), 0), bucketCount - 1)
       : Math.min(Math.floor((index / data.length) * bucketCount), bucketCount - 1);
     buckets[bucketIndex].push(index);
-    if (point.eventId) eventIndexes.add(index);
   });
 
-  const selected = new Set([0, data.length - 1, ...eventIndexes]);
-
-  for (const bucket of buckets) {
+  const sampled = [];
+  for (let bucketIndex = 0; bucketIndex < buckets.length; bucketIndex++) {
+    const bucket = buckets[bucketIndex];
     if (bucket.length === 0) continue;
-    let minIndex = bucket[0];
-    let maxIndex = bucket[0];
-
-    for (const index of bucket.slice(1)) {
-      if (data[index].price < data[minIndex].price) minIndex = index;
-      if (data[index].price > data[maxIndex].price) maxIndex = index;
-    }
-
-    selected.add(bucket[0]);
-    selected.add(bucket[bucket.length - 1]);
-    selected.add(minIndex);
-    selected.add(maxIndex);
+    const eventIndex = bucket.find(index => data[index].eventId);
+    const candidates = eventIndex === undefined ? bucket : [eventIndex];
+    const orderedPrices = candidates.map(index => data[index].price).sort((a, b) => a - b);
+    const medianPrice = orderedPrices[Math.floor(orderedPrices.length / 2)];
+    const representativeIndex = candidates.reduce((bestIndex, index) =>
+      Math.abs(data[index].price - medianPrice) < Math.abs(data[bestIndex].price - medianPrice)
+        ? index
+        : bestIndex
+    , candidates[0]);
+    sampled.push({
+      ...data[representativeIndex],
+      timeMs: firstX + ((bucketIndex + 0.5) / bucketCount) * xRange
+    });
   }
 
-  return [...selected].sort((a, b) => a - b).map(index => data[index]);
+  return sampled;
 }
 
 export function StockChart({ priceTicks = [], profile, symbol = '' }) {
