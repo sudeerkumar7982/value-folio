@@ -636,7 +636,7 @@ export function StockChart({ priceTicks = [], profile, metrics, symbol = '' }) {
                 {timeRange === '1D'
                   ? getMarketStatus().specialSession
                     ? 'Muhurat session • 2:20 PM – 3:30 PM IST'
-                    : 'NSE session • 9:15 AM – 3:30 PM IST'
+                    : 'Pre-opening • 9:00 AM – 9:15 AM • NSE session • 9:15 AM – 3:30 PM IST'
                   : 'Weekday closing prices'} • {formattedData.length} chart data points
               </span>
             )}

@@ -259,6 +259,30 @@ export default function App() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
         {activeTab === 'DASHBOARD' && (
+          <section className="flex flex-col gap-3 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 via-white to-indigo-50 p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-5">
+            <div className="flex items-start gap-3">
+              <div className="rounded-xl bg-blue-100 p-2.5 text-blue-700">
+                <Clock className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-base font-extrabold text-slate-800">Regular NSE market hours</h2>
+                <p className="mt-1 text-sm text-slate-600">Monday–Friday, excluding market holidays <span className="font-semibold">• IST</span></p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-sm sm:min-w-[430px]">
+              <div className="rounded-xl border border-blue-100 bg-white/80 p-3">
+                <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Pre-opening</div>
+                <div className="mt-1 font-bold text-slate-800">9:00 AM – 9:15 AM</div>
+              </div>
+              <div className="rounded-xl border border-blue-100 bg-white/80 p-3">
+                <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Trading session</div>
+                <div className="mt-1 font-bold text-slate-800">9:15 AM – 3:30 PM</div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {activeTab === 'DASHBOARD' && (
           <section className="overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-orange-50 p-5 shadow-sm sm:p-6">
             <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
               <div className="flex items-start gap-3">

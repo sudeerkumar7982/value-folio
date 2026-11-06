@@ -1,6 +1,7 @@
 const TIME_ZONE = 'Asia/Kolkata';
 const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
+const PRE_OPEN_MINUTES = 9 * 60;
 const MARKET_OPEN_MINUTES = 9 * 60 + 15;
 const MARKET_CLOSE_MINUTES = 15 * 60 + 30;
 const SPECIAL_SESSIONS = new Map([
@@ -75,9 +76,14 @@ function getSessionBounds(dateParts) {
   return { marketOpen, marketClose };
 }
 
-function getSpecialSessionTimes(dateParts) {
+function getSessionTimes(dateParts) {
+  const isTradingDay = SPECIAL_SESSIONS.has(dateParts.dateKey) ||
+    (dateParts.weekday !== 0 && dateParts.weekday !== 6 && !holidays.has(dateParts.dateKey));
+  if (!isTradingDay) return {};
+
   const specialSession = SPECIAL_SESSIONS.get(dateParts.dateKey);
-  if (!specialSession) return {};
+  const preOpeningStartMinutes = specialSession?.preOpeningStartMinutes ?? PRE_OPEN_MINUTES;
+  const marketOpenMinutes = specialSession?.marketOpenMinutes ?? MARKET_OPEN_MINUTES;
 
   const atMinutes = minutes => new Date(Date.UTC(
     dateParts.year,
@@ -87,10 +93,15 @@ function getSpecialSessionTimes(dateParts) {
     minutes % 60
   ) - IST_OFFSET_MS).toISOString();
 
+  const sessionTimes = {
+    preOpeningStartsAt: atMinutes(preOpeningStartMinutes),
+    preOpeningEndsAt: atMinutes(marketOpenMinutes)
+  };
+  if (!specialSession) return sessionTimes;
+
   return {
+    ...sessionTimes,
     specialSession: specialSession.name,
-    preOpeningStartsAt: atMinutes(specialSession.preOpeningStartMinutes),
-    preOpeningEndsAt: atMinutes(specialSession.marketOpenMinutes),
     closingAuctionEndsAt: atMinutes(specialSession.closingAuctionEndMinutes)
   };
 }
@@ -123,16 +134,30 @@ export function getMarketStatus(timestampMs = Date.now()) {
   const exchangeDate = getExchangeDate(timestampMs);
   const { marketOpen, marketClose } = getSessionBounds(exchangeDate);
   const holiday = holidays.get(exchangeDate.dateKey) || null;
+  const tradingDay = isTradingDay(timestampMs);
+  const marketOpenNow = isMarketOpenAt(timestampMs);
+  const sessionTimes = getSessionTimes(exchangeDate);
+  const preOpeningStartsAt = sessionTimes.preOpeningStartsAt
+    ? Date.parse(sessionTimes.preOpeningStartsAt)
+    : null;
+  const sessionPhase = !tradingDay
+    ? 'closed'
+    : marketOpenNow
+      ? 'market-open'
+      : preOpeningStartsAt !== null && timestampMs >= preOpeningStartsAt && timestampMs < marketOpen
+        ? 'pre-opening'
+        : 'closed';
 
   return {
     timezone: TIME_ZONE,
-    marketOpen: isMarketOpenAt(timestampMs),
-    tradingDay: isTradingDay(timestampMs),
+    marketOpen: marketOpenNow,
+    tradingDay,
+    sessionPhase,
     date: exchangeDate.dateKey,
     holiday,
     opensAt: new Date(marketOpen).toISOString(),
     closesAt: new Date(marketClose).toISOString(),
-    ...getSpecialSessionTimes(exchangeDate)
+    ...sessionTimes
   };
 }
 

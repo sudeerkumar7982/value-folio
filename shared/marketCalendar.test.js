@@ -21,6 +21,32 @@ test('market opens and closes at the specified IST times', () => {
   assert.equal(isMarketOpenAt(Date.parse('2026-03-04T10:00:00.000Z')), false);
 });
 
+test('regular weekday pre-opening runs from 9:00 to 9:15 IST without live trading', () => {
+  const beforePreOpen = Date.parse('2026-03-04T03:29:59.999Z');
+  const preOpen = Date.parse('2026-03-04T03:30:00.000Z');
+  const beforeTrading = Date.parse('2026-03-04T03:44:59.999Z');
+  const tradingOpen = Date.parse('2026-03-04T03:45:00.000Z');
+
+  assert.equal(getMarketStatus(beforePreOpen).sessionPhase, 'closed');
+  assert.equal(getMarketStatus(preOpen).sessionPhase, 'pre-opening');
+  assert.equal(getMarketStatus(beforeTrading).marketOpen, false);
+  assert.equal(getMarketStatus(beforeTrading).sessionPhase, 'pre-opening');
+  assert.equal(isMarketOpenAt(beforeTrading), false);
+  assert.equal(getMarketStatus(tradingOpen).sessionPhase, 'market-open');
+  assert.equal(getMarketStatus(preOpen).preOpeningStartsAt, '2026-03-04T03:30:00.000Z');
+  assert.equal(getMarketStatus(preOpen).preOpeningEndsAt, '2026-03-04T03:45:00.000Z');
+
+  const stock = {
+    profile: { symbol: 'TEST', currentPrice: 100, startingPrice: 100 },
+    priceTicks: []
+  };
+  ensureRichIntradayHistory(stock, Date.parse('2026-03-04T03:40:00.000Z'));
+  assert.deepEqual(stock.priceTicks, []);
+
+  assert.equal(getMarketStatus(Date.parse('2026-03-07T03:30:00.000Z')).preOpeningStartsAt, undefined);
+  assert.equal(getMarketStatus(Date.parse('2026-03-03T03:30:00.000Z')).preOpeningStartsAt, undefined);
+});
+
 test('real-life event impact drives rally strength and circuit bands remain unchanged', () => {
   const nowMs = Date.UTC(2026, 0, 1);
   const strongBullishEvent = [{

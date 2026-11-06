@@ -25,6 +25,13 @@ export default function StockHeader({
   const displayedChangePercent = metrics?.totalChangePercent ?? metrics?.changePercent ?? 0;
   const isPositive = displayedChangePercent >= 0;
   const isMarketTicking = isLiveActive && marketSession?.marketOpen;
+  const marketStatusLabel = !isLiveActive
+    ? 'PAUSED'
+    : marketSession?.marketOpen
+      ? 'LIVE TICK'
+      : marketSession?.sessionPhase === 'pre-opening'
+        ? 'PRE-OPENING'
+        : 'MARKET CLOSED';
 
   // Nav tabs
   const navTabs = (
@@ -178,7 +185,7 @@ export default function StockHeader({
                 >
                   <Radio className={`w-3 h-3 ${isMarketTicking ? 'text-rose-500 animate-ping' : ''}`} />
                   <span>
-                    {!isLiveActive ? 'PAUSED' : marketSession?.marketOpen ? 'LIVE TICK' : 'MARKET CLOSED'}
+                    {marketStatusLabel}
                   </span>
                 </button>
 
