@@ -105,7 +105,7 @@ export function computeStockMetrics(priceHistory, stock = null) {
   sorted.forEach(tick => {
     const timestamp = new Date(tick.timestamp).getTime();
     if (getMarketStatus(timestamp).date === todayDate) todayPrices.push(tick.price);
-    if (timestamp >= fiftyTwoWeeksAgo) fiftyTwoWeekPrices.push(tick.price);
+    if (timestamp >= fiftyTwoWeeksAgo && timestamp <= now.getTime()) fiftyTwoWeekPrices.push(tick.price);
   });
 
   const changeAmount = Number((currentPrice - previousPrice).toFixed(2));
