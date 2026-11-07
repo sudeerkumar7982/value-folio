@@ -225,12 +225,12 @@ export default function App() {
   const muhuratNow = Date.now();
   const muhuratStatus = !isMuhuratDate
     ? (localMarketSession.date < '2026-11-08' ? 'Upcoming' : 'Session complete')
-    : muhuratNow < Date.parse(localMarketSession.preOpeningStartsAt)
-      ? 'Scheduled today'
-      : muhuratNow < Date.parse(localMarketSession.preOpeningEndsAt)
+    : localMarketSession.sessionPhase === 'market-open'
+      ? 'Live Now'
+      : localMarketSession.sessionPhase === 'pre-opening'
         ? 'Pre-opening'
-        : muhuratNow < Date.parse(localMarketSession.closesAt)
-          ? 'Live Now'
+        : muhuratNow < Date.parse(localMarketSession.preOpeningStartsAt)
+          ? 'Scheduled today'
           : 'Session complete';
 
   return (

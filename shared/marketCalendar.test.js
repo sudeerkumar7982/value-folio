@@ -167,6 +167,10 @@ test('Diwali Muhurat trading overrides the Sunday holiday only for its special s
   assert.equal(isMarketOpenAt(tradingOpen), true);
   assert.equal(isMarketOpenAt(beforeClose), true);
   assert.equal(isMarketOpenAt(tradingClose), false);
+  assert.equal(getMarketStatus(beforePreOpen).sessionPhase, 'closed');
+  assert.equal(getMarketStatus(preOpen).sessionPhase, 'pre-opening');
+  assert.equal(getMarketStatus(tradingOpen).sessionPhase, 'market-open');
+  assert.equal(getMarketStatus(tradingClose).sessionPhase, 'closed');
 
   const status = getMarketStatus(tradingOpen);
   assert.equal(status.specialSession, 'Diwali Muhurat Trading');
