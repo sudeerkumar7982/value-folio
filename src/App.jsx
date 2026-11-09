@@ -283,6 +283,24 @@ export default function App() {
           </section>
         )}
 
+        {activeTab === 'DASHBOARD' && marketSession.holiday && !marketSession.tradingDay && (
+          <section
+            role="status"
+            className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-950 shadow-sm"
+          >
+            <div className="rounded-xl bg-amber-100 p-2.5 text-amber-700">
+              <Clock className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-extrabold">Market closed — NSE holiday</h2>
+              <p className="mt-1 text-sm text-amber-900">
+                {marketSession.holiday}
+                {marketSession.date ? ` • ${marketSession.date}` : ''}
+              </p>
+            </div>
+          </section>
+        )}
+
         {activeTab === 'DASHBOARD' &&
           localMarketSession.date >= '2026-11-06' &&
           localMarketSession.date <= '2026-11-08' && (

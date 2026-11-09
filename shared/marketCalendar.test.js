@@ -150,6 +150,12 @@ test('event impact drives price movement even when the sentiment label disagrees
 test('market is closed on weekends and NSE trading holidays', () => {
   assert.equal(isMarketOpenAt(Date.parse('2026-03-07T05:00:00.000Z')), false);
   assert.equal(isMarketOpenAt(Date.parse('2026-03-03T05:00:00.000Z')), false);
+
+  const holidayStatus = getMarketStatus(Date.parse('2026-03-03T05:00:00.000Z'));
+  assert.equal(holidayStatus.marketOpen, false);
+  assert.equal(holidayStatus.tradingDay, false);
+  assert.equal(holidayStatus.sessionPhase, 'closed');
+  assert.equal(holidayStatus.holiday, 'Holi');
 });
 
 test('Diwali Muhurat trading overrides the Sunday holiday only for its special session', () => {
