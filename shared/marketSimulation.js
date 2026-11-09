@@ -41,6 +41,23 @@ function formatMarketTime(timestampMs) {
   }).format(timestampMs);
 }
 
+function getCircuitLimits(anchorPrice, upperCircuitPct, lowerCircuitPct) {
+  return {
+    upperCircuit: Number((anchorPrice * (1 + upperCircuitPct / 100)).toFixed(2)),
+    lowerCircuit: Math.max(1.0, Number((anchorPrice * (1 - lowerCircuitPct / 100)).toFixed(2)))
+  };
+}
+
+export function getLatestCircuitReset(priceTicks, nowMs = Date.now()) {
+  const session = getMarketSessionFor(nowMs);
+  if (!session || !Array.isArray(priceTicks)) return null;
+
+  return [...priceTicks].reverse().find(tick => tick.eventId &&
+    String(tick.eventId).startsWith('circuit-reset-') &&
+    Date.parse(tick.timestamp) >= session.marketOpen &&
+    Date.parse(tick.timestamp) <= nowMs) || null;
+}
+
 export function getSentimentCircuitPercentages(sentimentScore) {
   const score = Math.max(0, Math.min(100, Number(sentimentScore) || 0));
   if (score >= 80) return { upperCircuitPct: 20, lowerCircuitPct: 5 };
@@ -139,7 +156,7 @@ export function calculateMarketMovePercent(
  * Computes dynamic circuit limits and sentiment parameters for a stock.
  * Circuits are wide safety-nets for extreme life events — not daily constraints.
  */
-function getStockMarketParams(stock) {
+function getStockMarketParams(stock, nowMs = Date.now()) {
   const currentPrice  = Number(stock.profile?.currentPrice  || 100);
   const startingPrice = Number(stock.profile?.startingPrice || stock.profile?.listingPrice || 100);
   const symbol        = stock.profile?.symbol || 'STOCK';
@@ -151,9 +168,12 @@ function getStockMarketParams(stock) {
   const lastEventTick    = Array.isArray(stock.priceTicks)
     ? [...stock.priceTicks].reverse().find(t => t.eventId !== null && !String(t.eventId).startsWith('circuit-reset'))
     : null;
-  const circuitAnchorPrice = lastEventTick ? lastEventTick.price : startingPrice;
-  const upperCircuit = Number((circuitAnchorPrice * (1 + upperCircuitPct / 100)).toFixed(2));
-  const lowerCircuit = Math.max(1.0, Number((circuitAnchorPrice * (1 - lowerCircuitPct / 100)).toFixed(2)));
+  const latestCircuitReset = getLatestCircuitReset(stock.priceTicks, nowMs);
+  const anchorTick = [lastEventTick, latestCircuitReset]
+    .filter(Boolean)
+    .sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp))[0];
+  const circuitAnchorPrice = anchorTick ? anchorTick.price : startingPrice;
+  const { upperCircuit, lowerCircuit } = getCircuitLimits(circuitAnchorPrice, upperCircuitPct, lowerCircuitPct);
 
   return { currentPrice, startingPrice, symbol, sentimentScore, upperCircuitPct, lowerCircuitPct, circuitAnchorPrice, upperCircuit, lowerCircuit };
 }
@@ -187,7 +207,9 @@ export function simulateCatchUpTicks(stock, targetNowMs = Date.now(), maxTicksTo
   else if (elapsedMs > 2 * 60 * 1000)        stepMs = 4 * 1000;
   else                                        stepMs = 2 * 1000;
 
-  const { symbol, upperCircuitPct, lowerCircuitPct, startingPrice, upperCircuit, lowerCircuit } = getStockMarketParams(stock);
+  const marketParams = getStockMarketParams(stock, targetNowMs);
+  const { symbol, upperCircuitPct, lowerCircuitPct, startingPrice } = marketParams;
+  let { upperCircuit, lowerCircuit } = marketParams;
   let simPrice      = Number(stock.profile.currentPrice || lastTick.price || 100);
   let currentTimeMs = lastTimeMs + stepMs;
   let tickIndex     = 0;
@@ -204,10 +226,16 @@ export function simulateCatchUpTicks(stock, targetNowMs = Date.now(), maxTicksTo
     const noise = calculateMarketMovePercent(simPrice, startingPrice, stock.events, symbol, currentTimeMs, u1, stepMs);
 
     const rawPrice = simPrice * (1 + noise / 100);
+    const hitUpper = rawPrice >= upperCircuit;
+    const hitLower = rawPrice <= lowerCircuit;
     simPrice = Number(Math.min(Math.max(rawPrice, lowerCircuit), upperCircuit).toFixed(2));
     if (simPrice < 1.0) simPrice = 1.0;
 
-    const tickLabel = noise > 0.03 ? '🔥 Bullish Buying' : noise < -0.03 ? '🔻 Bearish Selling' : '⚖️ Market Fluctuation';
+    const tickLabel = hitUpper
+      ? `🔒 Upper Circuit Limit Hit (+${upperCircuitPct}%)`
+      : hitLower
+        ? `🔒 Lower Circuit Limit Hit (-${lowerCircuitPct}%)`
+        : noise > 0.03 ? '🔥 Bullish Buying' : noise < -0.03 ? '🔻 Bearish Selling' : '⚖️ Market Fluctuation';
 
     stock.priceTicks.push({
       timestamp: new Date(currentTimeMs).toISOString(),
@@ -215,6 +243,17 @@ export function simulateCatchUpTicks(stock, targetNowMs = Date.now(), maxTicksTo
       eventId:   null,
       label:     tickLabel
     });
+
+    if (hitUpper || hitLower) {
+      const resetTime = currentTimeMs + 1;
+      stock.priceTicks.push({
+        timestamp: new Date(resetTime).toISOString(),
+        price: simPrice,
+        eventId: `circuit-reset-${resetTime}`,
+        label: `🔄 Circuit Reset — Trading Resumes from ₹${simPrice.toFixed(2)}`
+      });
+      ({ upperCircuit, lowerCircuit } = getCircuitLimits(simPrice, upperCircuitPct, lowerCircuitPct));
+    }
 
     currentTimeMs += stepMs;
     tickIndex++;
@@ -241,7 +280,9 @@ export function ensureRichIntradayHistory(stock, targetNowMs = Date.now()) {
   const todayTicks = stock.priceTicks.filter(t => new Date(t.timestamp).getTime() >= marketOpenMs);
   if (todayTicks.length >= 120) return stock;  // already rich enough
 
-  const { symbol, upperCircuit, lowerCircuit } = getStockMarketParams(stock);
+  const marketParams = getStockMarketParams(stock, targetNowMs);
+  const { symbol, upperCircuitPct, lowerCircuitPct } = marketParams;
+  let { upperCircuit, lowerCircuit } = marketParams;
   // Start the GBM walk from the CURRENT price (not IPO startingPrice).
   // This centers the generated chart around the actual live price so the
   // oscillations look realistic and don't appear as a sloping line from IPO.
@@ -283,11 +324,27 @@ export function ensureRichIntradayHistory(stock, targetNowMs = Date.now()) {
     const noise = calculateMarketMovePercent(currentP, openAnchor, stock.events, symbol, tMs, u1, stepMs);
 
     const rawPrice = currentP * (1 + noise / 100);
+    const hitUpper = rawPrice >= upperCircuit;
+    const hitLower = rawPrice <= lowerCircuit;
     currentP = Number(Math.min(Math.max(rawPrice, lowerCircuit), upperCircuit).toFixed(2));
     if (currentP < 1.0) currentP = 1.0;
 
-    const label = noise > 0.03 ? '🔥 Bullish Buying' : noise < -0.03 ? '🔻 Bearish Selling' : '⚖️ Market Fluctuation';
+    const label = hitUpper
+      ? `🔒 Upper Circuit Limit Hit (+${upperCircuitPct}%)`
+      : hitLower
+        ? `🔒 Lower Circuit Limit Hit (-${lowerCircuitPct}%)`
+        : noise > 0.03 ? '🔥 Bullish Buying' : noise < -0.03 ? '🔻 Bearish Selling' : '⚖️ Market Fluctuation';
     generated.push({ timestamp: new Date(tMs).toISOString(), price: currentP, eventId: null, label });
+    if (hitUpper || hitLower) {
+      const resetTime = tMs + 1;
+      generated.push({
+        timestamp: new Date(resetTime).toISOString(),
+        price: currentP,
+        eventId: `circuit-reset-${resetTime}`,
+        label: `🔄 Circuit Reset — Trading Resumes from ₹${currentP.toFixed(2)}`
+      });
+      ({ upperCircuit, lowerCircuit } = getCircuitLimits(currentP, upperCircuitPct, lowerCircuitPct));
+    }
   }
 
   // Merge existing event ticks (life events should be preserved)

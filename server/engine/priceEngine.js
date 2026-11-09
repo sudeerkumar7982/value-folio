@@ -1,7 +1,10 @@
 /**
  * Price Engine & Market Metrics Calculator for Human Life Stocks
  */
-import { getSentimentCircuitPercentages } from '../../shared/marketSimulation.js';
+import {
+  getLatestCircuitReset,
+  getSentimentCircuitPercentages
+} from '../../shared/marketSimulation.js';
 import { getMarketStatus } from '../../shared/marketCalendar.js';
 import { getPriceRanges } from '../../shared/priceRanges.js';
 
@@ -96,7 +99,9 @@ export function computeStockMetrics(priceHistory, stock = null, nowMs = Date.now
     openingPrice = 100;
   }
 
-  const circuits = getCircuitLimitsBySentiment(openingPrice, stock?.sentiment);
+  const latestCircuitReset = getLatestCircuitReset(sorted, nowMs);
+  const circuitAnchorPrice = latestCircuitReset?.price ?? openingPrice;
+  const circuits = getCircuitLimitsBySentiment(circuitAnchorPrice, stock?.sentiment);
   const prices = sorted.map(p => p.price);
 
   const currentPrice = prices[prices.length - 1];

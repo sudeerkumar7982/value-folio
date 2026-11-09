@@ -1,5 +1,6 @@
 import {
   calculateMarketMovePercent,
+  getLatestCircuitReset,
   getSentimentCircuitPercentages,
   simulateCatchUpTicks,
   ensureRichIntradayHistory
@@ -212,7 +213,8 @@ function computeMetrics(priceTicks, stock = null) {
     openingPrice = 100;
   }
 
-  const circuits = getCircuitLimitsBySentiment(openingPrice, sentimentData);
+  const latestCircuitReset = getLatestCircuitReset(sorted, nowMs);
+  const circuits = getCircuitLimitsBySentiment(latestCircuitReset?.price ?? openingPrice, sentimentData);
 
   const prices = sorted.map(p => p.price);
 
@@ -986,9 +988,11 @@ export const API = {
       ? '🔻 Bearish Market Selling' 
       : '⚖️ Neutral Fluctuation';
 
-    if (newPrice >= circuits.upperCircuit) {
+    const hitUpperCircuit = newPrice >= circuits.upperCircuit;
+    const hitLowerCircuit = newPrice <= circuits.lowerCircuit;
+    if (hitUpperCircuit) {
       tickLabel = `🔒 Upper Circuit Limit Hit (+${circuits.upperCircuitPct}%)`;
-    } else if (newPrice <= circuits.lowerCircuit) {
+    } else if (hitLowerCircuit) {
       tickLabel = `🔒 Lower Circuit Limit Hit (-${circuits.lowerCircuitPct}%)`;
     }
 
@@ -1005,6 +1009,16 @@ export const API = {
         price: newPrice,
         eventId: null,
         label: tickLabel
+      });
+    }
+
+    if (hitUpperCircuit || hitLowerCircuit) {
+      const resetTime = nowMs + 1;
+      stock.priceTicks.push({
+        timestamp: new Date(resetTime).toISOString(),
+        price: newPrice,
+        eventId: `circuit-reset-${resetTime}`,
+        label: `🔄 Circuit Reset — Trading Resumes from ₹${newPrice.toFixed(2)}`
       });
     }
 
