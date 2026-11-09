@@ -301,6 +301,23 @@ export default function App() {
           </section>
         )}
 
+        {activeTab === 'DASHBOARD' && !marketSession.holiday && marketSession.nextHoliday && (
+          <section
+            role="status"
+            className="flex items-start gap-3 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-blue-950 shadow-sm"
+          >
+            <div className="rounded-xl bg-blue-100 p-2.5 text-blue-700">
+              <Clock className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-extrabold">Upcoming market holiday</h2>
+              <p className="mt-1 text-sm text-blue-900">
+                {marketSession.nextHoliday.holiday} • {marketSession.nextHoliday.date}
+              </p>
+            </div>
+          </section>
+        )}
+
         {activeTab === 'DASHBOARD' &&
           localMarketSession.date >= '2026-11-06' &&
           localMarketSession.date <= '2026-11-08' && (

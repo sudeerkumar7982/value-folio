@@ -8,6 +8,7 @@ import {
   simulateCatchUpTicks
 } from './marketSimulation.js';
 import {
+  getUpcomingTradingHoliday,
   getMarketSessionFor,
   getMarketStatus,
   getTradingSessionsBetween,
@@ -156,6 +157,15 @@ test('market is closed on weekends and NSE trading holidays', () => {
   assert.equal(holidayStatus.tradingDay, false);
   assert.equal(holidayStatus.sessionPhase, 'closed');
   assert.equal(holidayStatus.holiday, 'Holi');
+
+  assert.deepEqual(
+    getUpcomingTradingHoliday(Date.parse('2026-11-09T18:18:00+05:30')),
+    { date: '2026-11-10', holiday: 'Diwali-Balipratipada' }
+  );
+  assert.deepEqual(
+    getMarketStatus(Date.parse('2026-11-09T18:18:00+05:30')).nextHoliday,
+    { date: '2026-11-10', holiday: 'Diwali-Balipratipada' }
+  );
 });
 
 test('Diwali Muhurat trading overrides the Sunday holiday only for its special session', () => {

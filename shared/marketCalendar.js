@@ -119,6 +119,22 @@ export function isTradingDay(timestampMs = Date.now()) {
   return SPECIAL_SESSIONS.has(dateKey) || (weekday !== 0 && weekday !== 6 && !holidays.has(dateKey));
 }
 
+export function getUpcomingTradingHoliday(timestampMs = Date.now()) {
+  const { dateKey } = getExchangeDate(timestampMs);
+  const upcomingHoliday = [...holidays.entries()]
+    .filter(([date]) => date > dateKey && !SPECIAL_SESSIONS.has(date))
+    .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+    .find(([date]) => {
+      const [year, month, day] = date.split('-').map(Number);
+      const weekday = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+      return weekday !== 0 && weekday !== 6;
+    });
+
+  return upcomingHoliday
+    ? { date: upcomingHoliday[0], holiday: upcomingHoliday[1] }
+    : null;
+}
+
 export function isMarketOpenAt(timestampMs = Date.now()) {
   const exchangeDate = getExchangeDate(timestampMs);
   const specialSession = SPECIAL_SESSIONS.get(exchangeDate.dateKey);
@@ -155,6 +171,7 @@ export function getMarketStatus(timestampMs = Date.now()) {
     sessionPhase,
     date: exchangeDate.dateKey,
     holiday,
+    nextHoliday: getUpcomingTradingHoliday(timestampMs),
     opensAt: new Date(marketOpen).toISOString(),
     closesAt: new Date(marketClose).toISOString(),
     ...sessionTimes
