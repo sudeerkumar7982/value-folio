@@ -525,8 +525,7 @@ export function StockChart({ priceTicks = [], profile, metrics, symbol = '' }) {
   const periodChangePct = openingPrice > 0 ? Number(((periodChangeAmt / openingPrice) * 100).toFixed(2)) : 0;
   const isUpTrend = periodChangeAmt >= 0;
 
-  // Match the reference chart: a crisp light-green line regardless of direction.
-  const strokeColor = '#00B386';
+  const strokeColor = isUpTrend ? '#00B386' : '#EF4444';
 
   const minVal = priceBounds.min;
   const maxVal = priceBounds.max;
