@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TrendingUp, TrendingDown, PlusCircle, ShoppingBag, RotateCcw, Settings, Activity, Radio, Rocket, ChevronDown, Layers, Flame, BarChart2, Briefcase } from 'lucide-react';
+import { TrendingUp, TrendingDown, PlusCircle, ShoppingBag, RotateCcw, Settings, Activity, Radio, Rocket, ChevronDown, Layers, Flame, BarChart2, Briefcase, Moon, Sun } from 'lucide-react';
 
 export default function StockHeader({ 
   profile, 
@@ -17,7 +17,9 @@ export default function StockHeader({
   onReset,
   isLiveActive,
   marketSession,
-  onToggleLive
+  onToggleLive,
+  isDarkMode,
+  onToggleTheme
 }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -98,6 +100,14 @@ export default function StockHeader({
               >
                 <Rocket className="w-3.5 h-3.5" />
                 <span>Launch IPO / Create Stock</span>
+              </button>
+              <button
+                onClick={onToggleTheme}
+                className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 rounded-xl border border-[#E2E0D8] transition-colors"
+                title={`Switch to ${isDarkMode ? 'light' : 'dark'} mode`}
+                aria-label={`Switch to ${isDarkMode ? 'light' : 'dark'} mode`}
+              >
+                {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </button>
               <button
                 onClick={onReset}
@@ -296,6 +306,15 @@ export default function StockHeader({
               title="Settings"
             >
               <Settings className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={onToggleTheme}
+              className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 rounded-xl border border-[#E2E0D8] transition-colors"
+              title={`Switch to ${isDarkMode ? 'light' : 'dark'} mode`}
+              aria-label={`Switch to ${isDarkMode ? 'light' : 'dark'} mode`}
+            >
+              {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
 
             <button

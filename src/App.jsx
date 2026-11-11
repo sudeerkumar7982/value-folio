@@ -25,6 +25,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [isLiveActive, setIsLiveActive] = useState(true);
   const [marketSession, setMarketSession] = useState(getMarketStatus());
+  const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('valuefolio-theme') === 'dark');
   const lastTickTimestampRef = useRef(null);
 
   // Modals state
@@ -90,6 +91,12 @@ export default function App() {
     const interval = setInterval(refreshSchedule, 60 * 1000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const theme = isDarkMode ? 'dark' : 'light';
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem('valuefolio-theme', theme);
+  }, [isDarkMode]);
 
   const handleToggleLive = async () => {
     const nextLiveState = !isLiveActive;
@@ -257,6 +264,8 @@ export default function App() {
         isLiveActive={isLiveActive}
         marketSession={marketSession}
         onToggleLive={handleToggleLive}
+        isDarkMode={isDarkMode}
+        onToggleTheme={() => setIsDarkMode(current => !current)}
       />
 
       {/* Main Container */}
