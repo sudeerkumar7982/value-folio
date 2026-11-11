@@ -158,17 +158,20 @@ test('market is closed on weekends and NSE trading holidays', () => {
   assert.equal(holidayStatus.sessionPhase, 'closed');
   assert.equal(holidayStatus.holiday, 'Holi');
 
+  assert.equal(getUpcomingTradingHoliday(Date.parse('2026-11-09T19:59:59+05:30')), null);
+  const previousEvening = Date.parse('2026-11-09T20:00:00+05:30');
   assert.deepEqual(
-    getUpcomingTradingHoliday(Date.parse('2026-11-09T18:18:00+05:30')),
+    getUpcomingTradingHoliday(previousEvening),
     { date: '2026-11-10', holiday: 'Diwali-Balipratipada' }
   );
   assert.deepEqual(
-    getMarketStatus(Date.parse('2026-11-09T18:18:00+05:30')).nextHoliday,
+    getMarketStatus(previousEvening).nextHoliday,
     { date: '2026-11-10', holiday: 'Diwali-Balipratipada' }
   );
   assert.equal(getUpcomingTradingHoliday(Date.parse('2026-03-01T12:00:00+05:30')), null);
+  assert.equal(getUpcomingTradingHoliday(Date.parse('2026-03-02T19:59:59+05:30')), null);
   assert.deepEqual(
-    getUpcomingTradingHoliday(Date.parse('2026-03-02T12:00:00+05:30')),
+    getUpcomingTradingHoliday(Date.parse('2026-03-02T20:00:00+05:30')),
     { date: '2026-03-03', holiday: 'Holi' }
   );
   assert.equal(getMarketStatus(Date.parse('2026-03-03T12:00:00+05:30')).holiday, 'Holi');

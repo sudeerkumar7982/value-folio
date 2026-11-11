@@ -4,6 +4,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const PRE_OPEN_MINUTES = 9 * 60;
 const MARKET_OPEN_MINUTES = 9 * 60 + 15;
 const MARKET_CLOSE_MINUTES = 15 * 60 + 30;
+const HOLIDAY_NOTICE_START_MINUTES = 20 * 60;
 const SPECIAL_SESSIONS = new Map([
   ['2026-11-08', {
     name: 'Diwali Muhurat Trading',
@@ -120,7 +121,9 @@ export function isTradingDay(timestampMs = Date.now()) {
 }
 
 export function getUpcomingTradingHoliday(timestampMs = Date.now()) {
-  const { year, month, day } = getExchangeDate(timestampMs);
+  const { year, month, day, minutes } = getExchangeDate(timestampMs);
+  if (minutes < HOLIDAY_NOTICE_START_MINUTES) return null;
+
   const tomorrow = new Date(Date.UTC(year, month, day) + DAY_MS).toISOString().slice(0, 10);
   const holiday = holidays.get(tomorrow);
   if (!holiday || SPECIAL_SESSIONS.has(tomorrow)) return null;
