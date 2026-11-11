@@ -221,6 +221,9 @@ export default function App() {
   const metrics = data?.metrics || null;
   const priceTicks = data?.priceTicks || [];
   const localMarketSession = getMarketStatus();
+  const holidayNotice = marketSession.holiday && !marketSession.tradingDay
+    ? { date: marketSession.date, holiday: marketSession.holiday }
+    : marketSession.nextHoliday;
   const isMuhuratDate = localMarketSession.date === '2026-11-08';
   const muhuratNow = Date.now();
   const muhuratStatus = !isMuhuratDate
@@ -283,7 +286,7 @@ export default function App() {
           </section>
         )}
 
-        {activeTab === 'DASHBOARD' && marketSession.holiday && !marketSession.tradingDay && (
+        {activeTab === 'DASHBOARD' && holidayNotice && (
           <section
             role="status"
             className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-950 shadow-sm"
@@ -292,27 +295,9 @@ export default function App() {
               <Clock className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-extrabold">Market closed — NSE holiday</h2>
+              <h2 className="text-base font-extrabold">MARKET HOLIDAY ON {holidayNotice.date}</h2>
               <p className="mt-1 text-sm text-amber-900">
-                {marketSession.holiday}
-                {marketSession.date ? ` • ${marketSession.date}` : ''}
-              </p>
-            </div>
-          </section>
-        )}
-
-        {activeTab === 'DASHBOARD' && !marketSession.holiday && marketSession.nextHoliday && (
-          <section
-            role="status"
-            className="flex items-start gap-3 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-blue-950 shadow-sm"
-          >
-            <div className="rounded-xl bg-blue-100 p-2.5 text-blue-700">
-              <Clock className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 className="text-base font-extrabold">Upcoming market holiday</h2>
-              <p className="mt-1 text-sm text-blue-900">
-                {marketSession.nextHoliday.holiday} • {marketSession.nextHoliday.date}
+                {holidayNotice.holiday}
               </p>
             </div>
           </section>

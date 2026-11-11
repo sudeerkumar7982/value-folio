@@ -166,6 +166,12 @@ test('market is closed on weekends and NSE trading holidays', () => {
     getMarketStatus(Date.parse('2026-11-09T18:18:00+05:30')).nextHoliday,
     { date: '2026-11-10', holiday: 'Diwali-Balipratipada' }
   );
+  assert.equal(getUpcomingTradingHoliday(Date.parse('2026-03-01T12:00:00+05:30')), null);
+  assert.deepEqual(
+    getUpcomingTradingHoliday(Date.parse('2026-03-02T12:00:00+05:30')),
+    { date: '2026-03-03', holiday: 'Holi' }
+  );
+  assert.equal(getMarketStatus(Date.parse('2026-03-03T12:00:00+05:30')).holiday, 'Holi');
 });
 
 test('Diwali Muhurat trading overrides the Sunday holiday only for its special session', () => {

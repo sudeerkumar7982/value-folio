@@ -120,18 +120,14 @@ export function isTradingDay(timestampMs = Date.now()) {
 }
 
 export function getUpcomingTradingHoliday(timestampMs = Date.now()) {
-  const { dateKey } = getExchangeDate(timestampMs);
-  const upcomingHoliday = [...holidays.entries()]
-    .filter(([date]) => date > dateKey && !SPECIAL_SESSIONS.has(date))
-    .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
-    .find(([date]) => {
-      const [year, month, day] = date.split('-').map(Number);
-      const weekday = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
-      return weekday !== 0 && weekday !== 6;
-    });
+  const { year, month, day } = getExchangeDate(timestampMs);
+  const tomorrow = new Date(Date.UTC(year, month, day) + DAY_MS).toISOString().slice(0, 10);
+  const holiday = holidays.get(tomorrow);
+  if (!holiday || SPECIAL_SESSIONS.has(tomorrow)) return null;
 
-  return upcomingHoliday
-    ? { date: upcomingHoliday[0], holiday: upcomingHoliday[1] }
+  const weekday = new Date(`${tomorrow}T00:00:00Z`).getUTCDay();
+  return weekday !== 0 && weekday !== 6
+    ? { date: tomorrow, holiday }
     : null;
 }
 
