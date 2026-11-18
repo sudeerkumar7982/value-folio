@@ -876,22 +876,9 @@ const dbMethods = {
         addCacheTick(sym, { timestamp: nowIso, price: clampedPrice, eventId: null, label: finalLabel });
       }
 
-      if (hitUpper || hitLower) {
-        const resetLabel = hitUpper
-          ? `📈 Circuit Reset — Trading Resumes from ₹${clampedPrice.toFixed(2)}`
-          : `📉 Circuit Reset — Trading Resumes from ₹${clampedPrice.toFixed(2)}`;
-        addCacheTick(sym, { timestamp: new Date(nowMs + 1).toISOString(), price: clampedPrice, eventId: `circuit-reset-${nowMs}`, label: resetLabel });
-      }
-
       // ── 2. Enqueue DB writes (batch every 15s) ───────────────────────────────────────
       // Queue tick for DB write; flushed periodically
       enqueueDbTick(sym, { timestamp: nowIso, price: clampedPrice, eventId: null, label: finalLabel });
-      if (hitUpper || hitLower) {
-        const resetLabel = hitUpper
-          ? `📈 Circuit Reset — Trading Resumes from ₹${clampedPrice.toFixed(2)}`
-          : `📉 Circuit Reset — Trading Resumes from ₹${clampedPrice.toFixed(2)}`;
-        enqueueDbTick(sym, { timestamp: new Date(nowMs + 1).toISOString(), price: clampedPrice, eventId: `circuit-reset-${nowMs}`, label: resetLabel });
-      }
       // Note: DB writes are batched; cache ensures chart continuity even if Neon is full.
 
       // Persist currentPrice periodically without writing the state blob each second.
@@ -924,12 +911,6 @@ const dbMethods = {
         stock.priceTicks.push({ timestamp: nowIso, price: clampedPrice, eventId: null, label: finalLabel });
       }
 
-      if (hitUpper || hitLower) {
-        const resetLabel = hitUpper
-          ? `📈 Circuit Reset — Trading Resumes from ₹${clampedPrice.toFixed(2)}`
-          : `📉 Circuit Reset — Trading Resumes from ₹${clampedPrice.toFixed(2)}`;
-        stock.priceTicks.push({ timestamp: new Date(nowMs + 1).toISOString(), price: clampedPrice, eventId: `circuit-reset-${nowMs}`, label: resetLabel });
-      }
 
       const MAX_TICKS = 43200;
       if (stock.priceTicks.length > MAX_TICKS) {

@@ -23,7 +23,7 @@ test('52-week high uses the in-window maximum and low uses the first plotted dai
   assert.equal(metrics.fiftyTwoWeekLow, 95);
 });
 
-test('circuit limits recalculate from a same-day circuit reset price', () => {
+test('circuit limits stay fixed from the prior close for the trading day', () => {
   const now = Date.parse('2026-03-04T05:00:00.000Z');
   const metrics = computeStockMetrics([
     { timestamp: '2026-03-03T04:00:00.000Z', price: 150, eventId: null },
@@ -32,11 +32,11 @@ test('circuit limits recalculate from a same-day circuit reset price', () => {
     { timestamp: '2026-03-04T04:30:00.001Z', price: 142.5, eventId: 'circuit-reset-1772598600000' }
   ], { profile: { startingPrice: 150 }, sentiment: { sentimentScore: 80 } }, now);
 
-  assert.equal(metrics.lowerCircuit, 135.38);
-  assert.equal(metrics.upperCircuit, 171);
+  assert.equal(metrics.lowerCircuit, 142.5);
+  assert.equal(metrics.upperCircuit, 180);
 });
 
-test('circuit limits recalculate again after a later same-day circuit reset', () => {
+test('a later same-day circuit hit does not re-anchor limits', () => {
   const now = Date.parse('2026-03-04T05:00:00.000Z');
   const metrics = computeStockMetrics([
     { timestamp: '2026-03-03T04:00:00.000Z', price: 150, eventId: null },
@@ -45,8 +45,8 @@ test('circuit limits recalculate again after a later same-day circuit reset', ()
     { timestamp: '2026-03-04T04:45:00.001Z', price: 135.38, eventId: 'circuit-reset-1772599500000' }
   ], { profile: { startingPrice: 150 }, sentiment: { sentimentScore: 80 } }, now);
 
-  assert.equal(metrics.lowerCircuit, 128.61);
-  assert.equal(metrics.upperCircuit, 162.46);
+  assert.equal(metrics.lowerCircuit, 142.5);
+  assert.equal(metrics.upperCircuit, 180);
 });
 
 test('circuit resets from previous sessions do not change today’s circuit anchor', () => {

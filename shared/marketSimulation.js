@@ -58,6 +58,31 @@ export function getLatestCircuitReset(priceTicks, nowMs = Date.now()) {
     Date.parse(tick.timestamp) <= nowMs) || null;
 }
 
+export function getDailyCircuitAnchor(priceTicks, startingPrice, nowMs = Date.now()) {
+  const session = getMarketSessionFor(nowMs);
+  const base = Number(startingPrice) > 0 ? Number(startingPrice) : 100;
+  if (!session || !Array.isArray(priceTicks) || priceTicks.length === 0) return base;
+
+  const priorCloseTick = [...priceTicks].reverse().find(tick => {
+    const timestamp = Date.parse(tick.timestamp);
+    return Number.isFinite(timestamp) &&
+      timestamp < session.marketOpen &&
+      Number.isFinite(Number(tick.price));
+  });
+
+  if (priorCloseTick) return Number(priorCloseTick.price);
+
+  const openingTicks = priceTicks.filter(tick => {
+    const timestamp = Date.parse(tick.timestamp);
+    return timestamp >= session.marketOpen &&
+      timestamp <= nowMs &&
+      Number.isFinite(Number(tick.price));
+  });
+  if (openingTicks.length > 0) return Number(openingTicks[0].price);
+
+  return base;
+}
+
 export function getSentimentCircuitPercentages(sentimentScore) {
   const score = Math.max(0, Math.min(100, Number(sentimentScore) || 0));
   if (score >= 80) return { upperCircuitPct: 20, lowerCircuitPct: 5 };
@@ -164,15 +189,7 @@ function getStockMarketParams(stock, nowMs = Date.now()) {
   const { sentimentScore } = computeStockSentiment(stock);
 
   const { upperCircuitPct, lowerCircuitPct } = getSentimentCircuitPercentages(sentimentScore);
-
-  const lastEventTick    = Array.isArray(stock.priceTicks)
-    ? [...stock.priceTicks].reverse().find(t => t.eventId !== null && !String(t.eventId).startsWith('circuit-reset'))
-    : null;
-  const latestCircuitReset = getLatestCircuitReset(stock.priceTicks, nowMs);
-  const anchorTick = [lastEventTick, latestCircuitReset]
-    .filter(Boolean)
-    .sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp))[0];
-  const circuitAnchorPrice = anchorTick ? anchorTick.price : startingPrice;
+  const circuitAnchorPrice = getDailyCircuitAnchor(stock.priceTicks, startingPrice, nowMs);
   const { upperCircuit, lowerCircuit } = getCircuitLimits(circuitAnchorPrice, upperCircuitPct, lowerCircuitPct);
 
   return { currentPrice, startingPrice, symbol, sentimentScore, upperCircuitPct, lowerCircuitPct, circuitAnchorPrice, upperCircuit, lowerCircuit };
@@ -245,14 +262,8 @@ export function simulateCatchUpTicks(stock, targetNowMs = Date.now(), maxTicksTo
     });
 
     if (hitUpper || hitLower) {
-      const resetTime = currentTimeMs + 1;
-      stock.priceTicks.push({
-        timestamp: new Date(resetTime).toISOString(),
-        price: simPrice,
-        eventId: `circuit-reset-${resetTime}`,
-        label: `🔄 Circuit Reset — Trading Resumes from ₹${simPrice.toFixed(2)}`
-      });
-      ({ upperCircuit, lowerCircuit } = getCircuitLimits(simPrice, upperCircuitPct, lowerCircuitPct));
+      // Daily circuit limits stay fixed for this session. They are not re-anchored
+      // after a limit is hit.
     }
 
     currentTimeMs += stepMs;
@@ -336,14 +347,7 @@ export function ensureRichIntradayHistory(stock, targetNowMs = Date.now()) {
         : noise > 0.03 ? '🔥 Bullish Buying' : noise < -0.03 ? '🔻 Bearish Selling' : '⚖️ Market Fluctuation';
     generated.push({ timestamp: new Date(tMs).toISOString(), price: currentP, eventId: null, label });
     if (hitUpper || hitLower) {
-      const resetTime = tMs + 1;
-      generated.push({
-        timestamp: new Date(resetTime).toISOString(),
-        price: currentP,
-        eventId: `circuit-reset-${resetTime}`,
-        label: `🔄 Circuit Reset — Trading Resumes from ₹${currentP.toFixed(2)}`
-      });
-      ({ upperCircuit, lowerCircuit } = getCircuitLimits(currentP, upperCircuitPct, lowerCircuitPct));
+      // Keep the same daily circuit band after a limit is hit.
     }
   }
 
